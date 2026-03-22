@@ -11,16 +11,16 @@ export default function StockPage() {
     { icon: "smartphone", label: "iPhone", active: true },
     { icon: "laptop_mac", label: "Mac", active: false },
     { icon: "tablet_mac", label: "iPad", active: false },
-    { icon: "watch", label: "Accessories", active: false },
-    { icon: "settings_input_component", label: "Parts", active: false },
+    { icon: "watch", label: "Accesorios", active: false },
+    { icon: "settings_input_component", label: "Repuestos", active: false },
   ];
 
   return (
     <>
       <div className="flex justify-between items-end mb-8">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Stock & Inventory</h2>
-          <p className="text-on-surface-variant text-sm mt-1">Manage products, parts and stock levels</p>
+          <h2 className="text-3xl font-bold tracking-tight">Stock e Inventario</h2>
+          <p className="text-on-surface-variant text-sm mt-1">Gestión de productos, repuestos y niveles de stock</p>
         </div>
       </div>
 
@@ -28,12 +28,12 @@ export default function StockPage() {
       <section className="mb-8 p-6 bg-red-50 border border-red-100 rounded-xl flex items-start gap-4">
         <span className="material-symbols-outlined text-red-500 mt-0.5">report</span>
         <div className="flex-1">
-          <h4 className="text-sm font-bold text-red-800 mb-2">Critical Stock Alerts</h4>
+          <h4 className="text-sm font-bold text-red-800 mb-2">Alertas de Stock Crítico</h4>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
-              { name: "iPhone 13 Screen", count: "1 left" },
-              { name: "USB-C Power Adapter", count: "0 left" },
-              { name: "MBP M1 Battery", count: "2 left" },
+              { name: "iPhone 13 Screen", count: "1 restante" },
+              { name: "USB-C Power Adapter", count: "0 restante" },
+              { name: "MBP M1 Battery", count: "2 restantes" },
             ].map((alert) => (
               <div key={alert.name} className="bg-white/60 p-3 rounded-lg flex justify-between items-center border border-red-100/50">
                 <span className="text-xs font-medium">{alert.name}</span>
@@ -48,7 +48,7 @@ export default function StockPage() {
         {/* Categories Sidebar */}
         <div className="col-span-12 lg:col-span-2 space-y-6">
           <div>
-            <h3 className="text-[10px] uppercase tracking-[0.15em] font-bold text-cool-grey mb-4 px-2">Categories</h3>
+            <h3 className="text-[10px] uppercase tracking-[0.15em] font-bold text-cool-grey mb-4 px-2">Categorías</h3>
             <div className="flex flex-col gap-1">
               {categories.map((cat) => (
                 <button key={cat.label} className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all ${
@@ -61,16 +61,16 @@ export default function StockPage() {
             </div>
           </div>
           <div>
-            <h3 className="text-[10px] uppercase tracking-[0.15em] font-bold text-cool-grey mb-4 px-2">Stock Status</h3>
+            <h3 className="text-[10px] uppercase tracking-[0.15em] font-bold text-cool-grey mb-4 px-2">Estado de Stock</h3>
             <div className="flex flex-col gap-1">
               <button className="flex items-center gap-3 px-4 py-3 text-cool-grey hover:bg-slate-100 rounded-xl font-medium text-sm">
-                <span className="material-symbols-outlined">list</span> All Items
+                <span className="material-symbols-outlined">list</span> Todos
               </button>
               <button className="flex items-center gap-3 px-4 py-3 text-cool-grey hover:bg-slate-100 rounded-xl font-medium text-sm">
-                <span className="material-symbols-outlined text-amber-500">warning</span> Low Stock
+                <span className="material-symbols-outlined text-amber-500">warning</span> Stock bajo
               </button>
               <button className="flex items-center gap-3 px-4 py-3 text-cool-grey hover:bg-slate-100 rounded-xl font-medium text-sm">
-                <span className="material-symbols-outlined text-red-500">error</span> Out of Stock
+                <span className="material-symbols-outlined text-red-500">error</span> Sin stock
               </button>
             </div>
           </div>
@@ -83,15 +83,15 @@ export default function StockPage() {
             <div className="flex items-center gap-4 flex-1 max-w-xl">
               <div className="relative flex-1">
                 <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-cool-grey">search</span>
-                <input className="w-full pl-12 pr-6 py-3 bg-white rounded-xl border border-slate-200 focus:ring-1 focus:ring-primary/30 transition-all text-sm" placeholder="Search SKU or product name..." type="text" />
+                <input className="w-full pl-12 pr-6 py-3 bg-white rounded-xl border border-slate-200 focus:ring-1 focus:ring-primary/30 transition-all text-sm" placeholder="Buscar por SKU o nombre..." type="text" />
               </div>
             </div>
             <div className="flex items-center gap-3">
               <button className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-bold text-sm shadow-md shadow-primary/20">
-                <span className="material-symbols-outlined text-lg">add</span> Add Product
+                <span className="material-symbols-outlined text-lg">add</span> Agregar Producto
               </button>
               <button className="flex items-center gap-2 px-6 py-3 bg-primary/10 text-primary-dark rounded-full font-bold text-sm">
-                <span className="material-symbols-outlined text-lg">inventory</span> Stock Entry
+                <span className="material-symbols-outlined text-lg">inventory</span> Ingreso de Stock
               </button>
             </div>
           </div>
@@ -102,10 +102,10 @@ export default function StockPage() {
                 <thead>
                   <tr className="bg-slate-50">
                     <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">SKU</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Product Name</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Variant</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Cost</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Sale</th>
+                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Producto</th>
+                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Variante</th>
+                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Costo</th>
+                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Venta</th>
                     <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Stock</th>
                     <th className="px-4 py-4"></th>
                   </tr>
@@ -133,7 +133,7 @@ export default function StockPage() {
               </table>
             </div>
             <div className="p-4 bg-slate-50 flex justify-between items-center text-xs font-medium text-cool-grey border-t border-slate-100">
-              <span>Showing 5 of 142 products</span>
+              <span>Mostrando 5 de 142 productos</span>
               <div className="flex gap-2">
                 <button className="w-8 h-8 rounded-lg bg-white border border-slate-100 flex items-center justify-center font-bold">1</button>
                 <button className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-slate-100">2</button>
@@ -146,7 +146,7 @@ export default function StockPage() {
         {/* Right Detail */}
         <div className="col-span-12 lg:col-span-3">
           <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 sticky top-24">
-            <h2 className="text-xl font-black mb-6">Item Detail</h2>
+            <h2 className="text-xl font-black mb-6">Detalle del Producto</h2>
             <div className="flex items-center gap-4 mb-6">
               <div className="w-16 h-16 rounded-xl bg-slate-100 flex items-center justify-center">
                 <span className="material-symbols-outlined text-3xl text-cool-grey">smartphone</span>
@@ -158,16 +158,16 @@ export default function StockPage() {
             </div>
             <div className="grid grid-cols-2 gap-3 mb-6">
               <div className="bg-slate-50 p-4 rounded-xl">
-                <p className="text-[10px] text-cool-grey uppercase font-bold mb-1">Total Stock</p>
-                <p className="text-2xl font-black">12 <span className="text-xs font-normal text-cool-grey">units</span></p>
+                <p className="text-[10px] text-cool-grey uppercase font-bold mb-1">Stock Total</p>
+                <p className="text-2xl font-black">12 <span className="text-xs font-normal text-cool-grey">uds</span></p>
               </div>
               <div className="bg-slate-50 p-4 rounded-xl">
-                <p className="text-[10px] text-cool-grey uppercase font-bold mb-1">Asset Value</p>
+                <p className="text-[10px] text-cool-grey uppercase font-bold mb-1">Valor en Stock</p>
                 <p className="text-2xl font-black">$10,788</p>
               </div>
             </div>
             <div className="mb-6">
-              <h4 className="text-xs font-bold uppercase tracking-widest text-cool-grey mb-4">30-Day Trend</h4>
+              <h4 className="text-xs font-bold uppercase tracking-widest text-cool-grey mb-4">Tendencia 30 días</h4>
               <div className="h-24 w-full flex items-end gap-1 px-1">
                 {[40, 50, 45, 60, 75, 90, 85, 100, 95].map((h, i) => (
                   <div key={i} className={`flex-1 rounded-t-sm ${i >= 4 ? "bg-primary/60" : "bg-slate-100"}`} style={{ height: `${h}%` }} />
@@ -175,12 +175,12 @@ export default function StockPage() {
               </div>
             </div>
             <div className="mb-6">
-              <h4 className="text-xs font-bold uppercase tracking-widest text-cool-grey mb-3">Variants</h4>
+              <h4 className="text-xs font-bold uppercase tracking-widest text-cool-grey mb-3">Variantes</h4>
               <div className="bg-slate-50 rounded-xl p-4 space-y-3">
                 {[
-                  { v: "128GB Black", u: "8 units" },
-                  { v: "256GB Black", u: "3 units" },
-                  { v: "512GB Black", u: "1 unit" },
+                  { v: "128GB Black", u: "8 uds" },
+                  { v: "256GB Black", u: "3 uds" },
+                  { v: "512GB Black", u: "1 ud" },
                 ].map((v) => (
                   <div key={v.v} className="flex justify-between items-center pb-2 border-b border-slate-100 last:border-0 last:pb-0">
                     <span className="text-xs font-medium text-on-surface-variant">{v.v}</span>
@@ -190,12 +190,12 @@ export default function StockPage() {
               </div>
             </div>
             <div>
-              <h4 className="text-xs font-bold uppercase tracking-widest text-cool-grey mb-3">Recent Movement</h4>
+              <h4 className="text-xs font-bold uppercase tracking-widest text-cool-grey mb-3">Movimientos Recientes</h4>
               <div className="space-y-3">
                 {[
-                  { icon: "shopping_cart", text: "Sale - Order #9021", sub: "Oct 24 • 14:30", delta: "-1", color: "text-red-500" },
-                  { icon: "local_shipping", text: "Purchase Entry", sub: "Oct 22 • 09:15", delta: "+10", color: "text-primary" },
-                  { icon: "assignment_return", text: "Customer Return", sub: "Oct 20 • 11:45", delta: "+1", color: "text-primary" },
+                  { icon: "shopping_cart", text: "Venta - Pedido #9021", sub: "24 Oct • 14:30", delta: "-1", color: "text-red-500" },
+                  { icon: "local_shipping", text: "Ingreso de compra", sub: "22 Oct • 09:15", delta: "+10", color: "text-primary" },
+                  { icon: "assignment_return", text: "Devolución", sub: "20 Oct • 11:45", delta: "+1", color: "text-primary" },
                 ].map((m, i) => (
                   <div key={i} className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">

@@ -4,8 +4,8 @@ import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 
 export const metadata: Metadata = {
-  title: "iGreen — Precision Repair",
-  description: "Apple repair shop management system",
+  title: "iGreen — Servicio Técnico Apple",
+  description: "Sistema de gestión para servicio técnico Apple",
 };
 
 export default function RootLayout({

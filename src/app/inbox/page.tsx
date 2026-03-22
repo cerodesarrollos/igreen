@@ -1,9 +1,9 @@
 export default function InboxPage() {
   const conversations = [
-    { name: "Laura Morales", msg: "My iPhone 13 screen...", time: "10:42 AM", platform: "instagram", platformColor: "bg-pink-500", platformIcon: "photo_camera", active: true, badge: "REPAIR ACTIVE" },
-    { name: "Marcus Chen", msg: "Is my Mac ready?", time: "9:15 AM", platform: "whatsapp", platformColor: "bg-green-500", platformIcon: "forum", unread: 2 },
-    { name: "Sarah Jenkins", msg: "Thank you for the quick fix!", time: "Yesterday", platform: "email", platformColor: "bg-blue-500", platformIcon: "mail" },
-    { name: "David Rossi", msg: "I'd like to quote a battery change", time: "Monday", platform: "instagram", platformColor: "bg-pink-500", platformIcon: "photo_camera" },
+    { name: "Laura Morales", msg: "La pantalla de mi iPhone 13...", time: "10:42", platform: "instagram", platformColor: "bg-pink-500", platformIcon: "photo_camera", active: true, badge: "REPARACIÓN ACTIVA" },
+    { name: "Marcus Chen", msg: "¿Ya está mi Mac?", time: "9:15", platform: "whatsapp", platformColor: "bg-green-500", platformIcon: "forum", unread: 2 },
+    { name: "Sarah Jenkins", msg: "¡Gracias por el arreglo rápido!", time: "Ayer", platform: "email", platformColor: "bg-blue-500", platformIcon: "mail" },
+    { name: "David Rossi", msg: "Quiero cotizar un cambio de batería", time: "Lunes", platform: "instagram", platformColor: "bg-pink-500", platformIcon: "photo_camera" },
   ];
 
   return (
@@ -13,7 +13,7 @@ export default function InboxPage() {
         <div className="p-4 space-y-4">
           <h2 className="text-lg font-bold">Inbox</h2>
           <div className="flex gap-1 overflow-x-auto no-scrollbar pb-1">
-            {["All", "WhatsApp", "Instagram", "Email"].map((f, i) => (
+            {["Todos", "WhatsApp", "Instagram", "Email"].map((f, i) => (
               <button key={f} className={`px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap ${
                 i === 0 ? "bg-primary text-white" : "text-cool-grey hover:bg-slate-200"
               }`}>{f}</button>
@@ -59,18 +59,18 @@ export default function InboxPage() {
             </div>
             <div>
               <h3 className="font-bold text-base leading-tight">Laura Morales</h3>
-              <p className="text-xs text-green-600 font-semibold uppercase tracking-wider">Online</p>
+              <p className="text-xs text-green-600 font-semibold uppercase tracking-wider">En línea</p>
             </div>
           </div>
           <div className="flex gap-3">
-            <button className="px-4 py-2 bg-slate-200 rounded-full text-xs font-bold hover:bg-slate-300 transition-colors">Link to Ticket</button>
-            <button className="px-4 py-2 bg-slate-200 rounded-full text-xs font-bold hover:bg-slate-300 transition-colors">Create Lead</button>
+            <button className="px-4 py-2 bg-slate-200 rounded-full text-xs font-bold hover:bg-slate-300 transition-colors">Vincular a Ticket</button>
+            <button className="px-4 py-2 bg-slate-200 rounded-full text-xs font-bold hover:bg-slate-300 transition-colors">Crear Lead</button>
           </div>
         </div>
 
         <div className="flex-1 p-8 overflow-y-auto space-y-6 flex flex-col no-scrollbar">
           <div className="flex flex-col items-center">
-            <span className="px-4 py-1 rounded-full bg-slate-100 text-[10px] font-bold text-cool-grey uppercase tracking-widest">Today</span>
+            <span className="px-4 py-1 rounded-full bg-slate-100 text-[10px] font-bold text-cool-grey uppercase tracking-widest">Hoy</span>
           </div>
 
           {/* Incoming */}
@@ -78,7 +78,7 @@ export default function InboxPage() {
             <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-bold self-end mb-1">LM</div>
             <div>
               <div className="bg-slate-100 rounded-t-2xl rounded-br-2xl p-4">
-                <p className="text-sm leading-relaxed">Hi! I wanted to check on the status of my iPhone 13 Pro repair. Is the screen already replaced?</p>
+                <p className="text-sm leading-relaxed">¡Hola! Quería saber cómo va la reparación de mi iPhone 13 Pro. ¿Ya cambiaron la pantalla?</p>
               </div>
               <span className="text-[10px] text-cool-grey mt-1 inline-block">10:42 AM</span>
             </div>
@@ -87,7 +87,7 @@ export default function InboxPage() {
           {/* Outgoing */}
           <div className="flex flex-col items-end gap-1 ml-auto max-w-[80%]">
             <div className="bg-gradient-to-br from-primary-dark to-primary text-white rounded-t-2xl rounded-bl-2xl p-4 shadow-md shadow-primary/10">
-              <p className="text-sm leading-relaxed font-medium">Hello Laura! Yes, we have just finished the installation of the original OLED panel. We are now running the final 30-minute stress test to ensure everything is perfect.</p>
+              <p className="text-sm leading-relaxed font-medium">¡Hola Laura! Sí, recién terminamos de instalar el panel OLED original. Ahora estamos corriendo el test de estrés final de 30 minutos para asegurarnos de que todo quede perfecto.</p>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="text-[10px] text-cool-grey">10:45 AM</span>
@@ -100,7 +100,7 @@ export default function InboxPage() {
             <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-bold self-end mb-1">LM</div>
             <div>
               <div className="bg-slate-100 rounded-t-2xl rounded-br-2xl p-4">
-                <p className="text-sm leading-relaxed">Awesome! Can I pick it up this afternoon?</p>
+                <p className="text-sm leading-relaxed">¡Genial! ¿Puedo pasar a buscarlo esta tarde?</p>
               </div>
               <span className="text-[10px] text-cool-grey mt-1 inline-block">10:46 AM</span>
             </div>
@@ -113,7 +113,7 @@ export default function InboxPage() {
             <button className="p-2 hover:bg-white rounded-xl transition-colors text-cool-grey hover:text-primary">
               <span className="material-symbols-outlined">add_circle</span>
             </button>
-            <input className="flex-1 bg-transparent border-none focus:ring-0 text-sm py-2 outline-none" placeholder="Type a message to Laura..." type="text" />
+            <input className="flex-1 bg-transparent border-none focus:ring-0 text-sm py-2 outline-none" placeholder="Escribí un mensaje a Laura..." type="text" />
             <div className="flex items-center gap-2">
               <button className="p-2 hover:bg-white rounded-xl transition-colors text-cool-grey">
                 <span className="material-symbols-outlined">mood</span>
@@ -137,7 +137,7 @@ export default function InboxPage() {
             </div>
           </div>
           <h2 className="text-xl font-black tracking-tight">Laura Morales</h2>
-          <p className="text-cool-grey text-sm mb-6">Customer since 2022</p>
+          <p className="text-cool-grey text-sm mb-6">Cliente desde 2022</p>
           <div className="w-full space-y-3">
             <div className="flex items-center gap-3 px-4 py-2 bg-slate-50 rounded-xl">
               <span className="material-symbols-outlined text-cool-grey text-lg">phone</span>
@@ -152,16 +152,16 @@ export default function InboxPage() {
 
         <div className="bg-white rounded-xl p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
-            <h4 className="text-xs font-black uppercase tracking-widest text-cool-grey">Active Repair</h4>
+            <h4 className="text-xs font-black uppercase tracking-widest text-cool-grey">Reparación Activa</h4>
             <span className="w-2 h-2 bg-primary animate-pulse rounded-full" />
           </div>
           <div className="bg-primary/5 border border-primary/20 rounded-xl p-4">
             <div className="flex justify-between mb-2">
               <span className="text-xs font-bold text-primary">#IG-9842</span>
-              <span className="text-[10px] px-2 py-0.5 bg-primary text-white rounded-full font-bold">STRESS TEST</span>
+              <span className="text-[10px] px-2 py-0.5 bg-primary text-white rounded-full font-bold">TEST DE ESTRÉS</span>
             </div>
             <p className="font-bold text-sm mb-1">iPhone 13 Pro - Alpine Green</p>
-            <p className="text-xs text-cool-grey mb-4">Screen Replacement & Calibration</p>
+            <p className="text-xs text-cool-grey mb-4">Reemplazo de pantalla y calibración</p>
             <div className="w-full h-1.5 bg-primary/20 rounded-full overflow-hidden">
               <div className="w-[85%] h-full bg-primary" />
             </div>
@@ -169,12 +169,12 @@ export default function InboxPage() {
         </div>
 
         <div className="bg-white rounded-xl p-6 shadow-sm">
-          <h4 className="text-xs font-black uppercase tracking-widest text-cool-grey mb-4">Purchase History</h4>
+          <h4 className="text-xs font-black uppercase tracking-widest text-cool-grey mb-4">Historial de Compras</h4>
           <div className="space-y-4">
             {[
-              { icon: "smartphone", name: "MagSafe Charger", date: "Dec 12, 2023", price: "$39.00" },
-              { icon: "headphones", name: "AirPods Pro Gen 2", date: "Aug 20, 2023", price: "$249.00" },
-              { icon: "laptop_mac", name: "Battery Service - Mac", date: "May 15, 2022", price: "$199.00" },
+              { icon: "smartphone", name: "MagSafe Charger", date: "12 Dic 2023", price: "$39.00" },
+              { icon: "headphones", name: "AirPods Pro Gen 2", date: "20 Ago 2023", price: "$249.00" },
+              { icon: "laptop_mac", name: "Servicio Batería - Mac", date: "15 May 2022", price: "$199.00" },
             ].map((item) => (
               <div key={item.name} className="flex items-center justify-between border-b border-slate-50 pb-3 last:border-0 last:pb-0">
                 <div className="flex items-center gap-3">

@@ -23,14 +23,14 @@ export default function Sidebar() {
           igreen
         </span>
         <span className="hidden lg:block text-[9px] uppercase tracking-[0.2em] font-bold text-cool-grey mt-0.5">
-          Precision Repair
+          Servicio Técnico
         </span>
       </div>
 
       {/* New Repair Button */}
       <button className="w-full bg-primary text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:brightness-95 transition-all shadow-sm">
         <span className="material-symbols-outlined">add</span>
-        <span className="hidden lg:block">New Repair</span>
+        <span className="hidden lg:block">Nueva Reparación</span>
       </button>
 
       {/* Navigation */}
@@ -65,11 +65,11 @@ export default function Sidebar() {
           }`}
         >
           <span className="material-symbols-outlined">settings</span>
-          <span className="hidden lg:block">Settings</span>
+          <span className="hidden lg:block">Configuración</span>
         </Link>
         <button className="flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 text-cool-grey hover:bg-slate-50 rounded-lg transition-all w-full">
           <span className="material-symbols-outlined">logout</span>
-          <span className="hidden lg:block">Logout</span>
+          <span className="hidden lg:block">Cerrar sesión</span>
         </button>
       </div>
     </aside>

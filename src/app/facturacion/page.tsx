@@ -10,7 +10,7 @@ export default function FacturacionPage() {
       <div className="flex justify-between items-end mb-8">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Facturación</h2>
-          <p className="text-on-surface-variant text-sm mt-1">Invoice management and tax tracking</p>
+          <p className="text-on-surface-variant text-sm mt-1">Gestión de facturas e impuestos</p>
         </div>
       </div>
 

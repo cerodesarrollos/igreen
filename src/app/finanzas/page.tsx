@@ -4,7 +4,7 @@ export default function FinanzasPage() {
       <div className="flex justify-between items-end mb-8">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Finanzas</h2>
-          <p className="text-on-surface-variant text-sm mt-1">Financial overview and cash management</p>
+          <p className="text-on-surface-variant text-sm mt-1">Resumen financiero y gestión de caja</p>
         </div>
         <div className="flex bg-slate-100 p-1 rounded-full">
           <button className="px-4 py-1.5 text-xs font-bold rounded-full bg-white shadow-sm">Hoy</button>

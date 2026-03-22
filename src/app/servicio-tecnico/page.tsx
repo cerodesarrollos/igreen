@@ -1,8 +1,8 @@
 export default function ServicioTecnicoPage() {
   const tickets = [
-    { id: "#IG-9842", device: "iPhone 13 Pro", client: "Laura Morales", date: "March 15, 2024", status: "En reparación", icon: "smartphone", active: true },
-    { id: "#IG-9839", device: "MacBook Air M2", client: "Carlos Ruiz", date: "March 14, 2024", status: "Ingresado", icon: "laptop_mac", active: false },
-    { id: "#IG-9835", device: "Apple Watch S7", client: "Elena Gómez", date: "March 12, 2024", status: "Listo para retiro", icon: "watch", active: false },
+    { id: "#IG-9842", device: "iPhone 13 Pro", client: "Laura Morales", date: "15 Mar 2024", status: "En reparación", icon: "smartphone", active: true },
+    { id: "#IG-9839", device: "MacBook Air M2", client: "Carlos Ruiz", date: "14 Mar 2024", status: "Ingresado", icon: "laptop_mac", active: false },
+    { id: "#IG-9835", device: "Apple Watch S7", client: "Elena Gómez", date: "12 Mar 2024", status: "Listo para retiro", icon: "watch", active: false },
   ];
 
   return (
@@ -11,17 +11,17 @@ export default function ServicioTecnicoPage() {
       <div className="flex justify-between items-end mb-8">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Servicio Técnico</h2>
-          <p className="text-on-surface-variant text-sm mt-1">Manage current repairs and diagnostics</p>
+          <p className="text-on-surface-variant text-sm mt-1">Gestión de reparaciones y diagnósticos</p>
         </div>
         <button className="bg-primary hover:opacity-90 text-white rounded-full px-6 py-3 flex items-center gap-2 font-bold shadow-lg shadow-primary/20 transition-all active:scale-95">
           <span className="material-symbols-outlined">add_circle</span>
-          <span>New Ticket</span>
+          <span>Nuevo Ticket</span>
         </button>
       </div>
 
       {/* Filter Chips */}
       <div className="flex gap-3 mb-8 overflow-x-auto pb-2">
-        {["All", "Ingresado", "En diagnóstico", "Presupuesto enviado", "En reparación", "Listo para retiro"].map((f, i) => (
+        {["Todos", "Ingresado", "En diagnóstico", "Presupuesto enviado", "En reparación", "Listo para retiro"].map((f, i) => (
           <button key={f} className={`px-5 py-2 rounded-full text-sm font-semibold whitespace-nowrap ${
             i === 0 ? "bg-on-surface text-white" : i === 4 ? "bg-primary/10 text-primary-dark ring-1 ring-primary/50 font-bold" : "bg-slate-200 text-on-surface-variant hover:bg-slate-300 transition-colors"
           }`}>
@@ -77,7 +77,7 @@ export default function ServicioTecnicoPage() {
 
             {/* Evidence */}
             <div className="mb-8">
-              <p className="text-xs font-black uppercase tracking-widest text-on-surface-variant mb-3 opacity-60">Evidence Gallery</p>
+              <p className="text-xs font-black uppercase tracking-widest text-on-surface-variant mb-3 opacity-60">Galería de evidencia</p>
               <div className="flex gap-3">
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="w-24 h-24 bg-slate-100 rounded-md flex items-center justify-center">
@@ -92,22 +92,22 @@ export default function ServicioTecnicoPage() {
 
             {/* Diagnosis */}
             <div className="mb-8">
-              <p className="text-xs font-black uppercase tracking-widest text-on-surface-variant mb-3 opacity-60">Diagnosis Report</p>
+              <p className="text-xs font-black uppercase tracking-widest text-on-surface-variant mb-3 opacity-60">Informe de diagnóstico</p>
               <div className="bg-slate-50 p-5 rounded-lg border-l-4 border-primary">
                 <p className="text-sm leading-relaxed">
-                  <span className="font-bold">Summary:</span> Screen cracked, Face ID sensor damaged. Internal connector show signs of oxidation. Needs full display assembly replacement and sensor recalibration.
+                  <span className="font-bold">Resumen:</span> Pantalla rota, sensor Face ID dañado. Conector interno con signos de oxidación. Requiere reemplazo completo del ensamble de pantalla y recalibración del sensor.
                 </p>
               </div>
             </div>
 
             {/* Timeline */}
             <div>
-              <p className="text-xs font-black uppercase tracking-widest text-on-surface-variant mb-4 opacity-60">Service Timeline</p>
+              <p className="text-xs font-black uppercase tracking-widest text-on-surface-variant mb-4 opacity-60">Línea de tiempo</p>
               <div className="space-y-6 relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-200">
                 {[
-                  { text: "Parts ordered", sub: "March 16, 9:00 AM • Technician: Alex B." },
-                  { text: "Diagnosis completed", sub: "March 15, 2:30 PM • Technician: Alex B." },
-                  { text: "Ticket created", sub: "March 15, 10:00 AM • Frontdesk: Sarah K." },
+                  { text: "Repuestos pedidos", sub: "16 Mar, 9:00 • Técnico: Matias" },
+                  { text: "Diagnóstico completado", sub: "15 Mar, 14:30 • Técnico: Matias" },
+                  { text: "Ticket creado", sub: "15 Mar, 10:00 • Recepción: Kennet" },
                 ].map((step, i) => (
                   <div key={i} className="relative pl-8">
                     <div className="absolute left-0 top-1 w-[24px] h-[24px] bg-primary rounded-full ring-4 ring-white flex items-center justify-center">
@@ -124,8 +124,8 @@ export default function ServicioTecnicoPage() {
 
             {/* Actions */}
             <div className="mt-10 flex gap-3">
-              <button className="flex-1 bg-slate-200 hover:bg-slate-300 font-bold py-3 rounded-full transition-all active:scale-95">Print Label</button>
-              <button className="flex-1 bg-primary text-white font-bold py-3 rounded-full shadow-lg shadow-primary/20 hover:opacity-90 transition-all active:scale-95">Update Status</button>
+              <button className="flex-1 bg-slate-200 hover:bg-slate-300 font-bold py-3 rounded-full transition-all active:scale-95">Imprimir Etiqueta</button>
+              <button className="flex-1 bg-primary text-white font-bold py-3 rounded-full shadow-lg shadow-primary/20 hover:opacity-90 transition-all active:scale-95">Actualizar Estado</button>
             </div>
           </div>
         </div>

@@ -9,7 +9,7 @@ export default function Header() {
         </span>
         <input
           className="bg-transparent border-none focus:ring-0 text-sm w-full placeholder:text-cool-grey outline-none"
-          placeholder="Search Command (CMD + K)"
+          placeholder="Buscar comando (CMD + K)"
           type="text"
         />
       </div>
@@ -23,13 +23,13 @@ export default function Header() {
         <div className="h-6 w-px bg-slate-200 mx-1" />
         <div className="flex items-center gap-3">
           <div className="text-right hidden sm:block">
-            <p className="font-bold text-xs">Alex Rivera</p>
+            <p className="font-bold text-xs">Matias</p>
             <p className="text-[9px] uppercase tracking-wider text-cool-grey">
-              Tech Lead
+              Admin
             </p>
           </div>
           <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs">
-            AR
+            MF
           </div>
         </div>
       </div>

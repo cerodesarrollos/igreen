@@ -37,9 +37,9 @@ export default function DashboardPage() {
               </button>
             </div>
             <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-              <span className="px-2.5 py-1 bg-slate-100 text-[10px] font-bold text-cool-grey rounded border border-slate-200 cursor-pointer">All</span>
-              <span className="px-2.5 py-1 bg-primary/10 text-[10px] font-bold text-primary rounded border border-primary/20 cursor-pointer">Ready</span>
-              <span className="px-2.5 py-1 bg-slate-100 text-[10px] font-bold text-cool-grey rounded border border-slate-200 cursor-pointer">Waiting</span>
+              <span className="px-2.5 py-1 bg-slate-100 text-[10px] font-bold text-cool-grey rounded border border-slate-200 cursor-pointer">Todos</span>
+              <span className="px-2.5 py-1 bg-primary/10 text-[10px] font-bold text-primary rounded border border-primary/20 cursor-pointer">Listos</span>
+              <span className="px-2.5 py-1 bg-slate-100 text-[10px] font-bold text-cool-grey rounded border border-slate-200 cursor-pointer">Esperando</span>
             </div>
             <div className="space-y-4">
               {[
@@ -62,7 +62,7 @@ export default function DashboardPage() {
               ))}
             </div>
             <button className="w-full mt-6 py-2 text-[11px] font-bold text-cool-grey border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors uppercase tracking-widest">
-              Expand List
+              Ver todos
             </button>
           </div>
         </div>
@@ -73,23 +73,23 @@ export default function DashboardPage() {
           <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="text-sm font-black uppercase tracking-widest">Weekly Revenue</h2>
-                <p className="text-[10px] text-cool-grey">Earnings 7-day breakdown</p>
+                <h2 className="text-sm font-black uppercase tracking-widest">Ingresos Semanales</h2>
+                <p className="text-[10px] text-cool-grey">Desglose de ingresos 7 días</p>
               </div>
               <select className="bg-slate-100 border-slate-200 rounded-lg px-3 py-1 text-[10px] font-bold focus:ring-0 border">
-                <option>This Week</option>
-                <option>Last Week</option>
+                <option>Esta semana</option>
+                <option>Semana pasada</option>
               </select>
             </div>
             <div className="flex items-end justify-between h-40 px-2 gap-2">
               {[
-                { day: "Mon", h: "h-20", active: false },
-                { day: "Tue", h: "h-28", active: false },
-                { day: "Wed", h: "h-24", active: false },
-                { day: "Thu", h: "h-32", active: true },
-                { day: "Fri", h: "h-[5.5rem]", active: false },
-                { day: "Sat", h: "h-14", active: false },
-                { day: "Sun", h: "h-10", active: false },
+                { day: "Lun", h: "h-20", active: false },
+                { day: "Mar", h: "h-28", active: false },
+                { day: "Mié", h: "h-24", active: false },
+                { day: "Jue", h: "h-32", active: true },
+                { day: "Vie", h: "h-[5.5rem]", active: false },
+                { day: "Sáb", h: "h-14", active: false },
+                { day: "Dom", h: "h-10", active: false },
               ].map((bar) => (
                 <div key={bar.day} className="flex flex-col items-center gap-2 flex-1">
                   <div className={`w-full rounded-t-sm ${bar.h} ${bar.active ? "bg-primary relative" : "bg-slate-100 hover:bg-primary/20 transition-all"}`}>
@@ -108,9 +108,9 @@ export default function DashboardPage() {
           {/* Service Tickets Table */}
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
             <div className="flex items-center justify-between p-5 border-b border-slate-100">
-              <h2 className="text-sm font-black uppercase tracking-widest">Service Tickets</h2>
+              <h2 className="text-sm font-black uppercase tracking-widest">Tickets de Servicio</h2>
               <a className="text-[10px] font-bold text-primary flex items-center gap-1 hover:underline" href="#">
-                VIEW LOG <span className="material-symbols-outlined text-[10px]">arrow_forward</span>
+                VER TODO <span className="material-symbols-outlined text-[10px]">arrow_forward</span>
               </a>
             </div>
             <div className="overflow-x-auto">
@@ -118,17 +118,17 @@ export default function DashboardPage() {
                 <thead>
                   <tr className="text-[10px] uppercase tracking-widest text-cool-grey bg-slate-50 border-b border-slate-100">
                     <th className="px-5 py-3 font-bold">Ticket</th>
-                    <th className="px-5 py-3 font-bold">Client</th>
-                    <th className="px-5 py-3 font-bold">Device</th>
-                    <th className="px-5 py-3 font-bold">Status</th>
+                    <th className="px-5 py-3 font-bold">Cliente</th>
+                    <th className="px-5 py-3 font-bold">Equipo</th>
+                    <th className="px-5 py-3 font-bold">Estado</th>
                     <th className="px-5 py-3 font-bold text-right">Op</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
                   {[
-                    { ticket: "#IG-9842", client: "Laura Morales", device: "iPhone 13 Pro", status: "Ready", color: "bg-primary text-white" },
-                    { ticket: "#IG-9841", client: "Roberto Blanco", device: "MacBook Pro M1", status: "Repair", color: "bg-amber-100 text-amber-700" },
-                    { ticket: "#IG-9840", client: "Elena Prieto", device: "iPad Pro 11\"", status: "Logged", color: "bg-slate-100 text-cool-grey" },
+                    { ticket: "#IG-9842", client: "Laura Morales", device: "iPhone 13 Pro", status: "Listo", color: "bg-primary text-white" },
+                    { ticket: "#IG-9841", client: "Roberto Blanco", device: "MacBook Pro M1", status: "En reparación", color: "bg-amber-100 text-amber-700" },
+                    { ticket: "#IG-9840", client: "Elena Prieto", device: "iPad Pro 11\"", status: "Ingresado", color: "bg-slate-100 text-cool-grey" },
                   ].map((row) => (
                     <tr key={row.ticket} className="hover:bg-slate-50 transition-colors text-[11px]">
                       <td className="px-5 py-3 font-bold">{row.ticket}</td>
@@ -153,14 +153,14 @@ export default function DashboardPage() {
         {/* Right Column: Real-time Feed */}
         <div className="col-span-12 lg:col-span-3 space-y-6">
           <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm h-full">
-            <h2 className="text-sm font-black uppercase tracking-widest mb-6">Real-time Feed</h2>
+            <h2 className="text-sm font-black uppercase tracking-widest mb-6">Actividad en tiempo real</h2>
             <div className="space-y-6 relative ml-2">
               <div className="absolute left-[-8px] top-0 bottom-0 w-px bg-slate-100" />
               {[
-                { text: "#IG-9842 Ready", sub: "Alex Rivera • 14m ago", color: "bg-primary" },
-                { text: "Parts Ordered MB Air", sub: "PO-2231 • 2h ago", color: "bg-amber-500" },
-                { text: "New Ticket iPhone 14", sub: "Cust: M. Vazquez • 4h ago", color: "bg-blue-500" },
-                { text: "Daily Report Printed", sub: "Sarah J. • 5h ago", color: "bg-slate-300" },
+                { text: "#IG-9842 Listo", sub: "Matias • hace 14m", color: "bg-primary" },
+                { text: "Repuestos pedidos MB Air", sub: "PO-2231 • hace 2h", color: "bg-amber-500" },
+                { text: "Nuevo Ticket iPhone 14", sub: "Cliente: M. Vazquez • hace 4h", color: "bg-blue-500" },
+                { text: "Reporte diario impreso", sub: "Kennet • hace 5h", color: "bg-slate-300" },
               ].map((feed, i) => (
                 <div key={i} className="relative pl-4">
                   <div className={`absolute left-[-11px] top-1 w-1.5 h-1.5 rounded-full ${feed.color} ring-4 ring-white`} />
@@ -173,11 +173,11 @@ export default function DashboardPage() {
             </div>
 
             <div className="mt-10 pt-6 border-t border-slate-100">
-              <p className="text-[10px] font-bold text-cool-grey uppercase tracking-widest mb-4">Quick Commands</p>
+              <p className="text-[10px] font-bold text-cool-grey uppercase tracking-widest mb-4">Acciones Rápidas</p>
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  { icon: "print", label: "Print Tag" },
-                  { icon: "contact_support", label: "Email Client" },
+                  { icon: "print", label: "Imprimir Etiqueta" },
+                  { icon: "contact_support", label: "Email Cliente" },
                 ].map((cmd) => (
                   <button key={cmd.label} className="flex flex-col items-center justify-center p-3 rounded-lg border border-slate-100 hover:bg-slate-50 text-cool-grey hover:text-primary transition-all">
                     <span className="material-symbols-outlined mb-1">{cmd.icon}</span>
