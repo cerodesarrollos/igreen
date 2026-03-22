@@ -7,6 +7,7 @@ const navItems = [
   { href: "/dashboard", icon: "dashboard", label: "Dashboard" },
   { href: "/servicio-tecnico", icon: "build", label: "Servicio Técnico" },
   { href: "/stock", icon: "inventory_2", label: "Stock" },
+  { href: "/ventas", icon: "phone_iphone", label: "Ventas" },
   { href: "/finanzas", icon: "payments", label: "Finanzas" },
   { href: "/inbox", icon: "inbox", label: "Inbox" },
   { href: "/facturacion", icon: "receipt_long", label: "Facturación" },
