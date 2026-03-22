@@ -378,6 +378,91 @@ export default function VentasPage() {
         </div>
       </div>
 
+      {/* ── Trade-in Pricing ── */}
+      <section className="mt-8">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <div className="p-2 bg-green-50 rounded-lg">
+                <span className="material-symbols-outlined text-green-600">swap_horiz</span>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold">Cotización Trade-in</h3>
+                <p className="text-on-surface-variant text-xs mt-0.5">Referencia de precios para cotizar equipos en parte de pago</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full">Última actualización: 22 Mar 2026</span>
+              <button className="flex items-center gap-2 px-5 py-2.5 bg-slate-200 rounded-full text-xs font-bold hover:bg-slate-300 transition-colors">
+                <span className="material-symbols-outlined text-sm">edit</span> Editar Precios
+              </button>
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="overflow-x-auto rounded-xl border border-slate-200">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-50">
+                  <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Modelo</th>
+                  <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey bg-green-50">Estado A — Impecable</th>
+                  <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey bg-amber-50">Estado B — Detalles menores</th>
+                  <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey bg-red-50">Estado C — Uso visible</th>
+                  <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Batería mín.</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {[
+                  { model: "iPhone 15 Pro Max", a: 380, b: 320, c: 250, bat: 80 },
+                  { model: "iPhone 15 Pro", a: 340, b: 280, c: 220, bat: 80 },
+                  { model: "iPhone 15", a: 280, b: 230, c: 170, bat: 80 },
+                  { model: "iPhone 14 Pro Max", a: 300, b: 250, c: 190, bat: 75 },
+                  { model: "iPhone 14 Pro", a: 260, b: 210, c: 160, bat: 75 },
+                  { model: "iPhone 14", a: 200, b: 160, c: 120, bat: 75 },
+                  { model: "iPhone 13 Pro Max", a: 220, b: 180, c: 130, bat: 70 },
+                  { model: "iPhone 13 Pro", a: 200, b: 160, c: 120, bat: 70 },
+                  { model: "iPhone 13", a: 160, b: 120, c: 80, bat: 70 },
+                  { model: "iPhone 12 Pro", a: 120, b: 90, c: 60, bat: 65 },
+                  { model: "iPhone 12", a: 100, b: 70, c: 40, bat: 65 },
+                  { model: "iPhone 11", a: 70, b: 50, c: 30, bat: 60 },
+                ].map((row, i) => (
+                  <tr key={row.model} className={`hover:bg-slate-50 transition-colors ${i % 2 === 1 ? "bg-slate-50/40" : ""}`}>
+                    <td className="px-6 py-3.5 text-sm font-bold">{row.model}</td>
+                    <td className="px-4 py-3.5">
+                      <span className="text-sm font-bold text-green-700">${row.a}</span>
+                      <span className="text-[10px] text-slate-400 ml-1">USD</span>
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <span className="text-sm font-bold text-amber-700">${row.b}</span>
+                      <span className="text-[10px] text-slate-400 ml-1">USD</span>
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <span className="text-sm font-bold text-red-600">${row.c}</span>
+                      <span className="text-[10px] text-slate-400 ml-1">USD</span>
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <div className="flex items-center gap-1.5">
+                        <span className="material-symbols-outlined text-sm text-slate-400">battery_5_bar</span>
+                        <span className="text-sm font-bold">{row.bat}%</span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* AI Info Box */}
+          <div className="mt-5 flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
+            <span className="material-symbols-outlined text-blue-600 text-lg mt-0.5">smart_toy</span>
+            <p className="text-xs text-blue-800 leading-relaxed">
+              El agente IA usa esta tabla para cotizar equipos automáticamente. Cuando un cliente envía fotos, GPT Vision analiza el estado y cotiza según estos valores de referencia.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* ── Financial Summary: Consignación ── */}
       <section className="mt-8">
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
