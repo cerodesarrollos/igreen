@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 
 interface Appointment {
@@ -13,24 +13,46 @@ interface Appointment {
   product_id: string | null;
 }
 
+type ViewMode = "lista" | "calendario" | "kanban";
+
+const STATUS_COLORS: Record<string, string> = {
+  confirmado: "bg-green-100 text-green-700",
+  pendiente: "bg-amber-100 text-amber-700",
+  completado: "bg-blue-100 text-blue-700",
+  no_show: "bg-red-100 text-red-700",
+  cancelado: "bg-slate-200 text-slate-600",
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  confirmado: "CONFIRMADO",
+  pendiente: "PENDIENTE",
+  completado: "COMPLETADO",
+  no_show: "NO SHOW",
+  cancelado: "CANCELADO",
+};
+
+const STATUS_BORDER_COLORS: Record<string, string> = {
+  pendiente: "border-l-amber-400",
+  confirmado: "border-l-green-400",
+  completado: "border-l-blue-400",
+  no_show: "border-l-red-400",
+  cancelado: "border-l-slate-400",
+};
+
+const STATUS_DOT_COLORS: Record<string, string> = {
+  confirmado: "bg-green-400",
+  pendiente: "bg-amber-400",
+  completado: "bg-blue-400",
+  no_show: "bg-red-400",
+  cancelado: "bg-slate-400",
+};
+
+const KANBAN_COLUMNS = ["pendiente", "confirmado", "completado", "no_show", "cancelado"] as const;
+
 function appointmentStatusBadge(s: string) {
-  const map: Record<string, string> = {
-    confirmado: "bg-green-100 text-green-700",
-    pendiente: "bg-amber-100 text-amber-700",
-    completado: "bg-blue-100 text-blue-700",
-    no_show: "bg-red-100 text-red-700",
-    cancelado: "bg-slate-200 text-slate-600",
-  };
-  const labels: Record<string, string> = {
-    confirmado: "CONFIRMADO",
-    pendiente: "PENDIENTE",
-    completado: "COMPLETADO",
-    no_show: "NO SHOW",
-    cancelado: "CANCELADO",
-  };
   return (
-    <span className={`px-2.5 py-0.5 ${map[s] || "bg-slate-100 text-slate-600"} text-[10px] font-bold rounded-full whitespace-nowrap`}>
-      {labels[s] || s.toUpperCase()}
+    <span className={`px-2.5 py-0.5 ${STATUS_COLORS[s] || "bg-slate-100 text-slate-600"} text-[10px] font-bold rounded-full whitespace-nowrap`}>
+      {STATUS_LABELS[s] || s.toUpperCase()}
     </span>
   );
 }
@@ -44,9 +66,200 @@ const emptyForm = {
   product_id: "",
 };
 
+/* ── Calendar helpers ── */
+function getDaysInMonth(year: number, month: number) {
+  return new Date(year, month + 1, 0).getDate();
+}
+
+function getFirstDayOfWeek(year: number, month: number) {
+  const d = new Date(year, month, 1).getDay();
+  return d === 0 ? 6 : d - 1; // Monday = 0
+}
+
+const MONTH_NAMES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+const DAY_NAMES = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+
+/* ── Calendar View ── */
+function CalendarView({ appointments, onDayClick }: { appointments: Appointment[]; onDayClick: (date: string) => void }) {
+  const today = new Date();
+  const [calYear, setCalYear] = useState(today.getFullYear());
+  const [calMonth, setCalMonth] = useState(today.getMonth());
+
+  const daysInMonth = getDaysInMonth(calYear, calMonth);
+  const firstDay = getFirstDayOfWeek(calYear, calMonth);
+  const prevMonthDays = getDaysInMonth(calYear, calMonth - 1);
+
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+
+  // Group appointments by date (YYYY-MM-DD)
+  const byDate = useMemo(() => {
+    const map: Record<string, Appointment[]> = {};
+    for (const a of appointments) {
+      const key = a.scheduled_at.slice(0, 10);
+      if (!map[key]) map[key] = [];
+      map[key].push(a);
+    }
+    return map;
+  }, [appointments]);
+
+  function prevMonth() {
+    if (calMonth === 0) { setCalYear(calYear - 1); setCalMonth(11); }
+    else setCalMonth(calMonth - 1);
+  }
+  function nextMonth() {
+    if (calMonth === 11) { setCalYear(calYear + 1); setCalMonth(0); }
+    else setCalMonth(calMonth + 1);
+  }
+
+  // Build grid cells
+  const cells: { day: number; inMonth: boolean; dateStr: string }[] = [];
+  // Previous month trailing days
+  for (let i = 0; i < firstDay; i++) {
+    const d = prevMonthDays - firstDay + 1 + i;
+    const m = calMonth === 0 ? 12 : calMonth;
+    const y = calMonth === 0 ? calYear - 1 : calYear;
+    cells.push({ day: d, inMonth: false, dateStr: `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}` });
+  }
+  // Current month
+  for (let d = 1; d <= daysInMonth; d++) {
+    cells.push({ day: d, inMonth: true, dateStr: `${calYear}-${String(calMonth + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}` });
+  }
+  // Next month leading days
+  const remaining = 7 - (cells.length % 7);
+  if (remaining < 7) {
+    for (let d = 1; d <= remaining; d++) {
+      const m = calMonth === 11 ? 1 : calMonth + 2;
+      const y = calMonth === 11 ? calYear + 1 : calYear;
+      cells.push({ day: d, inMonth: false, dateStr: `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}` });
+    }
+  }
+
+  return (
+    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      {/* Nav header */}
+      <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+        <button onClick={prevMonth} className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors">
+          <span className="material-symbols-outlined text-lg">chevron_left</span>
+        </button>
+        <h3 className="text-sm font-bold">{MONTH_NAMES[calMonth]} {calYear}</h3>
+        <button onClick={nextMonth} className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors">
+          <span className="material-symbols-outlined text-lg">chevron_right</span>
+        </button>
+      </div>
+      {/* Day names */}
+      <div className="grid grid-cols-7 border-b border-slate-100">
+        {DAY_NAMES.map((d) => (
+          <div key={d} className="px-2 py-2 text-center text-[10px] font-bold text-cool-grey uppercase tracking-widest">{d}</div>
+        ))}
+      </div>
+      {/* Day cells */}
+      <div className="grid grid-cols-7 overflow-x-auto">
+        {cells.map((cell, idx) => {
+          const isToday = cell.dateStr === todayStr;
+          const dayAppts = byDate[cell.dateStr] || [];
+          return (
+            <div
+              key={idx}
+              onClick={() => cell.inMonth && onDayClick(cell.dateStr)}
+              className={`min-h-[90px] border-b border-r border-slate-100 p-1.5 transition-colors ${
+                cell.inMonth ? "cursor-pointer hover:bg-slate-50" : ""
+              } ${isToday ? "ring-2 ring-primary ring-inset" : ""}`}
+            >
+              <span className={`text-xs font-bold ${cell.inMonth ? "text-on-surface" : "text-slate-300"}`}>
+                {cell.day}
+              </span>
+              <div className="mt-1 space-y-0.5">
+                {dayAppts.slice(0, 3).map((a) => {
+                  const t = new Date(a.scheduled_at);
+                  return (
+                    <div key={a.id} className="flex items-center gap-1">
+                      <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${STATUS_DOT_COLORS[a.status] || "bg-slate-300"}`} />
+                      <span className="text-[10px] text-slate-500 flex-shrink-0">
+                        {t.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })}
+                      </span>
+                      <span className="text-[10px] font-medium truncate">{a.client_name}</span>
+                    </div>
+                  );
+                })}
+                {dayAppts.length > 3 && (
+                  <span className="text-[9px] text-primary font-bold">+{dayAppts.length - 3} más</span>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ── Kanban View ── */
+function KanbanView({ appointments }: { appointments: Appointment[] }) {
+  const grouped = useMemo(() => {
+    const map: Record<string, Appointment[]> = {};
+    for (const col of KANBAN_COLUMNS) map[col] = [];
+    for (const a of appointments) {
+      if (map[a.status]) map[a.status].push(a);
+    }
+    return map;
+  }, [appointments]);
+
+  return (
+    <div className="flex gap-4 overflow-x-auto pb-4">
+      {KANBAN_COLUMNS.map((col) => {
+        const items = grouped[col] || [];
+        return (
+          <div key={col} className="flex-shrink-0 w-72 bg-slate-50 rounded-xl">
+            {/* Column header */}
+            <div className="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-widest text-cool-grey">{STATUS_LABELS[col]}</span>
+              <span className="px-2 py-0.5 bg-slate-200 text-slate-600 text-[10px] font-bold rounded-full">{items.length}</span>
+            </div>
+            {/* Cards */}
+            <div className="p-3 space-y-3 min-h-[200px]">
+              {items.length === 0 && (
+                <p className="text-xs text-slate-400 text-center py-8">Sin turnos</p>
+              )}
+              {items.map((a) => {
+                const d = new Date(a.scheduled_at);
+                return (
+                  <div
+                    key={a.id}
+                    className={`bg-white rounded-xl shadow-sm border border-slate-200 border-l-4 ${STATUS_BORDER_COLORS[a.status] || "border-l-slate-300"} p-4 hover:shadow-md transition-shadow`}
+                  >
+                    <p className="text-sm font-bold truncate">{a.client_name}</p>
+                    <div className="mt-2 space-y-1">
+                      <div className="flex items-center gap-1.5 text-xs text-on-surface-variant">
+                        <span className="material-symbols-outlined text-sm">schedule</span>
+                        {d.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })}
+                      </div>
+                      <div className="flex items-center gap-1.5 text-xs text-on-surface-variant">
+                        <span className="material-symbols-outlined text-sm">calendar_today</span>
+                        {d.toLocaleDateString("es-AR", { day: "2-digit", month: "short" })}
+                      </div>
+                      {a.client_phone && (
+                        <div className="flex items-center gap-1.5 text-xs text-on-surface-variant">
+                          <span className="material-symbols-outlined text-sm">phone</span>
+                          {a.client_phone}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ── Main Page ── */
 export default function TurnosPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [view, setView] = useState<ViewMode>("lista");
   const [statusFilter, setStatusFilter] = useState("todos");
   const [dateFilter, setDateFilter] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
@@ -62,8 +275,9 @@ export default function TurnosPage() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
+  // For lista & calendario: apply both filters. For kanban: only date filter.
   const filtered = appointments.filter((a) => {
-    if (statusFilter !== "todos" && a.status !== statusFilter) return false;
+    if (view !== "kanban" && statusFilter !== "todos" && a.status !== statusFilter) return false;
     if (dateFilter && !a.scheduled_at.startsWith(dateFilter)) return false;
     return true;
   });
@@ -99,12 +313,37 @@ export default function TurnosPage() {
     );
   }
 
+  const viewOptions: { value: ViewMode; label: string; icon: string }[] = [
+    { value: "lista", label: "Lista", icon: "view_list" },
+    { value: "calendario", label: "Calendario", icon: "calendar_month" },
+    { value: "kanban", label: "Kanban", icon: "view_kanban" },
+  ];
+
   return (
     <>
       <div className="flex justify-between items-end mb-8">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Turnos</h2>
-          <p className="text-on-surface-variant text-sm mt-1">Agenda de citas para venta de equipos</p>
+        <div className="flex items-center gap-4">
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight">Turnos</h2>
+            <p className="text-on-surface-variant text-sm mt-1">Agenda de citas para venta de equipos</p>
+          </div>
+          {/* View toggle chips */}
+          <div className="flex items-center gap-1.5 ml-2">
+            {viewOptions.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => setView(opt.value)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+                  view === opt.value
+                    ? "bg-primary text-white shadow-sm"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                }`}
+              >
+                <span className="material-symbols-outlined text-sm">{opt.icon}</span>
+                {opt.label}
+              </button>
+            ))}
+          </div>
         </div>
         <button
           onClick={() => { setForm(emptyForm); setShowAddModal(true); }}
@@ -116,29 +355,32 @@ export default function TurnosPage() {
 
       {/* Filters — Chips */}
       <div className="space-y-3 mb-6">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[10px] font-bold text-cool-grey uppercase tracking-widest mr-1">Estado</span>
-          {[
-            { value: "todos", label: "Todos" },
-            { value: "pendiente", label: "Pendiente" },
-            { value: "confirmado", label: "Confirmado" },
-            { value: "completado", label: "Completado" },
-            { value: "no_show", label: "No Show" },
-            { value: "cancelado", label: "Cancelado" },
-          ].map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => setStatusFilter(opt.value)}
-              className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
-                statusFilter === opt.value
-                  ? "bg-primary text-white shadow-sm"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
+        {/* Status filter: hidden in kanban view */}
+        {view !== "kanban" && (
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[10px] font-bold text-cool-grey uppercase tracking-widest mr-1">Estado</span>
+            {[
+              { value: "todos", label: "Todos" },
+              { value: "pendiente", label: "Pendiente" },
+              { value: "confirmado", label: "Confirmado" },
+              { value: "completado", label: "Completado" },
+              { value: "no_show", label: "No Show" },
+              { value: "cancelado", label: "Cancelado" },
+            ].map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => setStatusFilter(opt.value)}
+                className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
+                  statusFilter === opt.value
+                    ? "bg-primary text-white shadow-sm"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        )}
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-[10px] font-bold text-cool-grey uppercase tracking-widest mr-1">Fecha</span>
           {[
@@ -164,49 +406,62 @@ export default function TurnosPage() {
         </div>
       </div>
 
-      {/* List */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        {filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-cool-grey">
-            <span className="material-symbols-outlined text-4xl mb-3">calendar_month</span>
-            <p className="text-sm font-medium">No hay turnos para mostrar</p>
+      {/* ── Vista: Lista ── */}
+      {view === "lista" && (
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          {filtered.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 text-cool-grey">
+              <span className="material-symbols-outlined text-4xl mb-3">calendar_month</span>
+              <p className="text-sm font-medium">No hay turnos para mostrar</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50">
+                    <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Fecha / Hora</th>
+                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Cliente</th>
+                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Teléfono</th>
+                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Estado</th>
+                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Notas</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {filtered.map((a) => {
+                    const d = new Date(a.scheduled_at);
+                    return (
+                      <tr key={a.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="px-6 py-4">
+                          <p className="text-sm font-bold">{d.toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric" })}</p>
+                          <p className="text-[10px] text-cool-grey">{d.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })}</p>
+                        </td>
+                        <td className="px-4 py-4 text-sm font-medium">{a.client_name}</td>
+                        <td className="px-4 py-4 text-sm text-on-surface-variant">{a.client_phone}</td>
+                        <td className="px-4 py-4">{appointmentStatusBadge(a.status)}</td>
+                        <td className="px-4 py-4 text-xs text-on-surface-variant max-w-[200px] truncate">{a.notes || "—"}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+          <div className="p-4 bg-slate-50 text-xs font-medium text-cool-grey border-t border-slate-100">
+            {filtered.length} turno{filtered.length !== 1 ? "s" : ""}
           </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-slate-50">
-                  <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Fecha / Hora</th>
-                  <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Cliente</th>
-                  <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Teléfono</th>
-                  <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Estado</th>
-                  <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Notas</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                {filtered.map((a) => {
-                  const d = new Date(a.scheduled_at);
-                  return (
-                    <tr key={a.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-6 py-4">
-                        <p className="text-sm font-bold">{d.toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric" })}</p>
-                        <p className="text-[10px] text-cool-grey">{d.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })}</p>
-                      </td>
-                      <td className="px-4 py-4 text-sm font-medium">{a.client_name}</td>
-                      <td className="px-4 py-4 text-sm text-on-surface-variant">{a.client_phone}</td>
-                      <td className="px-4 py-4">{appointmentStatusBadge(a.status)}</td>
-                      <td className="px-4 py-4 text-xs text-on-surface-variant max-w-[200px] truncate">{a.notes || "—"}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-        <div className="p-4 bg-slate-50 text-xs font-medium text-cool-grey border-t border-slate-100">
-          {filtered.length} turno{filtered.length !== 1 ? "s" : ""}
         </div>
-      </div>
+      )}
+
+      {/* ── Vista: Calendario ── */}
+      {view === "calendario" && (
+        <CalendarView
+          appointments={filtered}
+          onDayClick={(date) => { setDateFilter(date); setView("lista"); }}
+        />
+      )}
+
+      {/* ── Vista: Kanban ── */}
+      {view === "kanban" && <KanbanView appointments={filtered} />}
 
       {/* Add Modal */}
       {showAddModal && (
