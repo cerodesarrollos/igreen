@@ -408,7 +408,33 @@ export default function VentasStockPage() {
     if (!saleProduct) return;
     setSavingSale(true);
     const finalPrice = parseFloat(saleForm.sale_price) || saleProduct.sale_price || 0;
-    const payload = {
+
+    // Auto-create client if name provided and no client_id
+    let clientId: string | null = saleForm.client_id || null;
+    if (!clientId && saleForm.client_name) {
+      // Check if client exists by phone or name
+      let existingClient = null;
+      if (saleForm.client_phone) {
+        const { data } = await supabase.from("ig_clients").select("id").eq("phone", saleForm.client_phone).limit(1).maybeSingle();
+        existingClient = data;
+      }
+      if (!existingClient && saleForm.client_name) {
+        const { data } = await supabase.from("ig_clients").select("id").eq("name", saleForm.client_name).limit(1).maybeSingle();
+        existingClient = data;
+      }
+      if (existingClient) {
+        clientId = existingClient.id;
+      } else {
+        // Create new client
+        const { data: newClient } = await supabase.from("ig_clients").insert({
+          name: saleForm.client_name,
+          phone: saleForm.client_phone || null,
+        }).select("id").single();
+        if (newClient) clientId = newClient.id;
+      }
+    }
+
+    const payload: Record<string, unknown> = {
       product_id: saleProduct.id,
       sale_price: finalPrice,
       cost_price: saleProduct.cost_price || 0,
@@ -416,6 +442,7 @@ export default function VentasStockPage() {
       notes: saleForm.notes || null,
       client_name: saleForm.client_name || null,
       client_phone: saleForm.client_phone || null,
+      client_id: clientId,
       sold_at: new Date().toISOString(),
     };
     const { error } = await supabase.from("ig_sales").insert(payload);
@@ -686,6 +713,7 @@ export default function VentasStockPage() {
                         <th className="px-3 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Condición</th>
                         <th className="px-3 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Batería</th>
                         <th className="px-3 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Precio</th>
+                        <th className="px-3 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Defectos</th>
                         <th className="px-3 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Origen</th>
                         <th className="px-3 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Ingreso</th>
                         <th className="px-3 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Estado</th>
@@ -720,6 +748,7 @@ export default function VentasStockPage() {
                             <span className={`text-sm font-bold ${batteryColor(p.battery_health)}`}>{p.battery_health}%</span>
                           </td>
                           <td className="px-3 py-4 text-sm font-bold">{formatPrice(p.sale_price)}</td>
+                          <td className="px-3 py-4 text-xs text-on-surface-variant max-w-[150px] truncate" title={p.defects || ""}>{p.defects || <span className="text-cool-grey/40">—</span>}</td>
                           <td className="px-3 py-4">{originBadge(p.origin)}</td>
                           <td className="px-3 py-4 text-xs text-cool-grey font-medium">
                             {new Date(p.created_at).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit" })}
@@ -874,7 +903,8 @@ export default function VentasStockPage() {
                   )}
                 </div>
 
-                {/* Delete Button */}
+                {/* Delete Button — only if NOT vendido */}
+                {selectedProduct.status !== "vendido" && (
                 <div className="pt-4 border-t border-slate-100 mt-4">
                   {!showDeleteConfirm ? (
                     <button
@@ -904,6 +934,7 @@ export default function VentasStockPage() {
                     </div>
                   )}
                 </div>
+                )}
               </>
             ) : (
               <div className="flex flex-col items-center justify-center py-12 text-cool-grey">

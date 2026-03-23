@@ -66,61 +66,115 @@ const emptyForm = {
   product_id: "",
 };
 
-/* ── Activity log helper ── */
-async function logActivity(action: string, entityId: string, description: string) {
-  await supabase.from("ig_activity_log").insert({
-    action,
-    entity: "appointment",
-    entity_id: entityId,
-    description,
-    created_at: new Date().toISOString(),
-  });
-}
+/* ── Action Buttons Component ── */
+function AppointmentActions({
+  appointment,
+  onStatusChange,
+  onEdit,
+  onDelete,
+  compact = false,
+}: {
+  appointment: Appointment;
+  onStatusChange: (id: string, status: string) => void;
+  onEdit: (a: Appointment) => void;
+  onDelete: (id: string) => void;
+  compact?: boolean;
+}) {
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const canChangeStatus = appointment.status === "pendiente" || appointment.status === "confirmado";
+  const canDelete = appointment.status !== "completado";
+  const isPendiente = appointment.status === "pendiente";
 
-/* ── WhatsApp helper ── */
-function openWhatsApp(phone: string, scheduledAt: string) {
-  const d = new Date(scheduledAt);
-  const time = d.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
-  const text = `Hola! Te recordamos tu turno en iGreen para hoy a las ${time}. Te esperamos en Los Ríos 1774!`;
-  const cleanPhone = phone.replace(/[^0-9+]/g, "").replace(/^\+/, "");
-  window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`, "_blank");
-}
+  const btnBase = compact
+    ? "flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-colors"
+    : "flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-colors";
 
-/* ── Status Action Buttons ── */
-function StatusActions({ appointment, onStatusChange, size = "sm" }: { appointment: Appointment; onStatusChange: (id: string, newStatus: string, label: string) => void; size?: "sm" | "md" }) {
-  const btnBase = size === "sm"
-    ? "flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold transition-colors"
-    : "flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors";
-
-  if (appointment.status === "pendiente") {
-    return (
-      <div className="flex gap-1.5">
-        <button onClick={() => onStatusChange(appointment.id, "confirmado", "confirmado")}
-          className={`${btnBase} bg-green-50 text-green-700 hover:bg-green-100`}>
-          ✅ Confirmar
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {/* Confirmar — only for pendiente */}
+      {isPendiente && (
+        <button
+          onClick={() => onStatusChange(appointment.id, "confirmado")}
+          className={`${btnBase} bg-blue-50 text-blue-700 hover:bg-blue-100`}
+          title="Confirmar turno"
+        >
+          <span className="material-symbols-outlined text-xs">check_circle</span>
+          {!compact && "Confirmar"}
         </button>
-        <button onClick={() => onStatusChange(appointment.id, "cancelado", "cancelado")}
-          className={`${btnBase} bg-red-50 text-red-700 hover:bg-red-100`}>
-          ❌ Cancelar
+      )}
+      {/* Completar */}
+      {canChangeStatus && (
+        <button
+          onClick={() => onStatusChange(appointment.id, "completado")}
+          className={`${btnBase} bg-green-50 text-green-700 hover:bg-green-100`}
+          title="Marcar como completado"
+        >
+          <span className="material-symbols-outlined text-xs">task_alt</span>
+          {!compact && "Completar"}
         </button>
-      </div>
-    );
-  }
-  if (appointment.status === "confirmado") {
-    return (
-      <div className="flex gap-1.5">
-        <button onClick={() => onStatusChange(appointment.id, "completado", "completado")}
-          className={`${btnBase} bg-blue-50 text-blue-700 hover:bg-blue-100`}>
-          ✅ Completar
+      )}
+      {/* No Show */}
+      {canChangeStatus && (
+        <button
+          onClick={() => onStatusChange(appointment.id, "no_show")}
+          className={`${btnBase} bg-red-50 text-red-700 hover:bg-red-100`}
+          title="Marcar como No Show"
+        >
+          <span className="material-symbols-outlined text-xs">person_off</span>
+          {!compact && "No Show"}
         </button>
-        <button onClick={() => onStatusChange(appointment.id, "no_show", "no show")}
-          className={`${btnBase} bg-red-50 text-red-700 hover:bg-red-100`}>
-          🚫 No Show
+      )}
+      {/* Cancelar */}
+      {canChangeStatus && (
+        <button
+          onClick={() => onStatusChange(appointment.id, "cancelado")}
+          className={`${btnBase} bg-slate-100 text-slate-600 hover:bg-slate-200`}
+          title="Cancelar turno"
+        >
+          <span className="material-symbols-outlined text-xs">cancel</span>
+          {!compact && "Cancelar"}
         </button>
-      </div>
-    );
-  }
-  return appointmentStatusBadge(appointment.status);
+      )}
+      {/* Editar */}
+      <button
+        onClick={() => onEdit(appointment)}
+        className={`${btnBase} bg-slate-50 text-slate-600 hover:bg-slate-100`}
+        title="Editar turno"
+      >
+        <span className="material-symbols-outlined text-xs">edit</span>
+        {!compact && "Editar"}
+      </button>
+      {/* Eliminar — not for completado */}
+      {canDelete && (
+        <>
+          {confirmDelete ? (
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => { onDelete(appointment.id); setConfirmDelete(false); }}
+                className={`${btnBase} bg-red-600 text-white hover:bg-red-700`}
+              >
+                <span className="material-symbols-outlined text-xs">delete_forever</span> Sí, eliminar
+              </button>
+              <button
+                onClick={() => setConfirmDelete(false)}
+                className={`${btnBase} bg-slate-100 text-slate-600 hover:bg-slate-200`}
+              >
+                No
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setConfirmDelete(true)}
+              className={`${btnBase} bg-red-50 text-red-600 hover:bg-red-100`}
+              title="Eliminar turno"
+            >
+              <span className="material-symbols-outlined text-xs">delete</span>
+            </button>
+          )}
+        </>
+      )}
+    </div>
+  );
 }
 
 /* ── Calendar helpers ── */
@@ -137,7 +191,19 @@ const MONTH_NAMES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Jul
 const DAY_NAMES = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
 /* ── Calendar View ── */
-function CalendarView({ appointments, onDayClick, onEdit, onStatusChange }: { appointments: Appointment[]; onDayClick?: (date: string) => void; onEdit: (a: Appointment) => void; onStatusChange: (id: string, newStatus: string, label: string) => void }) {
+function CalendarView({
+  appointments,
+  onDayClick,
+  onStatusChange,
+  onEdit,
+  onDelete,
+}: {
+  appointments: Appointment[];
+  onDayClick?: (date: string) => void;
+  onStatusChange: (id: string, status: string) => void;
+  onEdit: (a: Appointment) => void;
+  onDelete: (id: string) => void;
+}) {
   const today = new Date();
   const [calYear, setCalYear] = useState(today.getFullYear());
   const [calMonth, setCalMonth] = useState(today.getMonth());
@@ -315,22 +381,15 @@ function CalendarView({ appointments, onDayClick, onEdit, onStatusChange }: { ap
                         </div>
                       )}
                     </div>
-                    {/* Status actions */}
-                    <div className="mt-3 pt-3 border-t border-slate-50">
-                      <StatusActions appointment={a} onStatusChange={onStatusChange} size="md" />
-                    </div>
                     {/* Acciones rápidas */}
-                    <div className="flex gap-2 mt-2">
-                      {a.client_phone && (
-                        <button onClick={() => openWhatsApp(a.client_phone, a.scheduled_at)}
-                          className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-green-50 text-green-700 text-[10px] font-bold hover:bg-green-100 transition-colors">
-                          📱 WA
-                        </button>
-                      )}
-                      <button onClick={() => onEdit(a)}
-                        className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-50 text-slate-600 text-[10px] font-bold hover:bg-slate-100 transition-colors">
-                        <span className="material-symbols-outlined text-xs">edit</span> Editar
-                      </button>
+                    <div className="mt-3 pt-3 border-t border-slate-50">
+                      <AppointmentActions
+                        appointment={a}
+                        onStatusChange={onStatusChange}
+                        onEdit={onEdit}
+                        onDelete={onDelete}
+                        compact
+                      />
                     </div>
                   </div>
                 );
@@ -405,6 +464,13 @@ function KanbanView({ appointments }: { appointments: Appointment[] }) {
   );
 }
 
+/* ── Helper: convert ISO datetime to datetime-local input value ── */
+function isoToLocalInput(iso: string): string {
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 /* ── Main Page ── */
 export default function TurnosPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -412,10 +478,8 @@ export default function TurnosPage() {
   const [view, setView] = useState<ViewMode>("lista");
   const [statusFilter, setStatusFilter] = useState("todos");
   const [dateFilter, setDateFilter] = useState("");
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [editingTurno, setEditingTurno] = useState<Appointment | null>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
 
@@ -435,108 +499,76 @@ export default function TurnosPage() {
     return true;
   });
 
-  /* ── Status change handler ── */
-  async function handleStatusChange(id: string, newStatus: string, statusLabel: string) {
-    const turno = appointments.find(a => a.id === id);
-    if (!turno) return;
+  /* ── Open modal for add ── */
+  function openAddModal() {
+    setEditingId(null);
+    setForm(emptyForm);
+    setShowModal(true);
+  }
+
+  /* ── Open modal for edit ── */
+  function openEditModal(a: Appointment) {
+    setEditingId(a.id);
+    setForm({
+      client_name: a.client_name,
+      client_phone: a.client_phone,
+      scheduled_at: isoToLocalInput(a.scheduled_at),
+      status: a.status,
+      notes: a.notes || "",
+      product_id: a.product_id || "",
+    });
+    setShowModal(true);
+  }
+
+  /* ── Save (add or update) ── */
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    const payload = {
+      client_name: form.client_name,
+      client_phone: form.client_phone,
+      scheduled_at: new Date(form.scheduled_at).toISOString(),
+      status: form.status,
+      notes: form.notes || null,
+      product_id: form.product_id || null,
+    };
+
+    let error;
+    if (editingId) {
+      ({ error } = await supabase.from("ig_appointments").update(payload).eq("id", editingId));
+    } else {
+      ({ error } = await supabase.from("ig_appointments").insert(payload));
+    }
+
+    if (!error) {
+      setShowModal(false);
+      setForm(emptyForm);
+      setEditingId(null);
+      await fetchData();
+    } else {
+      alert("Error: " + error.message);
+    }
+    setSaving(false);
+  }
+
+  /* ── Quick status change ── */
+  async function handleStatusChange(id: string, newStatus: string) {
     const { error } = await supabase.from("ig_appointments").update({ status: newStatus }).eq("id", id);
     if (!error) {
-      const d = new Date(turno.scheduled_at);
-      const time = d.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
-      await logActivity("status_change", id, `Turno de ${turno.client_name} ${statusLabel} para ${time}`);
       await fetchData();
     } else {
-      alert("Error: " + error.message);
+      alert("Error al cambiar estado: " + error.message);
     }
   }
 
-  /* ── Open edit modal ── */
-  function openEditModal(turno: Appointment) {
-    setEditingTurno(turno);
-    const d = new Date(turno.scheduled_at);
-    // Format for datetime-local input
-    const localISO = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}T${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-    setForm({
-      client_name: turno.client_name,
-      client_phone: turno.client_phone,
-      scheduled_at: localISO,
-      status: turno.status,
-      notes: turno.notes || "",
-      product_id: turno.product_id || "",
-    });
-    setShowEditModal(true);
-    setShowDeleteConfirm(false);
-  }
-
-  /* ── Save edit ── */
-  async function handleEdit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!editingTurno) return;
-    setSaving(true);
-    const payload = {
-      client_name: form.client_name,
-      client_phone: form.client_phone,
-      scheduled_at: new Date(form.scheduled_at).toISOString(),
-      status: form.status,
-      notes: form.notes || null,
-      product_id: form.product_id || null,
-    };
-    const { error } = await supabase.from("ig_appointments").update(payload).eq("id", editingTurno.id);
+  /* ── Delete ── */
+  async function handleDelete(id: string) {
+    const { error } = await supabase.from("ig_appointments").delete().eq("id", id);
     if (!error) {
-      const d = new Date(payload.scheduled_at);
-      const time = d.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
-      await logActivity("edit", editingTurno.id, `Turno de ${form.client_name} editado — ${time}`);
-      setShowEditModal(false);
-      setEditingTurno(null);
-      setForm(emptyForm);
       await fetchData();
     } else {
-      alert("Error: " + error.message);
+      alert("Error al eliminar: " + error.message);
     }
-    setSaving(false);
-  }
-
-  /* ── Delete turno ── */
-  async function handleDelete() {
-    if (!editingTurno) return;
-    setSaving(true);
-    const d = new Date(editingTurno.scheduled_at);
-    const time = d.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
-    const desc = `Turno de ${editingTurno.client_name} eliminado (era para ${time})`;
-    const { error } = await supabase.from("ig_appointments").delete().eq("id", editingTurno.id);
-    if (!error) {
-      await logActivity("delete", editingTurno.id, desc);
-      setShowEditModal(false);
-      setShowDeleteConfirm(false);
-      setEditingTurno(null);
-      setForm(emptyForm);
-      await fetchData();
-    } else {
-      alert("Error: " + error.message);
-    }
-    setSaving(false);
-  }
-
-  async function handleAdd(e: React.FormEvent) {
-    e.preventDefault();
-    setSaving(true);
-    const payload = {
-      client_name: form.client_name,
-      client_phone: form.client_phone,
-      scheduled_at: new Date(form.scheduled_at).toISOString(),
-      status: form.status,
-      notes: form.notes || null,
-      product_id: form.product_id || null,
-    };
-    const { error } = await supabase.from("ig_appointments").insert(payload);
-    if (!error) {
-      setShowAddModal(false);
-      setForm(emptyForm);
-      await fetchData();
-    } else {
-      alert("Error: " + error.message);
-    }
-    setSaving(false);
   }
 
   if (loading) {
@@ -553,45 +585,6 @@ export default function TurnosPage() {
     { value: "calendario", label: "Calendario", icon: "calendar_month" },
     { value: "kanban", label: "Kanban", icon: "view_kanban" },
   ];
-
-  /* ── Form fields (shared between add/edit) ── */
-  const formFields = (
-    <div className="p-6 space-y-4">
-      <div>
-        <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Nombre del Cliente *</label>
-        <input required value={form.client_name} onChange={(e) => setForm({ ...form, client_name: e.target.value })}
-          className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30" />
-      </div>
-      <div>
-        <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Teléfono *</label>
-        <input required value={form.client_phone} onChange={(e) => setForm({ ...form, client_phone: e.target.value })}
-          className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30"
-          placeholder="+54 11 ..." />
-      </div>
-      <div>
-        <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Fecha y Hora *</label>
-        <input type="datetime-local" required value={form.scheduled_at} onChange={(e) => setForm({ ...form, scheduled_at: e.target.value })}
-          className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30" />
-      </div>
-      <div>
-        <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Estado</label>
-        <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}
-          className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30">
-          <option value="pendiente">Pendiente</option>
-          <option value="confirmado">Confirmado</option>
-          <option value="completado">Completado</option>
-          <option value="no_show">No Show</option>
-          <option value="cancelado">Cancelado</option>
-        </select>
-      </div>
-      <div>
-        <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Notas</label>
-        <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })}
-          className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30 resize-none"
-          rows={2} placeholder="Detalles del turno..." />
-      </div>
-    </div>
-  );
 
   return (
     <>
@@ -616,7 +609,7 @@ export default function TurnosPage() {
           </div>
         </div>
         <button
-          onClick={() => { setForm(emptyForm); setShowAddModal(true); }}
+          onClick={openAddModal}
           className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-bold text-sm shadow-md shadow-primary/20"
         >
           <span className="material-symbols-outlined text-lg">add</span> Nuevo Turno
@@ -708,25 +701,15 @@ export default function TurnosPage() {
                         </td>
                         <td className="px-4 py-4 text-sm font-medium">{a.client_name}</td>
                         <td className="px-4 py-4 text-sm text-on-surface-variant">{a.client_phone}</td>
-                        <td className="px-4 py-4">
-                          <StatusActions appointment={a} onStatusChange={handleStatusChange} />
-                        </td>
+                        <td className="px-4 py-4">{appointmentStatusBadge(a.status)}</td>
                         <td className="px-4 py-4 text-xs text-on-surface-variant max-w-[200px] truncate">{a.notes || "—"}</td>
                         <td className="px-4 py-4">
-                          <div className="flex items-center gap-1.5">
-                            {a.client_phone && (
-                              <button onClick={() => openWhatsApp(a.client_phone, a.scheduled_at)}
-                                title="WhatsApp"
-                                className="w-8 h-8 flex items-center justify-center rounded-lg bg-green-50 text-green-700 hover:bg-green-100 transition-colors text-sm">
-                                📱
-                              </button>
-                            )}
-                            <button onClick={() => openEditModal(a)}
-                              title="Editar"
-                              className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-50 text-slate-600 hover:bg-slate-100 transition-colors">
-                              <span className="material-symbols-outlined text-sm">edit</span>
-                            </button>
-                          </div>
+                          <AppointmentActions
+                            appointment={a}
+                            onStatusChange={handleStatusChange}
+                            onEdit={openEditModal}
+                            onDelete={handleDelete}
+                          />
                         </td>
                       </tr>
                     );
@@ -746,87 +729,67 @@ export default function TurnosPage() {
         <CalendarView
           appointments={filtered}
           onDayClick={(date) => { setDateFilter(date); setView("lista"); }}
-          onEdit={openEditModal}
           onStatusChange={handleStatusChange}
+          onEdit={openEditModal}
+          onDelete={handleDelete}
         />
       )}
 
       {/* ── Vista: Kanban ── */}
       {view === "kanban" && <KanbanView appointments={filtered} />}
 
-      {/* Add Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setShowAddModal(false)}>
+      {/* Add/Edit Modal */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setShowModal(false)}>
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md" onClick={(e) => e.stopPropagation()}>
             <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="text-lg font-bold">Nuevo Turno</h3>
-              <button onClick={() => setShowAddModal(false)} className="text-cool-grey hover:text-on-surface">
+              <h3 className="text-lg font-bold">{editingId ? "Editar Turno" : "Nuevo Turno"}</h3>
+              <button onClick={() => setShowModal(false)} className="text-cool-grey hover:text-on-surface">
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
-            <form onSubmit={handleAdd}>
-              {formFields}
-              <div className="px-6 pb-6 flex gap-3">
-                <button type="button" onClick={() => setShowAddModal(false)}
+            <form onSubmit={handleSave} className="p-6 space-y-4">
+              <div>
+                <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Nombre del Cliente *</label>
+                <input required value={form.client_name} onChange={(e) => setForm({ ...form, client_name: e.target.value })}
+                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30" />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Teléfono *</label>
+                <input required value={form.client_phone} onChange={(e) => setForm({ ...form, client_phone: e.target.value })}
+                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30"
+                  placeholder="+54 11 ..." />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Fecha y Hora *</label>
+                <input type="datetime-local" required value={form.scheduled_at} onChange={(e) => setForm({ ...form, scheduled_at: e.target.value })}
+                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30" />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Estado</label>
+                <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}
+                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30">
+                  <option value="pendiente">Pendiente</option>
+                  <option value="confirmado">Confirmado</option>
+                  {editingId && <option value="completado">Completado</option>}
+                  {editingId && <option value="no_show">No Show</option>}
+                  {editingId && <option value="cancelado">Cancelado</option>}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Notas</label>
+                <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30 resize-none"
+                  rows={2} placeholder="Detalles del turno..." />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setShowModal(false)}
                   className="flex-1 py-3 bg-slate-200 rounded-full text-sm font-bold hover:bg-slate-300 transition-colors">
                   Cancelar
                 </button>
                 <button type="submit" disabled={saving}
                   className="flex-1 py-3 bg-primary text-white rounded-full text-sm font-bold shadow-md shadow-primary/20 hover:brightness-95 transition-all disabled:opacity-50">
-                  {saving ? "Guardando..." : "Crear Turno"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Modal */}
-      {showEditModal && editingTurno && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => { setShowEditModal(false); setShowDeleteConfirm(false); }}>
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md" onClick={(e) => e.stopPropagation()}>
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="text-lg font-bold">Editar Turno</h3>
-              <div className="flex items-center gap-2">
-                <button onClick={() => setShowDeleteConfirm(true)}
-                  title="Eliminar turno"
-                  className="w-9 h-9 flex items-center justify-center rounded-full text-red-500 hover:bg-red-50 transition-colors">
-                  <span className="material-symbols-outlined text-lg">delete</span>
-                </button>
-                <button onClick={() => { setShowEditModal(false); setShowDeleteConfirm(false); }} className="text-cool-grey hover:text-on-surface">
-                  <span className="material-symbols-outlined">close</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Delete confirmation */}
-            {showDeleteConfirm && (
-              <div className="mx-6 mt-4 p-4 bg-red-50 border border-red-200 rounded-xl">
-                <p className="text-sm font-bold text-red-700 mb-1">¿Eliminar este turno?</p>
-                <p className="text-xs text-red-600 mb-3">Esta acción no se puede deshacer.</p>
-                <div className="flex gap-2">
-                  <button onClick={() => setShowDeleteConfirm(false)}
-                    className="flex-1 py-2 bg-white border border-red-200 rounded-full text-xs font-bold text-red-700 hover:bg-red-50 transition-colors">
-                    No, mantener
-                  </button>
-                  <button onClick={handleDelete} disabled={saving}
-                    className="flex-1 py-2 bg-red-600 text-white rounded-full text-xs font-bold hover:bg-red-700 transition-colors disabled:opacity-50">
-                    {saving ? "Eliminando..." : "Sí, eliminar"}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            <form onSubmit={handleEdit}>
-              {formFields}
-              <div className="px-6 pb-6 flex gap-3">
-                <button type="button" onClick={() => { setShowEditModal(false); setShowDeleteConfirm(false); }}
-                  className="flex-1 py-3 bg-slate-200 rounded-full text-sm font-bold hover:bg-slate-300 transition-colors">
-                  Cancelar
-                </button>
-                <button type="submit" disabled={saving}
-                  className="flex-1 py-3 bg-primary text-white rounded-full text-sm font-bold shadow-md shadow-primary/20 hover:brightness-95 transition-all disabled:opacity-50">
-                  {saving ? "Guardando..." : "Guardar Cambios"}
+                  {saving ? "Guardando..." : editingId ? "Guardar Cambios" : "Crear Turno"}
                 </button>
               </div>
             </form>
