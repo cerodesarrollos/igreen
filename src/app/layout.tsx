@@ -29,11 +29,13 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
-      <body className="antialiased text-on-surface">
+      <body className="antialiased text-on-surface bg-slate-100">
         <Sidebar />
         <Header />
-        <main className="ml-20 lg:ml-60 pt-20 p-6 min-h-screen transition-all">
-          <div className="max-w-[1600px] mx-auto">{children}</div>
+        <main className="ml-20 lg:ml-60 pt-20 p-4 min-h-screen transition-all">
+          <div className="max-w-[1600px] mx-auto bg-white rounded-2xl border border-slate-200 shadow-sm p-6 min-h-[calc(100vh-6rem)]">
+            {children}
+          </div>
         </main>
       </body>
     </html>
