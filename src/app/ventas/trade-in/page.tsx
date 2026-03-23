@@ -49,6 +49,15 @@ export default function TradeInPage() {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
 
+  // Edit mode
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  // Expanded row
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  // Delete confirmation
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+
   // Cotizador state
   const [quoterModel, setQuoterModel] = useState("");
   const [quoterCondition, setQuoterCondition] = useState<"A" | "B" | "C">("A");
@@ -123,6 +132,7 @@ export default function TradeInPage() {
     : tradeIns.filter((t) => t.status === historyFilter);
 
   function openModalFromQuoter() {
+    setEditingId(null);
     setForm({
       ...emptyForm,
       model_received: quoterModel,
@@ -133,7 +143,21 @@ export default function TradeInPage() {
     setShowAddModal(true);
   }
 
-  async function handleAdd(e: React.FormEvent) {
+  function openEditModal(t: TradeIn) {
+    setEditingId(t.id);
+    setForm({
+      client_name: t.client_name,
+      client_phone: t.client_phone || "",
+      model_received: t.model_received,
+      condition: t.condition,
+      battery_health: t.battery_health,
+      price_offered: t.price_offered ? String(t.price_offered) : "",
+      notes: t.notes || "",
+    });
+    setShowAddModal(true);
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
     const payload = {
@@ -143,18 +167,44 @@ export default function TradeInPage() {
       condition: form.condition,
       battery_health: form.battery_health,
       price_offered: form.price_offered ? parseFloat(form.price_offered) : 0,
-      status: "pendiente",
       notes: form.notes || null,
     };
-    const { error } = await supabase.from("ig_trade_ins").insert(payload);
+
+    let error;
+    if (editingId) {
+      ({ error } = await supabase.from("ig_trade_ins").update(payload).eq("id", editingId));
+    } else {
+      ({ error } = await supabase.from("ig_trade_ins").insert({ ...payload, status: "pendiente" }));
+    }
+
     if (!error) {
       setShowAddModal(false);
+      setEditingId(null);
       setForm(emptyForm);
       await fetchData();
     } else {
       alert("Error: " + error.message);
     }
     setSaving(false);
+  }
+
+  async function handleStatusChange(id: string, newStatus: "completado" | "cancelado") {
+    const { error } = await supabase.from("ig_trade_ins").update({ status: newStatus }).eq("id", id);
+    if (!error) {
+      await fetchData();
+    } else {
+      alert("Error: " + error.message);
+    }
+  }
+
+  async function handleDelete(id: string) {
+    const { error } = await supabase.from("ig_trade_ins").delete().eq("id", id);
+    if (!error) {
+      setDeleteConfirmId(null);
+      await fetchData();
+    } else {
+      alert("Error: " + error.message);
+    }
   }
 
   if (loading) {
@@ -191,7 +241,7 @@ export default function TradeInPage() {
       {/* Action button */}
       <div className="flex justify-end mb-6">
         <button
-          onClick={() => { setForm(emptyForm); setShowAddModal(true); }}
+          onClick={() => { setEditingId(null); setForm(emptyForm); setShowAddModal(true); }}
           className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-bold text-sm shadow-md shadow-primary/20 hover:brightness-95 transition-all"
         >
           <span className="material-symbols-outlined text-lg">add</span> Registrar Trade-in
@@ -440,47 +490,138 @@ export default function TradeInPage() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-50">
-                    <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Fecha</th>
+                    <th className="px-3 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey w-8"></th>
+                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Fecha</th>
                     <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Cliente</th>
                     <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Modelo Recibido</th>
                     <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Condición</th>
                     <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Batería</th>
                     <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Precio</th>
                     <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Estado</th>
+                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredHistory.map((t, i) => (
-                    <tr key={t.id} className={`hover:bg-blue-50/40 transition-colors border-t border-slate-100 ${i % 2 === 1 ? "bg-slate-50/50" : ""}`}>
-                      <td className="px-6 py-4 text-sm tabular-nums">
-                        {new Date(t.created_at).toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric" })}
-                      </td>
-                      <td className="px-4 py-4">
-                        <p className="text-sm font-bold">{t.client_name}</p>
-                        {t.client_phone && <p className="text-[10px] text-cool-grey mt-0.5">{t.client_phone}</p>}
-                      </td>
-                      <td className="px-4 py-4 text-sm font-bold">{t.model_received}</td>
-                      <td className="px-4 py-4">
-                        <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-black ${
-                          t.condition === "A" ? "bg-green-100 text-green-700" : t.condition === "B" ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700"
-                        }`}>{t.condition}</span>
-                      </td>
-                      <td className="px-4 py-4 w-28">
-                        <BatteryBar value={t.battery_health} size="mini" />
-                      </td>
-                      <td className="px-4 py-4 text-sm font-bold">{formatPrice(t.price_offered)}</td>
-                      <td className="px-4 py-4">
-                        <span className={`px-3 py-1 text-[10px] font-bold rounded-full ${
-                          t.status === "completado"
-                            ? "bg-green-100 text-green-700"
-                            : t.status === "cancelado"
-                            ? "bg-red-100 text-red-700"
-                            : "bg-amber-100 text-amber-700"
-                        }`}>
-                          {t.status.toUpperCase()}
-                        </span>
-                      </td>
-                    </tr>
+                    <>
+                      <tr
+                        key={t.id}
+                        className={`hover:bg-blue-50/40 transition-colors border-t border-slate-100 cursor-pointer ${i % 2 === 1 ? "bg-slate-50/50" : ""}`}
+                        onClick={() => setExpandedId(expandedId === t.id ? null : t.id)}
+                      >
+                        <td className="px-3 py-4 text-center">
+                          <span className={`material-symbols-outlined text-sm text-cool-grey transition-transform inline-block ${expandedId === t.id ? "rotate-90" : ""}`}>
+                            chevron_right
+                          </span>
+                        </td>
+                        <td className="px-4 py-4 text-sm tabular-nums">
+                          {new Date(t.created_at).toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric" })}
+                        </td>
+                        <td className="px-4 py-4">
+                          <p className="text-sm font-bold">{t.client_name}</p>
+                          {t.client_phone && <p className="text-[10px] text-cool-grey mt-0.5">{t.client_phone}</p>}
+                        </td>
+                        <td className="px-4 py-4 text-sm font-bold">{t.model_received}</td>
+                        <td className="px-4 py-4">
+                          <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-black ${
+                            t.condition === "A" ? "bg-green-100 text-green-700" : t.condition === "B" ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700"
+                          }`}>{t.condition}</span>
+                        </td>
+                        <td className="px-4 py-4 w-28">
+                          <BatteryBar value={t.battery_health} size="mini" />
+                        </td>
+                        <td className="px-4 py-4 text-sm font-bold">{formatPrice(t.price_offered)}</td>
+                        <td className="px-4 py-4">
+                          <span className={`px-3 py-1 text-[10px] font-bold rounded-full ${
+                            t.status === "completado"
+                              ? "bg-green-100 text-green-700"
+                              : t.status === "cancelado"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-amber-100 text-amber-700"
+                          }`}>
+                            {t.status.toUpperCase()}
+                          </span>
+                        </td>
+                        <td className="px-4 py-4" onClick={(e) => e.stopPropagation()}>
+                          <div className="flex items-center gap-1">
+                            {/* Edit button */}
+                            <button
+                              onClick={() => openEditModal(t)}
+                              className="p-1.5 rounded-lg hover:bg-slate-100 text-cool-grey hover:text-primary transition-colors"
+                              title="Editar"
+                            >
+                              <span className="material-symbols-outlined text-base">edit</span>
+                            </button>
+
+                            {/* Status action buttons — only for pendiente */}
+                            {t.status === "pendiente" && (
+                              <>
+                                <button
+                                  onClick={() => handleStatusChange(t.id, "completado")}
+                                  className="p-1.5 rounded-lg hover:bg-green-50 text-cool-grey hover:text-green-600 transition-colors"
+                                  title="Completar (equipo recibido)"
+                                >
+                                  <span className="material-symbols-outlined text-base">check_circle</span>
+                                </button>
+                                <button
+                                  onClick={() => handleStatusChange(t.id, "cancelado")}
+                                  className="p-1.5 rounded-lg hover:bg-red-50 text-cool-grey hover:text-red-600 transition-colors"
+                                  title="Cancelar"
+                                >
+                                  <span className="material-symbols-outlined text-base">cancel</span>
+                                </button>
+                              </>
+                            )}
+
+                            {/* Delete — only for pendiente or cancelado */}
+                            {(t.status === "pendiente" || t.status === "cancelado") && (
+                              <button
+                                onClick={() => setDeleteConfirmId(t.id)}
+                                className="p-1.5 rounded-lg hover:bg-red-50 text-cool-grey hover:text-red-600 transition-colors"
+                                title="Eliminar"
+                              >
+                                <span className="material-symbols-outlined text-base">delete</span>
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+
+                      {/* Expanded detail row */}
+                      {expandedId === t.id && (
+                        <tr key={`${t.id}-detail`} className="bg-slate-50/80">
+                          <td colSpan={9} className="px-6 py-4">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                              <div>
+                                <p className="text-[10px] uppercase tracking-widest font-bold text-cool-grey mb-1">Fecha y Hora</p>
+                                <p className="font-medium">
+                                  {new Date(t.created_at).toLocaleDateString("es-AR", { weekday: "long", day: "2-digit", month: "long", year: "numeric" })}
+                                  {" — "}
+                                  {new Date(t.created_at).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-[10px] uppercase tracking-widest font-bold text-cool-grey mb-1">Notas</p>
+                                <p className="font-medium">{t.notes || "Sin notas"}</p>
+                              </div>
+                              <div>
+                                <p className="text-[10px] uppercase tracking-widest font-bold text-cool-grey mb-1">Cotizado por</p>
+                                <p className="font-medium text-cool-grey">—</p>
+                              </div>
+                              {t.status === "completado" && (
+                                <div className="md:col-span-3">
+                                  <p className="text-[10px] uppercase tracking-widest font-bold text-cool-grey mb-1">Producto vinculado</p>
+                                  <button className="flex items-center gap-2 text-xs text-primary font-bold hover:underline">
+                                    <span className="material-symbols-outlined text-sm">link</span>
+                                    Vincular a producto
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </>
                   ))}
                 </tbody>
               </table>
@@ -489,17 +630,17 @@ export default function TradeInPage() {
         </div>
       </section>
 
-      {/* ============ Add Modal ============ */}
+      {/* ============ Add/Edit Modal ============ */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setShowAddModal(false)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => { setShowAddModal(false); setEditingId(null); }}>
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md" onClick={(e) => e.stopPropagation()}>
             <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="text-lg font-bold">Registrar Trade-in</h3>
-              <button onClick={() => setShowAddModal(false)} className="text-cool-grey hover:text-on-surface">
+              <h3 className="text-lg font-bold">{editingId ? "Editar Trade-in" : "Registrar Trade-in"}</h3>
+              <button onClick={() => { setShowAddModal(false); setEditingId(null); }} className="text-cool-grey hover:text-on-surface">
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
-            <form onSubmit={handleAdd} className="p-6 space-y-4">
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
                 <label className="text-[10px] font-bold text-cool-grey uppercase tracking-widest">Cliente *</label>
                 <input required value={form.client_name} onChange={(e) => setForm({ ...form, client_name: e.target.value })}
@@ -546,16 +687,45 @@ export default function TradeInPage() {
                   rows={2} />
               </div>
               <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setShowAddModal(false)}
+                <button type="button" onClick={() => { setShowAddModal(false); setEditingId(null); }}
                   className="flex-1 py-3 bg-slate-200 rounded-full text-sm font-bold hover:bg-slate-300 transition-colors">
                   Cancelar
                 </button>
                 <button type="submit" disabled={saving}
                   className="flex-1 py-3 bg-primary text-white rounded-full text-sm font-bold shadow-md shadow-primary/20 hover:brightness-95 transition-all disabled:opacity-50">
-                  {saving ? "Guardando..." : "Registrar"}
+                  {saving ? "Guardando..." : editingId ? "Guardar Cambios" : "Registrar"}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ============ Delete Confirmation Modal ============ */}
+      {deleteConfirmId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setDeleteConfirmId(null)}>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6 text-center">
+              <div className="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="material-symbols-outlined text-2xl text-red-500">delete_forever</span>
+              </div>
+              <h3 className="text-lg font-bold mb-2">¿Eliminar trade-in?</h3>
+              <p className="text-sm text-cool-grey mb-6">Esta acción no se puede deshacer.</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setDeleteConfirmId(null)}
+                  className="flex-1 py-3 bg-slate-200 rounded-full text-sm font-bold hover:bg-slate-300 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => handleDelete(deleteConfirmId)}
+                  className="flex-1 py-3 bg-red-500 text-white rounded-full text-sm font-bold hover:bg-red-600 transition-colors"
+                >
+                  Eliminar
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
