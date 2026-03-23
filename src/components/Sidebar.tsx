@@ -21,6 +21,7 @@ const ventasSubItems = [
   { href: "/ventas/trade-in", icon: "swap_horiz", label: "Trade-in" },
   { href: "/ventas/clientes", icon: "people", label: "Clientes" },
   { href: "/ventas/rendicion", icon: "receipt", label: "Rendición" },
+  { href: "/ventas/metricas", icon: "bar_chart", label: "Métricas" },
 ];
 
 export default function Sidebar() {
