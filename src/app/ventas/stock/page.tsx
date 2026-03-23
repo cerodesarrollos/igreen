@@ -513,160 +513,120 @@ export default function VentasStockPage() {
   return (
     <>
       {/* ── Header ── */}
-      <div className="flex justify-between items-end mb-8">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Stock de Equipos</h2>
-          <p className="text-on-surface-variant text-sm mt-1">Gestión de inventario iPhone — alta, edición y venta</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => { setAddForm(emptyProductForm); setShowAddModal(true); }}
-            className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-bold text-sm shadow-md shadow-primary/20"
-          >
-            <span className="material-symbols-outlined text-lg">add</span> Cargar Equipo
-          </button>
-          <button
-            onClick={() => {
-              const disponible = allProducts.find((p) => p.status === "disponible");
-              if (disponible) openSaleModal(disponible);
-              else alert("No hay equipos disponibles para vender");
-            }}
-            className="flex items-center gap-2 px-6 py-3 border-2 border-primary text-primary rounded-full font-bold text-sm hover:bg-primary/5 transition-all"
-          >
-            <span className="material-symbols-outlined text-lg">point_of_sale</span> Nueva Venta
-          </button>
-        </div>
+      <div className="mb-6">
+        <h2 className="text-3xl font-bold tracking-tight">Stock de Equipos</h2>
+        <p className="text-on-surface-variant text-sm mt-1">Gestión de inventario iPhone — alta, edición y venta</p>
       </div>
 
-      {/* ── KPI Cards ── */}
-      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      {/* ── KPI Cards (compactas) ── */}
+      <section className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         {[
-          { label: "Total Disponible", value: disponibles.toString(), icon: "phone_iphone", iconBg: "bg-green-50", iconColor: "text-green-600" },
-          { label: "Reservados", value: reservados.toString(), icon: "schedule", iconBg: "bg-amber-50", iconColor: "text-amber-600" },
-          { label: "Vendidos Hoy", value: vendidosHoy.toString(), icon: "sell", iconBg: "bg-blue-50", iconColor: "text-blue-600" },
-          { label: "Valor Stock", value: formatPrice(valorStock), icon: "trending_up", iconBg: "bg-green-50", iconColor: "text-green-600" },
+          { label: "Total Disponible", value: disponibles.toString(), icon: "phone_iphone", bg: "bg-green-50", color: "text-green-600" },
+          { label: "Reservados", value: reservados.toString(), icon: "schedule", bg: "bg-amber-50", color: "text-amber-600" },
+          { label: "Vendidos Hoy", value: vendidosHoy.toString(), icon: "sell", bg: "bg-blue-50", color: "text-blue-600" },
+          { label: "Valor Stock", value: formatPrice(valorStock), icon: "trending_up", bg: "bg-green-50", color: "text-green-600" },
         ].map((kpi) => (
-          <div key={kpi.label} className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-between group hover:shadow-md transition-shadow">
-            <div className="flex justify-between items-start mb-4">
-              <div className={`p-2 ${kpi.iconBg} rounded-lg`}>
-                <span className={`material-symbols-outlined ${kpi.iconColor}`}>{kpi.icon}</span>
+          <div key={kpi.label} className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-3">
+              <div className={`p-1.5 ${kpi.bg} rounded-lg`}>
+                <span className={`material-symbols-outlined ${kpi.color} text-lg`}>{kpi.icon}</span>
               </div>
-            </div>
-            <div>
-              <p className="text-on-surface-variant text-xs font-medium mb-1">{kpi.label}</p>
-              <h3 className="text-2xl font-bold tracking-tight">{kpi.value}</h3>
+              <div>
+                <p className="text-[10px] text-cool-grey font-bold uppercase tracking-wider">{kpi.label}</p>
+                <h3 className="text-lg font-bold tracking-tight">{kpi.value}</h3>
+              </div>
             </div>
           </div>
         ))}
       </section>
 
-      {/* ── Main Grid ── */}
-      <div className="grid grid-cols-12 gap-8">
-        {/* Categories Sidebar */}
-        <div className="col-span-12 lg:col-span-2 space-y-6">
-          <div>
-            <h3 className="text-[10px] uppercase tracking-[0.15em] font-bold text-cool-grey mb-4 px-2">Estado</h3>
-            <div className="flex flex-col gap-1">
-              {[
-                { key: "todos", icon: "list", label: `Todos (${allProducts.length})` },
-                { key: "disponible", icon: "check_circle", label: `Disponibles (${disponibles})`, color: "text-green-500" },
-                { key: "reservado", icon: "schedule", label: `Reservados (${reservados})`, color: "text-amber-500" },
-                { key: "vendido", icon: "sell", label: `Vendidos (${allProducts.filter((p) => p.status === "vendido").length})`, color: "text-slate-400" },
-              ].map((item) => (
-                <button
-                  key={item.key}
-                  onClick={() => setStatusFilter(item.key)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all ${
-                    statusFilter === item.key ? "bg-white text-primary shadow-sm" : "text-cool-grey hover:bg-slate-100"
-                  }`}
-                >
-                  <span className={`material-symbols-outlined ${item.color || ""}`}>{item.icon}</span>
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <h3 className="text-[10px] uppercase tracking-[0.15em] font-bold text-cool-grey mb-4 px-2">Tipo</h3>
-            <div className="flex flex-col gap-1">
-              {[
-                { key: "todos", label: "Todos" },
-                { key: "nuevo", label: "Nuevos" },
-                { key: "usado", label: "Usados" },
-              ].map((item) => (
-                <button
-                  key={item.key}
-                  onClick={() => setNewFilter(item.key)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all ${
-                    newFilter === item.key ? "bg-white text-primary shadow-sm" : "text-cool-grey hover:bg-slate-100"
-                  }`}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <h3 className="text-[10px] uppercase tracking-[0.15em] font-bold text-cool-grey mb-4 px-2">Condición</h3>
-            <div className="flex flex-col gap-1">
-              {[
-                { key: "todos", label: "Todos" },
-                { key: "A", label: "A — Impecable" },
-                { key: "B", label: "B — Detalles" },
-                { key: "C", label: "C — Uso visible" },
-              ].map((item) => (
-                <button
-                  key={item.key}
-                  onClick={() => setConditionFilter(item.key)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all ${
-                    conditionFilter === item.key ? "bg-white text-primary shadow-sm" : "text-cool-grey hover:bg-slate-100"
-                  }`}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <h3 className="text-[10px] uppercase tracking-[0.15em] font-bold text-cool-grey mb-4 px-2">Origen</h3>
-            <div className="flex flex-col gap-1">
-              {[
-                { key: "todos", label: "Todos" },
-                { key: "propio", label: "Stock Propio" },
-                { key: "consignacion", label: "Consignación" },
-              ].map((item) => (
-                <button
-                  key={item.key}
-                  onClick={() => setOriginFilter(item.key)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all ${
-                    originFilter === item.key ? "bg-white text-primary shadow-sm" : "text-cool-grey hover:bg-slate-100"
-                  }`}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
+      {/* ── Buscador + Botones ── */}
+      <div className="flex flex-wrap items-center gap-3 mb-4">
+        <div className="relative flex-1 min-w-[200px] max-w-xl">
+          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-cool-grey">search</span>
+          <input
+            className="w-full pl-12 pr-6 py-3 bg-white rounded-xl border border-slate-200 focus:ring-1 focus:ring-primary/30 transition-all text-sm"
+            placeholder="Buscar por modelo o IMEI..."
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
+        <button
+          onClick={() => { setAddForm(emptyProductForm); setShowAddModal(true); }}
+          className="flex items-center gap-2 px-5 py-3 bg-primary text-white rounded-full font-bold text-sm shadow-md shadow-primary/20"
+        >
+          <span className="material-symbols-outlined text-lg">add</span> Cargar
+        </button>
+        <button
+          onClick={() => {
+            const disponible = allProducts.find((p) => p.status === "disponible");
+            if (disponible) openSaleModal(disponible);
+            else alert("No hay equipos disponibles para vender");
+          }}
+          className="flex items-center gap-2 px-5 py-3 border-2 border-primary text-primary rounded-full font-bold text-sm hover:bg-primary/5 transition-all"
+        >
+          <span className="material-symbols-outlined text-lg">point_of_sale</span> Nueva Venta
+        </button>
+      </div>
 
+      {/* ── Filtros Horizontales (chips) ── */}
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-3 mb-6">
+        {/* Estado */}
+        <div className="flex items-center gap-1.5">
+          <span className="text-[10px] font-bold text-cool-grey uppercase tracking-wider mr-1">Estado:</span>
+          {(["todos", "disponible", "reservado", "vendido"] as const).map((key) => {
+            const labels: Record<string, string> = { todos: "Todos", disponible: "Disponible", reservado: "Reservado", vendido: "Vendido" };
+            return (
+              <button key={key} onClick={() => setStatusFilter(key)}
+                className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${statusFilter === key ? "bg-primary text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>
+                {labels[key]}
+              </button>
+            );
+          })}
+        </div>
+        {/* Tipo */}
+        <div className="flex items-center gap-1.5">
+          <span className="text-[10px] font-bold text-cool-grey uppercase tracking-wider mr-1">Tipo:</span>
+          {(["todos", "nuevo", "usado"] as const).map((key) => {
+            const labels: Record<string, string> = { todos: "Todos", nuevo: "Nuevo", usado: "Usado" };
+            return (
+              <button key={key} onClick={() => setNewFilter(key)}
+                className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${newFilter === key ? "bg-primary text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>
+                {labels[key]}
+              </button>
+            );
+          })}
+        </div>
+        {/* Condición */}
+        <div className="flex items-center gap-1.5">
+          <span className="text-[10px] font-bold text-cool-grey uppercase tracking-wider mr-1">Condición:</span>
+          {(["todos", "A", "B", "C"] as const).map((key) => (
+            <button key={key} onClick={() => setConditionFilter(key)}
+              className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${conditionFilter === key ? "bg-primary text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>
+              {key === "todos" ? "Todos" : key}
+            </button>
+          ))}
+        </div>
+        {/* Origen */}
+        <div className="flex items-center gap-1.5">
+          <span className="text-[10px] font-bold text-cool-grey uppercase tracking-wider mr-1">Origen:</span>
+          {(["todos", "propio", "consignacion"] as const).map((key) => {
+            const labels: Record<string, string> = { todos: "Todos", propio: "Propio", consignacion: "Consignación" };
+            return (
+              <button key={key} onClick={() => setOriginFilter(key)}
+                className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${originFilter === key ? "bg-primary text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>
+                {labels[key]}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Main Grid: Tabla + Panel Detalle ── */}
+      <div className="grid grid-cols-12 gap-6">
         {/* Main Table */}
-        <div className="col-span-12 lg:col-span-7">
-          {/* Actions */}
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-            <div className="flex items-center gap-4 flex-1 max-w-xl">
-              <div className="relative flex-1">
-                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-cool-grey">search</span>
-                <input
-                  className="w-full pl-12 pr-6 py-3 bg-white rounded-xl border border-slate-200 focus:ring-1 focus:ring-primary/30 transition-all text-sm"
-                  placeholder="Buscar por modelo o IMEI..."
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </div>
-            </div>
-          </div>
-
+        <div className="col-span-12 lg:col-span-8">
           <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200">
             {filtered.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-cool-grey">
@@ -680,14 +640,16 @@ export default function VentasStockPage() {
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="bg-slate-50">
-                        <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Equipo</th>
-                        <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">IMEI</th>
-                        <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Capacidad</th>
-                        <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Condición</th>
-                        <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Batería</th>
-                        <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Precio</th>
-                        <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Estado</th>
-                        <th className="px-4 py-4"></th>
+                        <th className="px-5 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Equipo</th>
+                        <th className="px-3 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">IMEI</th>
+                        <th className="px-3 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Capacidad</th>
+                        <th className="px-3 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Condición</th>
+                        <th className="px-3 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Batería</th>
+                        <th className="px-3 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Precio</th>
+                        <th className="px-3 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Origen</th>
+                        <th className="px-3 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Ingreso</th>
+                        <th className="px-3 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Estado</th>
+                        <th className="px-3 py-4"></th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-50">
@@ -697,7 +659,7 @@ export default function VentasStockPage() {
                           onClick={() => setSelectedProduct(p)}
                           className={`hover:bg-slate-50 transition-colors cursor-pointer group ${selectedProduct?.id === p.id ? "bg-primary/5" : ""}`}
                         >
-                          <td className="px-6 py-4">
+                          <td className="px-5 py-4">
                             <div className="flex items-center gap-3">
                               <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
                                 <span className="material-symbols-outlined text-lg text-cool-grey">smartphone</span>
@@ -711,15 +673,19 @@ export default function VentasStockPage() {
                               </div>
                             </div>
                           </td>
-                          <td className="px-4 py-4 font-mono text-xs text-cool-grey">{maskImei(p.imei)}</td>
-                          <td className="px-4 py-4 text-sm font-medium">{p.capacity}</td>
-                          <td className="px-4 py-4">{conditionBadge(p.condition)}</td>
-                          <td className="px-4 py-4">
+                          <td className="px-3 py-4 font-mono text-xs text-cool-grey">{maskImei(p.imei)}</td>
+                          <td className="px-3 py-4 text-sm font-medium">{p.capacity}</td>
+                          <td className="px-3 py-4">{conditionBadge(p.condition)}</td>
+                          <td className="px-3 py-4">
                             <span className={`text-sm font-bold ${batteryColor(p.battery_health)}`}>{p.battery_health}%</span>
                           </td>
-                          <td className="px-4 py-4 text-sm font-bold">{formatPrice(p.sale_price)}</td>
-                          <td className="px-4 py-4">{statusBadge(p.status)}</td>
-                          <td className="px-4 py-4 text-right">
+                          <td className="px-3 py-4 text-sm font-bold">{formatPrice(p.sale_price)}</td>
+                          <td className="px-3 py-4">{originBadge(p.origin)}</td>
+                          <td className="px-3 py-4 text-xs text-cool-grey font-medium">
+                            {new Date(p.created_at).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit" })}
+                          </td>
+                          <td className="px-3 py-4">{statusBadge(p.status)}</td>
+                          <td className="px-3 py-4 text-right">
                             <button
                               onClick={(ev) => { ev.stopPropagation(); if (p.status === "disponible") openSaleModal(p); }}
                               className={`material-symbols-outlined transition-colors ${p.status === "disponible" ? "text-primary hover:text-primary-dark" : "text-slate-300"}`}
@@ -742,7 +708,7 @@ export default function VentasStockPage() {
         </div>
 
         {/* Right Detail Panel */}
-        <div className="col-span-12 lg:col-span-3 space-y-6">
+        <div className="col-span-12 lg:col-span-4 space-y-6">
           <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 sticky top-24">
             <h3 className="text-[10px] uppercase tracking-[0.15em] font-bold text-cool-grey mb-4">Detalle de Equipo</h3>
             {selectedProduct ? (

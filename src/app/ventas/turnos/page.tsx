@@ -114,27 +114,53 @@ export default function TurnosPage() {
         </button>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-wrap items-center gap-4 mb-6">
-        <div className="flex items-center gap-2">
-          <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Estado</label>
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2.5 bg-white rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30">
-            <option value="todos">Todos</option>
-            <option value="pendiente">Pendiente</option>
-            <option value="confirmado">Confirmado</option>
-            <option value="completado">Completado</option>
-            <option value="no_show">No Show</option>
-            <option value="cancelado">Cancelado</option>
-          </select>
+      {/* Filters — Chips */}
+      <div className="space-y-3 mb-6">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[10px] font-bold text-cool-grey uppercase tracking-widest mr-1">Estado</span>
+          {[
+            { value: "todos", label: "Todos" },
+            { value: "pendiente", label: "Pendiente" },
+            { value: "confirmado", label: "Confirmado" },
+            { value: "completado", label: "Completado" },
+            { value: "no_show", label: "No Show" },
+            { value: "cancelado", label: "Cancelado" },
+          ].map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setStatusFilter(opt.value)}
+              className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
+                statusFilter === opt.value
+                  ? "bg-primary text-white shadow-sm"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
         </div>
-        <div className="flex items-center gap-2">
-          <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Fecha</label>
-          <input type="date" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)}
-            className="px-4 py-2.5 bg-white rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30" />
-          {dateFilter && (
-            <button onClick={() => setDateFilter("")} className="text-xs text-primary font-bold hover:underline">Limpiar</button>
-          )}
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[10px] font-bold text-cool-grey uppercase tracking-widest mr-1">Fecha</span>
+          {[
+            { value: "", label: "Todos" },
+            { value: new Date().toISOString().slice(0, 10), label: "Hoy" },
+          ].map((opt) => (
+            <button
+              key={opt.value || "all"}
+              onClick={() => setDateFilter(opt.value)}
+              className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
+                dateFilter === opt.value
+                  ? "bg-primary text-white shadow-sm"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+          <div className="flex items-center gap-1 ml-1">
+            <input type="date" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)}
+              className="px-2.5 py-1 bg-white rounded-full border border-slate-200 text-xs focus:ring-1 focus:ring-primary/30" />
+          </div>
         </div>
       </div>
 
