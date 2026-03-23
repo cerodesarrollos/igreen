@@ -18,9 +18,13 @@ interface Product {
   consignment_owner: string | null;
   cost_price: number | null;
   sale_price: number | null;
+  photos: string[] | null;
   defects: string | null;
   notes: string | null;
+  loaded_at: string | null;
+  sold_at: string | null;
   created_at: string;
+  updated_at: string;
 }
 
 interface Sale {
@@ -51,21 +55,71 @@ interface Appointment {
   product_id: string | null;
 }
 
+/* ───── iPhone Catalog ───── */
+const IPHONE_CATALOG: Record<string, { capacities: string[]; colors: string[] }> = {
+  "iPhone 11": { capacities: ["64GB", "128GB", "256GB"], colors: ["Negro", "Blanco", "Rojo", "Amarillo", "Verde", "Violeta"] },
+  "iPhone 11 Pro": { capacities: ["64GB", "256GB", "512GB"], colors: ["Gris Espacial", "Plata", "Oro", "Verde Noche"] },
+  "iPhone 11 Pro Max": { capacities: ["64GB", "256GB", "512GB"], colors: ["Gris Espacial", "Plata", "Oro", "Verde Noche"] },
+  "iPhone 12 mini": { capacities: ["64GB", "128GB", "256GB"], colors: ["Negro", "Blanco", "Rojo", "Azul", "Verde"] },
+  "iPhone 12": { capacities: ["64GB", "128GB", "256GB"], colors: ["Negro", "Blanco", "Rojo", "Azul", "Verde"] },
+  "iPhone 12 Pro": { capacities: ["128GB", "256GB", "512GB"], colors: ["Grafito", "Plata", "Oro", "Azul Pacífico"] },
+  "iPhone 12 Pro Max": { capacities: ["128GB", "256GB", "512GB"], colors: ["Grafito", "Plata", "Oro", "Azul Pacífico"] },
+  "iPhone 13 mini": { capacities: ["128GB", "256GB", "512GB"], colors: ["Negro Noche", "Luz de Estrella", "Rojo", "Azul", "Rosa", "Verde"] },
+  "iPhone 13": { capacities: ["128GB", "256GB", "512GB"], colors: ["Negro Noche", "Luz de Estrella", "Rojo", "Azul", "Rosa", "Verde"] },
+  "iPhone 13 Pro": { capacities: ["128GB", "256GB", "512GB", "1TB"], colors: ["Grafito", "Plata", "Oro", "Azul Sierra", "Verde Alpino"] },
+  "iPhone 13 Pro Max": { capacities: ["128GB", "256GB", "512GB", "1TB"], colors: ["Grafito", "Plata", "Oro", "Azul Sierra", "Verde Alpino"] },
+  "iPhone 14": { capacities: ["128GB", "256GB", "512GB"], colors: ["Negro Noche", "Luz de Estrella", "Rojo", "Azul", "Violeta", "Amarillo"] },
+  "iPhone 14 Plus": { capacities: ["128GB", "256GB", "512GB"], colors: ["Negro Noche", "Luz de Estrella", "Rojo", "Azul", "Violeta", "Amarillo"] },
+  "iPhone 14 Pro": { capacities: ["128GB", "256GB", "512GB", "1TB"], colors: ["Negro Espacial", "Plata", "Oro", "Violeta Oscuro"] },
+  "iPhone 14 Pro Max": { capacities: ["128GB", "256GB", "512GB", "1TB"], colors: ["Negro Espacial", "Plata", "Oro", "Violeta Oscuro"] },
+  "iPhone 15": { capacities: ["128GB", "256GB", "512GB"], colors: ["Negro", "Azul", "Verde", "Amarillo", "Rosa"] },
+  "iPhone 15 Plus": { capacities: ["128GB", "256GB", "512GB"], colors: ["Negro", "Azul", "Verde", "Amarillo", "Rosa"] },
+  "iPhone 15 Pro": { capacities: ["128GB", "256GB", "512GB", "1TB"], colors: ["Titanio Negro", "Titanio Blanco", "Titanio Natural", "Titanio Azul"] },
+  "iPhone 15 Pro Max": { capacities: ["256GB", "512GB", "1TB"], colors: ["Titanio Negro", "Titanio Blanco", "Titanio Natural", "Titanio Azul"] },
+  "iPhone 16": { capacities: ["128GB", "256GB", "512GB"], colors: ["Negro", "Blanco", "Azul", "Verde", "Rosa"] },
+  "iPhone 16 Plus": { capacities: ["128GB", "256GB", "512GB"], colors: ["Negro", "Blanco", "Azul", "Verde", "Rosa"] },
+  "iPhone 16 Pro": { capacities: ["128GB", "256GB", "512GB", "1TB"], colors: ["Titanio Negro", "Titanio Blanco", "Titanio Natural", "Titanio Desierto"] },
+  "iPhone 16 Pro Max": { capacities: ["256GB", "512GB", "1TB"], colors: ["Titanio Negro", "Titanio Blanco", "Titanio Natural", "Titanio Desierto"] },
+  "iPhone SE (2da)": { capacities: ["64GB", "128GB", "256GB"], colors: ["Negro", "Blanco", "Rojo"] },
+  "iPhone SE (3ra)": { capacities: ["64GB", "128GB", "256GB"], colors: ["Negro Noche", "Luz de Estrella", "Rojo"] },
+};
+
+const MODEL_NAMES = Object.keys(IPHONE_CATALOG);
+
+const emptyProductForm = {
+  model: "",
+  imei: "",
+  capacity: "",
+  color: "",
+  condition: "A" as "A" | "B" | "C",
+  battery_health: 100,
+  cost_price: "",
+  sale_price: "",
+  origin: "propio" as "propio" | "consignacion",
+  consignment_owner: "",
+  defects: "",
+  notes: "",
+};
+
 /* ───── helpers ───── */
 function maskImei(imei: string) {
   return "•••••" + imei.slice(-4);
 }
 
+function conditionLabel(c: "A" | "B" | "C") {
+  const map = { A: "Impecable", B: "Detalles menores", C: "Uso visible" };
+  return map[c];
+}
+
 function conditionBadge(c: "A" | "B" | "C") {
   const map = {
-    A: { label: "Impecable", cls: "bg-green-100 text-green-700" },
-    B: { label: "Detalles menores", cls: "bg-amber-100 text-amber-700" },
-    C: { label: "Uso visible", cls: "bg-red-100 text-red-700" },
+    A: "bg-green-100 text-green-700",
+    B: "bg-amber-100 text-amber-700",
+    C: "bg-red-100 text-red-700",
   };
-  const m = map[c];
   return (
-    <span className={`px-2 py-0.5 ${m.cls} text-[10px] font-bold rounded-full whitespace-nowrap`}>
-      {c} — {m.label}
+    <span className={`px-2 py-0.5 ${map[c]} text-[10px] font-bold rounded-full whitespace-nowrap`}>
+      {c} — {conditionLabel(c)}
     </span>
   );
 }
@@ -76,7 +130,7 @@ function batteryColor(pct: number) {
   return "text-red-500";
 }
 
-function saleStatusBadge(s: string) {
+function statusBadge(s: string) {
   const map: Record<string, string> = {
     disponible: "bg-green-100 text-green-700",
     reservado: "bg-amber-100 text-amber-700",
@@ -88,6 +142,12 @@ function saleStatusBadge(s: string) {
       {labels[s] || s}
     </span>
   );
+}
+
+function originBadge(o: string) {
+  return o === "propio"
+    ? <span className="px-3 py-1 bg-green-100 text-green-700 text-[10px] font-black uppercase tracking-widest rounded-full">Stock Propio</span>
+    : <span className="px-3 py-1 bg-purple-100 text-purple-700 text-[10px] font-black uppercase tracking-widest rounded-full">Consignación</span>;
 }
 
 function appointmentStatusBadge(s: string) {
@@ -117,6 +177,166 @@ function formatPrice(n: number | null) {
   return `$${n.toLocaleString("es-AR")} USD`;
 }
 
+/* ───── Product Form Modal (shared for add/edit) ───── */
+function ProductFormModal({
+  title,
+  form,
+  setForm,
+  onSubmit,
+  onClose,
+  saving,
+  submitLabel,
+}: {
+  title: string;
+  form: typeof emptyProductForm;
+  setForm: (f: typeof emptyProductForm) => void;
+  onSubmit: (e: React.FormEvent) => void;
+  onClose: () => void;
+  saving: boolean;
+  submitLabel: string;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+          <h3 className="text-lg font-bold">{title}</h3>
+          <button onClick={onClose} className="text-cool-grey hover:text-on-surface">
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <form onSubmit={onSubmit} className="p-6 space-y-4">
+          {/* Model */}
+          <div>
+            <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Modelo *</label>
+            <select required value={form.model} onChange={(e) => {
+              const m = e.target.value;
+              const spec = IPHONE_CATALOG[m];
+              setForm({ ...form, model: m, capacity: spec ? spec.capacities[0] : "", color: spec ? spec.colors[0] : "" });
+            }}
+              className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30">
+              <option value="">Seleccionar modelo...</option>
+              {MODEL_NAMES.map((m) => <option key={m} value={m}>{m}</option>)}
+            </select>
+          </div>
+          {/* IMEI */}
+          <div>
+            <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">IMEI *</label>
+            <input required value={form.imei} onChange={(e) => setForm({ ...form, imei: e.target.value })}
+              className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30 font-mono"
+              placeholder="353912110891234" />
+          </div>
+          {/* Capacity + Color */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Capacidad</label>
+              {form.model && IPHONE_CATALOG[form.model] ? (
+                <select value={form.capacity} onChange={(e) => setForm({ ...form, capacity: e.target.value })}
+                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30">
+                  {IPHONE_CATALOG[form.model].capacities.map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
+              ) : (
+                <input value={form.capacity} onChange={(e) => setForm({ ...form, capacity: e.target.value })}
+                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30"
+                  placeholder="128GB" />
+              )}
+            </div>
+            <div>
+              <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Color</label>
+              {form.model && IPHONE_CATALOG[form.model] ? (
+                <select value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })}
+                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30">
+                  {IPHONE_CATALOG[form.model].colors.map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
+              ) : (
+                <input value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })}
+                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30"
+                  placeholder="Negro" />
+              )}
+            </div>
+          </div>
+          {/* Condition + Battery */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Condición *</label>
+              <select value={form.condition} onChange={(e) => setForm({ ...form, condition: e.target.value as "A" | "B" | "C" })}
+                className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30">
+                <option value="A">A — Impecable</option>
+                <option value="B">B — Detalles menores</option>
+                <option value="C">C — Uso visible</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Batería % *</label>
+              <input type="number" min={0} max={100} required value={form.battery_health}
+                onChange={(e) => setForm({ ...form, battery_health: parseInt(e.target.value) || 0 })}
+                className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30" />
+            </div>
+          </div>
+          {/* Prices */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Precio Costo (USD)</label>
+              <input type="number" step="0.01" value={form.cost_price}
+                onChange={(e) => setForm({ ...form, cost_price: e.target.value })}
+                className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30"
+                placeholder="400" />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Precio Venta (USD)</label>
+              <input type="number" step="0.01" value={form.sale_price}
+                onChange={(e) => setForm({ ...form, sale_price: e.target.value })}
+                className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30"
+                placeholder="450" />
+            </div>
+          </div>
+          {/* Origin */}
+          <div>
+            <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Origen *</label>
+            <select value={form.origin} onChange={(e) => setForm({ ...form, origin: e.target.value as "propio" | "consignacion" })}
+              className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30">
+              <option value="propio">Stock Propio</option>
+              <option value="consignacion">Consignación</option>
+            </select>
+          </div>
+          {form.origin === "consignacion" && (
+            <div>
+              <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Dueño Consignación</label>
+              <input value={form.consignment_owner} onChange={(e) => setForm({ ...form, consignment_owner: e.target.value })}
+                className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30"
+                placeholder="Nombre del dueño" />
+            </div>
+          )}
+          {/* Defects */}
+          <div>
+            <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Defectos</label>
+            <textarea value={form.defects} onChange={(e) => setForm({ ...form, defects: e.target.value })}
+              className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30 resize-none"
+              rows={2} placeholder="Describir defectos si los hay..." />
+          </div>
+          {/* Notes */}
+          <div>
+            <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Notas</label>
+            <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })}
+              className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30 resize-none"
+              rows={2} placeholder="Notas adicionales..." />
+          </div>
+          {/* Submit */}
+          <div className="flex gap-3 pt-2">
+            <button type="button" onClick={onClose}
+              className="flex-1 py-3 bg-slate-200 rounded-full text-sm font-bold hover:bg-slate-300 transition-colors">
+              Cancelar
+            </button>
+            <button type="submit" disabled={saving}
+              className="flex-1 py-3 bg-primary text-white rounded-full text-sm font-bold shadow-md shadow-primary/20 hover:brightness-95 transition-all disabled:opacity-50">
+              {saving ? "Guardando..." : submitLabel}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 /* ───── component ───── */
 export default function VentasPage() {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
@@ -124,32 +344,28 @@ export default function VentasPage() {
   const [tradeInPrices, setTradeInPrices] = useState<TradeInPrice[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState<string>("Disponibles");
-  const [ownershipFilter, setOwnershipFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("todos");
+  const [conditionFilter, setConditionFilter] = useState<string>("todos");
+  const [originFilter, setOriginFilter] = useState<string>("todos");
   const [search, setSearch] = useState("");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   // Sale modal
   const [showSaleModal, setShowSaleModal] = useState(false);
   const [saleProduct, setSaleProduct] = useState<Product | null>(null);
-  const [saleForm, setSaleForm] = useState({
-    payment_method: "efectivo",
-    sale_price: "",
-    notes: "",
-  });
+  const [saleForm, setSaleForm] = useState({ payment_method: "efectivo", sale_price: "", notes: "" });
   const [savingSale, setSavingSale] = useState(false);
 
   // Add product modal
   const [showAddModal, setShowAddModal] = useState(false);
-  const [addForm, setAddForm] = useState({
-    model: "", imei: "", capacity: "", color: "",
-    condition: "A" as "A" | "B" | "C",
-    battery_health: 100,
-    cost_price: "", sale_price: "",
-    origin: "propio" as "propio" | "consignacion",
-    consignment_owner: "", defects: "", notes: "",
-  });
+  const [addForm, setAddForm] = useState(emptyProductForm);
   const [savingAdd, setSavingAdd] = useState(false);
+
+  // Edit product modal
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editForm, setEditForm] = useState(emptyProductForm);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [savingEdit, setSavingEdit] = useState(false);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -161,11 +377,16 @@ export default function VentasPage() {
     ]);
     if (prodRes.data) {
       setAllProducts(prodRes.data as Product[]);
+      if (selectedProduct) {
+        const updated = prodRes.data.find((p: Product) => p.id === selectedProduct.id);
+        if (updated) setSelectedProduct(updated as Product);
+      }
     }
     if (salesRes.data) setSales(salesRes.data as Sale[]);
     if (tradeRes.data) setTradeInPrices(tradeRes.data as TradeInPrice[]);
     if (aptRes.data) setAppointments(aptRes.data as Appointment[]);
     setLoading(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -174,26 +395,20 @@ export default function VentasPage() {
 
   /* KPI calculations */
   const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const todayStr = now.toISOString().slice(0, 10);
 
-  const monthlySales = sales.filter((s) => new Date(s.sold_at || s.created_at) >= monthStart);
-  const totalGanancia = monthlySales.reduce((sum, s) => sum + ((s.sale_price || 0) - (s.cost_price || 0)), 0);
   const disponibles = allProducts.filter((p) => p.status === "disponible").length;
-  const turnosHoy = appointments.filter((a) => a.scheduled_at && a.scheduled_at.startsWith(todayStr)).length;
+  const reservados = allProducts.filter((p) => p.status === "reservado").length;
+  const vendidosHoy = sales.filter((s) => (s.sold_at || s.created_at).startsWith(todayStr)).length;
+  const valorStock = allProducts
+    .filter((p) => p.status === "disponible")
+    .reduce((sum, p) => sum + (p.sale_price || 0), 0);
 
-  /* Filtered equipment for table */
-  const statusFilterMap: Record<string, string | null> = {
-    Todos: null,
-    Disponibles: "disponible",
-    Reservados: "reservado",
-    Vendidos: "vendido",
-  };
-
-  const filteredEquipment = allProducts.filter((p) => {
-    const sf = statusFilterMap[statusFilter];
-    if (sf && p.status !== sf) return false;
-    if (ownershipFilter !== "all" && p.origin !== (ownershipFilter === "Propio" ? "propio" : "consignacion")) return false;
+  /* Filters */
+  const filtered = allProducts.filter((p) => {
+    if (statusFilter !== "todos" && p.status !== statusFilter) return false;
+    if (conditionFilter !== "todos" && p.condition !== conditionFilter) return false;
+    if (originFilter !== "todos" && p.origin !== originFilter) return false;
     if (search) {
       const q = search.toLowerCase();
       if (!p.model.toLowerCase().includes(q) && !p.imei.toLowerCase().includes(q)) return false;
@@ -201,7 +416,7 @@ export default function VentasPage() {
     return true;
   });
 
-  /* Trade-in prices grouped by model */
+  /* Trade-in table */
   const tradeInModels = Array.from(new Set(tradeInPrices.map((t) => t.model)));
   const tradeInTable = tradeInModels.map((model) => {
     const rows = tradeInPrices.filter((t) => t.model === model);
@@ -230,7 +445,6 @@ export default function VentasPage() {
     e.preventDefault();
     if (!saleProduct) return;
     setSavingSale(true);
-
     const payload = {
       product_id: saleProduct.id,
       sale_price: parseFloat(saleForm.sale_price) || saleProduct.sale_price || 0,
@@ -239,10 +453,8 @@ export default function VentasPage() {
       notes: saleForm.notes || null,
       sold_at: new Date().toISOString(),
     };
-
     const { error } = await supabase.from("ig_sales").insert(payload);
     if (!error) {
-      // Update product status to vendido
       await supabase.from("ig_products").update({ status: "vendido", sold_at: new Date().toISOString() }).eq("id", saleProduct.id);
       setShowSaleModal(false);
       setSaleProduct(null);
@@ -276,12 +488,7 @@ export default function VentasPage() {
     const { error } = await supabase.from("ig_products").insert(payload);
     if (!error) {
       setShowAddModal(false);
-      setAddForm({
-        model: "", imei: "", capacity: "", color: "",
-        condition: "A", battery_health: 100,
-        cost_price: "", sale_price: "",
-        origin: "propio", consignment_owner: "", defects: "", notes: "",
-      });
+      setAddForm(emptyProductForm);
       await fetchData();
     } else {
       alert("Error al guardar: " + error.message);
@@ -289,7 +496,54 @@ export default function VentasPage() {
     setSavingAdd(false);
   }
 
-  const statusFilters = ["Todos", "Disponibles", "Reservados", "Vendidos"];
+  /* Edit Product */
+  function openEditModal(product: Product) {
+    setEditingProduct(product);
+    setEditForm({
+      model: product.model || "",
+      imei: product.imei || "",
+      capacity: product.capacity || "",
+      color: product.color || "",
+      condition: product.condition,
+      battery_health: product.battery_health,
+      cost_price: product.cost_price?.toString() || "",
+      sale_price: product.sale_price?.toString() || "",
+      origin: product.origin,
+      consignment_owner: product.consignment_owner || "",
+      defects: product.defects || "",
+      notes: product.notes || "",
+    });
+    setShowEditModal(true);
+  }
+
+  async function handleEditProduct(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editingProduct) return;
+    setSavingEdit(true);
+    const payload = {
+      model: editForm.model,
+      imei: editForm.imei,
+      capacity: editForm.capacity,
+      color: editForm.color,
+      condition: editForm.condition,
+      battery_health: editForm.battery_health,
+      cost_price: editForm.cost_price ? parseFloat(editForm.cost_price) : null,
+      sale_price: editForm.sale_price ? parseFloat(editForm.sale_price) : null,
+      origin: editForm.origin,
+      consignment_owner: editForm.origin === "consignacion" ? editForm.consignment_owner : null,
+      defects: editForm.defects || null,
+      notes: editForm.notes || null,
+    };
+    const { error } = await supabase.from("ig_products").update(payload).eq("id", editingProduct.id);
+    if (!error) {
+      setShowEditModal(false);
+      setEditingProduct(null);
+      await fetchData();
+    } else {
+      alert("Error al actualizar: " + error.message);
+    }
+    setSavingEdit(false);
+  }
 
   if (loading) {
     return (
@@ -306,21 +560,11 @@ export default function VentasPage() {
       <div className="flex justify-between items-end mb-8">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Ventas de Equipos</h2>
-          <p className="text-on-surface-variant text-sm mt-1">
-            Gestión de inventario, turnos y operaciones de venta
-          </p>
+          <p className="text-on-surface-variant text-sm mt-1">Gestión de inventario iPhone, turnos y operaciones de venta</p>
         </div>
         <div className="flex items-center gap-3">
           <button
-            onClick={() => {
-              setAddForm({
-                model: "", imei: "", capacity: "", color: "",
-                condition: "A", battery_health: 100,
-                cost_price: "", sale_price: "",
-                origin: "propio", consignment_owner: "", defects: "", notes: "",
-              });
-              setShowAddModal(true);
-            }}
+            onClick={() => { setAddForm(emptyProductForm); setShowAddModal(true); }}
             className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-bold text-sm shadow-md shadow-primary/20"
           >
             <span className="material-symbols-outlined text-lg">add</span> Cargar Equipo
@@ -341,10 +585,10 @@ export default function VentasPage() {
       {/* ── KPI Cards ── */}
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {[
-          { label: "Equipos Disponibles", value: disponibles.toString(), icon: "phone_iphone", iconBg: "bg-green-50", iconColor: "text-green-600" },
-          { label: "Turnos Hoy", value: turnosHoy.toString(), icon: "event", iconBg: "bg-amber-50", iconColor: "text-amber-600" },
-          { label: "Vendidos este mes", value: monthlySales.length.toString(), icon: "sell", iconBg: "bg-blue-50", iconColor: "text-blue-600" },
-          { label: "Ganancia del mes", value: formatPrice(totalGanancia), icon: "trending_up", iconBg: "bg-green-50", iconColor: "text-green-600" },
+          { label: "Total Disponible", value: disponibles.toString(), icon: "phone_iphone", iconBg: "bg-green-50", iconColor: "text-green-600" },
+          { label: "Reservados", value: reservados.toString(), icon: "schedule", iconBg: "bg-amber-50", iconColor: "text-amber-600" },
+          { label: "Vendidos Hoy", value: vendidosHoy.toString(), icon: "sell", iconBg: "bg-blue-50", iconColor: "text-blue-600" },
+          { label: "Valor Stock", value: formatPrice(valorStock), icon: "trending_up", iconBg: "bg-green-50", iconColor: "text-green-600" },
         ].map((kpi) => (
           <div key={kpi.label} className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-between group hover:shadow-md transition-shadow">
             <div className="flex justify-between items-start mb-4">
@@ -362,135 +606,173 @@ export default function VentasPage() {
 
       {/* ── Main Grid ── */}
       <div className="grid grid-cols-12 gap-8">
-        {/* ── Left: Catalog Table ── */}
-        <div className="col-span-12 lg:col-span-8">
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            {/* Card Header */}
-            <div className="p-6 border-b border-slate-100">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold">Catálogo de Equipos</h3>
-                <div className="flex bg-slate-100 p-1 rounded-full">
-                  {statusFilters.map((f) => (
-                    <button
-                      key={f}
-                      onClick={() => setStatusFilter(f)}
-                      className={`px-4 py-1.5 text-xs font-bold rounded-full transition-all ${
-                        statusFilter === f ? "bg-white shadow-sm text-on-surface" : "text-on-surface-variant hover:text-on-surface"
-                      }`}
-                    >
-                      {f}
-                    </button>
-                  ))}
-                </div>
-              </div>
+        {/* Categories Sidebar */}
+        <div className="col-span-12 lg:col-span-2 space-y-6">
+          <div>
+            <h3 className="text-[10px] uppercase tracking-[0.15em] font-bold text-cool-grey mb-4 px-2">Estado</h3>
+            <div className="flex flex-col gap-1">
+              {[
+                { key: "todos", icon: "list", label: `Todos (${allProducts.length})` },
+                { key: "disponible", icon: "check_circle", label: `Disponibles (${disponibles})`, color: "text-green-500" },
+                { key: "reservado", icon: "schedule", label: `Reservados (${reservados})`, color: "text-amber-500" },
+                { key: "vendido", icon: "sell", label: `Vendidos (${allProducts.filter((p) => p.status === "vendido").length})`, color: "text-slate-400" },
+              ].map((item) => (
+                <button
+                  key={item.key}
+                  onClick={() => setStatusFilter(item.key)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all ${
+                    statusFilter === item.key ? "bg-white text-primary shadow-sm" : "text-cool-grey hover:bg-slate-100"
+                  }`}
+                >
+                  <span className={`material-symbols-outlined ${item.color || ""}`}>{item.icon}</span>
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <h3 className="text-[10px] uppercase tracking-[0.15em] font-bold text-cool-grey mb-4 px-2">Condición</h3>
+            <div className="flex flex-col gap-1">
+              {[
+                { key: "todos", label: "Todos" },
+                { key: "A", label: "A — Impecable" },
+                { key: "B", label: "B — Detalles" },
+                { key: "C", label: "C — Uso visible" },
+              ].map((item) => (
+                <button
+                  key={item.key}
+                  onClick={() => setConditionFilter(item.key)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all ${
+                    conditionFilter === item.key ? "bg-white text-primary shadow-sm" : "text-cool-grey hover:bg-slate-100"
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <h3 className="text-[10px] uppercase tracking-[0.15em] font-bold text-cool-grey mb-4 px-2">Origen</h3>
+            <div className="flex flex-col gap-1">
+              {[
+                { key: "todos", label: "Todos" },
+                { key: "propio", label: "Stock Propio" },
+                { key: "consignacion", label: "Consignación" },
+              ].map((item) => (
+                <button
+                  key={item.key}
+                  onClick={() => setOriginFilter(item.key)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all ${
+                    originFilter === item.key ? "bg-white text-primary shadow-sm" : "text-cool-grey hover:bg-slate-100"
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
 
-              <div className="flex items-center gap-4">
-                <div className="relative flex-1">
-                  <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-cool-grey">search</span>
-                  <input
-                    className="w-full pl-12 pr-6 py-3 bg-slate-50 rounded-xl border border-slate-200 focus:ring-1 focus:ring-primary/30 transition-all text-sm"
-                    placeholder="Buscar por IMEI, modelo..."
-                    type="text"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                  />
-                </div>
-                <div className="flex bg-slate-100 p-1 rounded-full">
-                  {[
-                    { key: "all", label: "Todos" },
-                    { key: "Propio", label: "Stock Propio" },
-                    { key: "Consignación", label: "Consignación" },
-                  ].map((item) => (
-                    <button
-                      key={item.key}
-                      onClick={() => setOwnershipFilter(item.key)}
-                      className={`px-4 py-1.5 text-xs font-bold rounded-full transition-all ${ownershipFilter === item.key ? "bg-white shadow-sm" : "text-on-surface-variant"}`}
-                    >
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
+        {/* Main Table */}
+        <div className="col-span-12 lg:col-span-7">
+          {/* Actions */}
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+            <div className="flex items-center gap-4 flex-1 max-w-xl">
+              <div className="relative flex-1">
+                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-cool-grey">search</span>
+                <input
+                  className="w-full pl-12 pr-6 py-3 bg-white rounded-xl border border-slate-200 focus:ring-1 focus:ring-primary/30 transition-all text-sm"
+                  placeholder="Buscar por modelo o IMEI..."
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
               </div>
             </div>
+          </div>
 
-            {/* Table */}
-            {filteredEquipment.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 text-cool-grey">
+          <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200">
+            {filtered.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 text-cool-grey">
                 <span className="material-symbols-outlined text-4xl mb-3">inventory_2</span>
                 <p className="text-sm font-medium">No hay equipos para mostrar</p>
                 <p className="text-xs mt-1">Probá cambiar los filtros o cargá un equipo nuevo</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-slate-50">
-                      <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Equipo</th>
-                      <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">IMEI</th>
-                      <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Capacidad</th>
-                      <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Estado Equipo</th>
-                      <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Batería</th>
-                      <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Precio Venta</th>
-                      <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Estado</th>
-                      <th className="px-4 py-4"></th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-50">
-                    {filteredEquipment.map((eq) => (
-                      <tr key={eq.id} onClick={() => setSelectedProduct(eq)} className={`hover:bg-slate-50 transition-colors cursor-pointer group ${selectedProduct?.id === eq.id ? "bg-primary/5" : ""}`}>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
-                              <span className="material-symbols-outlined text-lg text-cool-grey">smartphone</span>
-                            </div>
-                            <div>
-                              <p className="text-sm font-bold">{eq.model}</p>
-                              <p className="text-[10px] text-on-surface-variant">{eq.color}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-4 py-4 font-mono text-xs text-cool-grey">{maskImei(eq.imei)}</td>
-                        <td className="px-4 py-4 text-sm font-medium">{eq.capacity}</td>
-                        <td className="px-4 py-4">{conditionBadge(eq.condition)}</td>
-                        <td className="px-4 py-4">
-                          <span className={`text-sm font-bold ${batteryColor(eq.battery_health)}`}>{eq.battery_health}%</span>
-                        </td>
-                        <td className="px-4 py-4 text-sm font-bold">{formatPrice(eq.sale_price)}</td>
-                        <td className="px-4 py-4">{saleStatusBadge(eq.status)}</td>
-                        <td className="px-4 py-4 text-right">
-                          <button
-                            onClick={(e) => { e.stopPropagation(); if (eq.status === "disponible") openSaleModal(eq); }}
-                            className={`material-symbols-outlined transition-colors ${eq.status === "disponible" ? "text-primary hover:text-primary-dark" : "text-slate-300"}`}
-                            title={eq.status === "disponible" ? "Registrar venta" : ""}
-                          >
-                            {eq.status === "disponible" ? "sell" : "chevron_right"}
-                          </button>
-                        </td>
+              <>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-slate-50">
+                        <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Equipo</th>
+                        <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">IMEI</th>
+                        <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Capacidad</th>
+                        <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Condición</th>
+                        <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Batería</th>
+                        <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Precio</th>
+                        <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Estado</th>
+                        <th className="px-4 py-4"></th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50">
+                      {filtered.map((p) => (
+                        <tr
+                          key={p.id}
+                          onClick={() => setSelectedProduct(p)}
+                          className={`hover:bg-slate-50 transition-colors cursor-pointer group ${selectedProduct?.id === p.id ? "bg-primary/5" : ""}`}
+                        >
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
+                                <span className="material-symbols-outlined text-lg text-cool-grey">smartphone</span>
+                              </div>
+                              <div>
+                                <p className="text-sm font-bold">{p.model}</p>
+                                <p className="text-[10px] text-on-surface-variant">{p.color}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-4 py-4 font-mono text-xs text-cool-grey">{maskImei(p.imei)}</td>
+                          <td className="px-4 py-4 text-sm font-medium">{p.capacity}</td>
+                          <td className="px-4 py-4">{conditionBadge(p.condition)}</td>
+                          <td className="px-4 py-4">
+                            <span className={`text-sm font-bold ${batteryColor(p.battery_health)}`}>{p.battery_health}%</span>
+                          </td>
+                          <td className="px-4 py-4 text-sm font-bold">{formatPrice(p.sale_price)}</td>
+                          <td className="px-4 py-4">{statusBadge(p.status)}</td>
+                          <td className="px-4 py-4 text-right">
+                            <button
+                              onClick={(ev) => { ev.stopPropagation(); if (p.status === "disponible") openSaleModal(p); }}
+                              className={`material-symbols-outlined transition-colors ${p.status === "disponible" ? "text-primary hover:text-primary-dark" : "text-slate-300"}`}
+                              title={p.status === "disponible" ? "Registrar venta" : ""}
+                            >
+                              {p.status === "disponible" ? "sell" : "chevron_right"}
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="p-4 bg-slate-50 flex justify-between items-center text-xs font-medium text-cool-grey border-t border-slate-100">
+                  <span>Mostrando {filtered.length} de {allProducts.length} equipos</span>
+                </div>
+              </>
             )}
-
-            <div className="p-4 bg-slate-50 flex justify-between items-center text-xs font-medium text-cool-grey border-t border-slate-100">
-              <span>Mostrando {filteredEquipment.length} de {allProducts.length} equipos</span>
-            </div>
           </div>
         </div>
 
-        {/* ── Right Column ── */}
-        <div className="col-span-12 lg:col-span-4 space-y-6">
-          {/* Card 1: Turnos de Hoy */}
+        {/* Right Detail Panel */}
+        <div className="col-span-12 lg:col-span-3 space-y-6">
+          {/* Turnos de Hoy */}
           <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary">calendar_today</span>
                 <h3 className="text-lg font-bold">Turnos de Hoy</h3>
               </div>
-              <span className="text-[10px] font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full">{turnosHoy} turno{turnosHoy !== 1 ? "s" : ""}</span>
+              <span className="text-[10px] font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full">{todayAppointments.length} turno{todayAppointments.length !== 1 ? "s" : ""}</span>
             </div>
-
             {todayAppointments.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8 text-cool-grey">
                 <span className="material-symbols-outlined text-3xl mb-2">event_available</span>
@@ -517,10 +799,9 @@ export default function VentasPage() {
             )}
           </div>
 
-          {/* Card 2: Detalle de Equipo */}
+          {/* Detalle de Equipo */}
           <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 sticky top-24">
             <h3 className="text-[10px] uppercase tracking-[0.15em] font-bold text-cool-grey mb-4">Detalle de Equipo</h3>
-
             {selectedProduct ? (
               <>
                 <div className="flex items-center gap-4 mb-5">
@@ -537,7 +818,7 @@ export default function VentasPage() {
                   {[
                     { label: "Capacidad", value: selectedProduct.capacity || "—" },
                     { label: "Color", value: selectedProduct.color || "—" },
-                    { label: "Estado", value: `${selectedProduct.condition} — ${({A:"Impecable",B:"Detalles",C:"Uso visible"} as Record<string,string>)[selectedProduct.condition]}` },
+                    { label: "Estado Equipo", value: `${selectedProduct.condition} — ${conditionLabel(selectedProduct.condition)}` },
                     { label: "Batería", value: `${selectedProduct.battery_health}%` },
                   ].map((item) => (
                     <div key={item.label} className="bg-slate-50 p-3 rounded-xl">
@@ -547,6 +828,7 @@ export default function VentasPage() {
                   ))}
                 </div>
 
+                {/* Precios */}
                 <div className="mb-5">
                   <h4 className="text-xs font-bold uppercase tracking-widest text-cool-grey mb-3">Precios</h4>
                   <div className="bg-slate-50 rounded-xl p-4 space-y-2">
@@ -567,16 +849,22 @@ export default function VentasPage() {
                   </div>
                 </div>
 
+                {/* Propiedad */}
                 <div className="mb-5">
                   <h4 className="text-xs font-bold uppercase tracking-widest text-cool-grey mb-3">Propiedad</h4>
-                  <span className={`px-3 py-1 ${selectedProduct.origin === "propio" ? "bg-green-100 text-green-700" : "bg-purple-100 text-purple-700"} text-[10px] font-black uppercase tracking-widest rounded-full`}>
-                    {selectedProduct.origin === "propio" ? "Stock Propio" : "Consignación"}
-                  </span>
+                  {originBadge(selectedProduct.origin)}
                   {selectedProduct.consignment_owner && (
                     <p className="text-xs text-on-surface-variant mt-2">Dueño: {selectedProduct.consignment_owner}</p>
                   )}
                 </div>
 
+                {/* Estado */}
+                <div className="mb-5">
+                  <h4 className="text-xs font-bold uppercase tracking-widest text-cool-grey mb-3">Estado de Venta</h4>
+                  {statusBadge(selectedProduct.status)}
+                </div>
+
+                {/* Defectos */}
                 {selectedProduct.defects && (
                   <div className="mb-5">
                     <h4 className="text-xs font-bold uppercase tracking-widest text-cool-grey mb-3">Defectos</h4>
@@ -584,26 +872,63 @@ export default function VentasPage() {
                   </div>
                 )}
 
+                {/* Notas */}
+                {selectedProduct.notes && (
+                  <div className="mb-5">
+                    <h4 className="text-xs font-bold uppercase tracking-widest text-cool-grey mb-3">Notas</h4>
+                    <p className="text-xs text-on-surface-variant leading-relaxed">{selectedProduct.notes}</p>
+                  </div>
+                )}
+
+                {/* Fotos */}
+                <div className="mb-5">
+                  <h4 className="text-xs font-bold uppercase tracking-widest text-cool-grey mb-3">Fotos</h4>
+                  <div className="grid grid-cols-4 gap-2">
+                    {(selectedProduct.photos && selectedProduct.photos.length > 0
+                      ? selectedProduct.photos
+                      : [null, null, null, null]
+                    ).map((photo, n) => (
+                      <div key={n} className="aspect-square rounded-lg bg-slate-100 border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden">
+                        {photo ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={photo} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="material-symbols-outlined text-lg text-slate-300">image</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Garantía */}
                 <div className="mb-5 flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
                   <span className="material-symbols-outlined text-blue-600 text-lg">verified_user</span>
                   <p className="text-xs font-medium text-blue-800">Garantía: 90 días desde la venta</p>
                 </div>
 
+                {/* Buttons */}
                 <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={() => openEditModal(selectedProduct)}
+                    className="flex-1 py-3 bg-slate-200 rounded-full text-xs font-bold hover:bg-slate-300 transition-colors flex items-center justify-center gap-1"
+                  >
+                    <span className="material-symbols-outlined text-sm">edit</span> Editar
+                  </button>
                   {selectedProduct.status === "disponible" && (
                     <button
                       onClick={() => openSaleModal(selectedProduct)}
                       className="flex-1 py-3 bg-primary text-white rounded-full text-xs font-bold shadow-md shadow-primary/20 hover:brightness-95 transition-all flex items-center justify-center gap-1"
                     >
-                      <span className="material-symbols-outlined text-sm">sell</span> Registrar Venta
+                      <span className="material-symbols-outlined text-sm">sell</span> Vender
                     </button>
                   )}
                 </div>
               </>
             ) : (
-              <div className="flex flex-col items-center justify-center py-8 text-cool-grey">
-                <span className="material-symbols-outlined text-3xl mb-2">touch_app</span>
-                <p className="text-xs font-medium">Seleccioná un equipo del catálogo</p>
+              <div className="flex flex-col items-center justify-center py-12 text-cool-grey">
+                <span className="material-symbols-outlined text-4xl mb-3">touch_app</span>
+                <p className="text-sm font-medium">Seleccioná un equipo</p>
+                <p className="text-xs mt-1">Hacé click en un equipo de la tabla para ver sus detalles</p>
               </div>
             )}
           </div>
@@ -746,7 +1071,6 @@ export default function VentasPage() {
               </button>
             </div>
             <form onSubmit={handleRegisterSale} className="p-6 space-y-4">
-              {/* Product info */}
               <div className="bg-slate-50 p-4 rounded-xl">
                 <p className="text-xs font-bold text-primary">{saleProduct.model}</p>
                 <p className="text-[10px] text-on-surface-variant font-mono">{saleProduct.imei}</p>
@@ -796,106 +1120,28 @@ export default function VentasPage() {
 
       {/* ── Add Product Modal ── */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setShowAddModal(false)}>
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="text-lg font-bold">Cargar Equipo</h3>
-              <button onClick={() => setShowAddModal(false)} className="text-cool-grey hover:text-on-surface">
-                <span className="material-symbols-outlined">close</span>
-              </button>
-            </div>
-            <form onSubmit={handleAddProduct} className="p-6 space-y-4">
-              <div>
-                <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Modelo *</label>
-                <input required value={addForm.model} onChange={(e) => setAddForm({ ...addForm, model: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30"
-                  placeholder="Ej: iPhone 14 Pro Max" />
-              </div>
-              <div>
-                <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">IMEI *</label>
-                <input required value={addForm.imei} onChange={(e) => setAddForm({ ...addForm, imei: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30 font-mono"
-                  placeholder="353912110891234" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Capacidad</label>
-                  <input value={addForm.capacity} onChange={(e) => setAddForm({ ...addForm, capacity: e.target.value })}
-                    className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30" placeholder="128GB" />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Color</label>
-                  <input value={addForm.color} onChange={(e) => setAddForm({ ...addForm, color: e.target.value })}
-                    className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30" placeholder="Negro" />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Condición *</label>
-                  <select value={addForm.condition} onChange={(e) => setAddForm({ ...addForm, condition: e.target.value as "A"|"B"|"C" })}
-                    className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30">
-                    <option value="A">A — Impecable</option>
-                    <option value="B">B — Detalles menores</option>
-                    <option value="C">C — Uso visible</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Batería % *</label>
-                  <input type="number" min={0} max={100} required value={addForm.battery_health}
-                    onChange={(e) => setAddForm({ ...addForm, battery_health: parseInt(e.target.value) || 0 })}
-                    className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30" />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Precio Costo (USD)</label>
-                  <input type="number" step="0.01" value={addForm.cost_price}
-                    onChange={(e) => setAddForm({ ...addForm, cost_price: e.target.value })}
-                    className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30" placeholder="400" />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Precio Venta (USD)</label>
-                  <input type="number" step="0.01" value={addForm.sale_price}
-                    onChange={(e) => setAddForm({ ...addForm, sale_price: e.target.value })}
-                    className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30" placeholder="450" />
-                </div>
-              </div>
-              <div>
-                <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Origen *</label>
-                <select value={addForm.origin} onChange={(e) => setAddForm({ ...addForm, origin: e.target.value as "propio"|"consignacion" })}
-                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30">
-                  <option value="propio">Stock Propio</option>
-                  <option value="consignacion">Consignación</option>
-                </select>
-              </div>
-              {addForm.origin === "consignacion" && (
-                <div>
-                  <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Dueño Consignación</label>
-                  <input value={addForm.consignment_owner} onChange={(e) => setAddForm({ ...addForm, consignment_owner: e.target.value })}
-                    className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30" placeholder="Nombre del dueño" />
-                </div>
-              )}
-              <div>
-                <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Defectos</label>
-                <textarea value={addForm.defects} onChange={(e) => setAddForm({ ...addForm, defects: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30 resize-none" rows={2} />
-              </div>
-              <div>
-                <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Notas</label>
-                <textarea value={addForm.notes} onChange={(e) => setAddForm({ ...addForm, notes: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30 resize-none" rows={2} />
-              </div>
-              <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setShowAddModal(false)}
-                  className="flex-1 py-3 bg-slate-200 rounded-full text-sm font-bold hover:bg-slate-300 transition-colors">Cancelar</button>
-                <button type="submit" disabled={savingAdd}
-                  className="flex-1 py-3 bg-primary text-white rounded-full text-sm font-bold shadow-md shadow-primary/20 hover:brightness-95 transition-all disabled:opacity-50">
-                  {savingAdd ? "Guardando..." : "Guardar Equipo"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <ProductFormModal
+          title="Cargar Equipo"
+          form={addForm}
+          setForm={setAddForm}
+          onSubmit={handleAddProduct}
+          onClose={() => setShowAddModal(false)}
+          saving={savingAdd}
+          submitLabel="Guardar Equipo"
+        />
+      )}
+
+      {/* ── Edit Product Modal ── */}
+      {showEditModal && editingProduct && (
+        <ProductFormModal
+          title="Editar Equipo"
+          form={editForm}
+          setForm={setEditForm}
+          onSubmit={handleEditProduct}
+          onClose={() => setShowEditModal(false)}
+          saving={savingEdit}
+          submitLabel="Guardar Cambios"
+        />
       )}
     </>
   );
