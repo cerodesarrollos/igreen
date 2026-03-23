@@ -26,7 +26,7 @@ export default function Header() {
   const title = pageTitles[pathname] || { section: "iGreen", page: "" };
 
   return (
-    <header className="fixed top-0 right-0 w-[calc(100%-5rem)] lg:w-[calc(100%-15rem)] z-40 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-6 h-16 transition-all">
+    <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-6 h-16 shrink-0">
       {/* Left: Page title breadcrumb */}
       <div className="flex items-center gap-2 min-w-0">
         <h1 className="text-sm font-bold text-on-surface truncate">

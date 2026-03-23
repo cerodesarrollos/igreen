@@ -29,14 +29,21 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
-      <body className="antialiased text-on-surface bg-slate-100">
-        <Sidebar />
-        <Header />
-        <main className="ml-20 lg:ml-60 pt-20 p-4 min-h-screen transition-all">
-          <div className="max-w-[1600px] mx-auto bg-white rounded-2xl border border-slate-200 shadow-sm p-6 min-h-[calc(100vh-6rem)]">
-            {children}
+      <body className="antialiased text-on-surface bg-slate-200/60">
+        {/* App Window */}
+        <div className="m-3 rounded-2xl overflow-hidden bg-white border border-slate-200/80 shadow-xl min-h-[calc(100vh-1.5rem)] flex">
+          {/* Sidebar inside window */}
+          <Sidebar />
+          {/* Right side: Header + Content */}
+          <div className="flex-1 flex flex-col min-h-0">
+            <Header />
+            <main className="flex-1 p-6 overflow-y-auto">
+              <div className="max-w-[1600px] mx-auto">
+                {children}
+              </div>
+            </main>
           </div>
-        </main>
+        </div>
       </body>
     </html>
   );
