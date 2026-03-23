@@ -5,12 +5,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const navItems = [
-  { href: "/dashboard", icon: "dashboard", label: "Dashboard" },
-  { href: "/servicio-tecnico", icon: "build", label: "Servicio Técnico" },
-  { href: "/stock", icon: "inventory_2", label: "Stock" },
-  { href: "/finanzas", icon: "payments", label: "Finanzas" },
-  { href: "/inbox", icon: "inbox", label: "Inbox" },
-  { href: "/facturacion", icon: "receipt_long", label: "Facturación" },
+  { href: "/ventas", icon: "phone_iphone", label: "Venta de iPhone", isVentas: true },
+  { href: "/dashboard", icon: "dashboard", label: "Dashboard", locked: true },
+  { href: "/servicio-tecnico", icon: "build", label: "Servicio Técnico", locked: true },
+  { href: "/stock", icon: "inventory_2", label: "Stock", locked: true },
+  { href: "/finanzas", icon: "payments", label: "Finanzas", locked: true },
+  { href: "/inbox", icon: "inbox", label: "Inbox", locked: true },
+  { href: "/facturacion", icon: "receipt_long", label: "Facturación", locked: true },
 ];
 
 const ventasSubItems = [
@@ -54,76 +55,75 @@ export default function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 space-y-1 overflow-y-auto no-scrollbar">
         {navItems.map((item) => {
-          const isActive = pathname === item.href;
-
-          // Insert Ventas dropdown after Stock
-          if (item.href === "/stock") {
+          // Ventas de iPhone — collapsible with sub-items
+          if (item.isVentas) {
             return (
-              <div key="stock-and-ventas">
-                <Link
-                  href={item.href}
-                  className={`flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-lg transition-all ${
-                    isActive
+              <div key="ventas-section">
+                <button
+                  onClick={() => setVentasOpen(!ventasOpen)}
+                  className={`w-full flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-lg transition-all ${
+                    isInVentas
                       ? "text-primary font-bold bg-slate-50"
                       : "text-cool-grey hover:bg-slate-50"
                   }`}
                 >
                   <span className="material-symbols-outlined">{item.icon}</span>
-                  <span className="hidden lg:block">{item.label}</span>
-                </Link>
+                  <span className="hidden lg:block flex-1 text-left">{item.label}</span>
+                  <span className={`material-symbols-outlined text-sm hidden lg:block transition-transform ${ventasOpen ? "rotate-180" : ""}`}>
+                    expand_more
+                  </span>
+                </button>
 
-                {/* Ventas dropdown */}
-                <div className="mt-1">
-                  <button
-                    onClick={() => setVentasOpen(!ventasOpen)}
-                    className={`w-full flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-lg transition-all ${
-                      isInVentas
-                        ? "text-primary font-bold bg-slate-50"
-                        : "text-cool-grey hover:bg-slate-50"
-                    }`}
-                  >
-                    <span className="material-symbols-outlined">phone_iphone</span>
-                    <span className="hidden lg:block flex-1 text-left">Venta de iPhone</span>
-                    <span className={`material-symbols-outlined text-sm hidden lg:block transition-transform ${ventasOpen ? "rotate-180" : ""}`}>
-                      expand_more
-                    </span>
-                  </button>
+                {ventasOpen && (
+                  <div className="ml-0 lg:ml-4 mt-1 space-y-0.5">
+                    {ventasSubItems.map((sub) => {
+                      const isSubActive = pathname === sub.href;
+                      return (
+                        <Link
+                          key={sub.href}
+                          href={sub.href}
+                          className={`flex items-center justify-center lg:justify-start gap-3 px-3 py-2 rounded-lg transition-all text-sm ${
+                            isSubActive
+                              ? "text-primary font-bold bg-primary/5"
+                              : "text-cool-grey hover:bg-slate-50"
+                          }`}
+                        >
+                          <span className="material-symbols-outlined text-[20px]">{sub.icon}</span>
+                          <span className="hidden lg:block">{sub.label}</span>
+                        </Link>
+                      );
+                    })}
 
-                  {ventasOpen && (
-                    <div className="ml-0 lg:ml-4 mt-1 space-y-0.5">
-                      {ventasSubItems.map((sub) => {
-                        const isSubActive = pathname === sub.href;
-                        return (
-                          <Link
-                            key={sub.href}
-                            href={sub.href}
-                            className={`flex items-center justify-center lg:justify-start gap-3 px-3 py-2 rounded-lg transition-all text-sm ${
-                              isSubActive
-                                ? "text-primary font-bold bg-primary/5"
-                                : "text-cool-grey hover:bg-slate-50"
-                            }`}
-                          >
-                            <span className="material-symbols-outlined text-[20px]">{sub.icon}</span>
-                            <span className="hidden lg:block">{sub.label}</span>
-                          </Link>
-                        );
-                      })}
-
-                      {/* Publicidad — disabled */}
-                      <div
-                        className="flex items-center justify-center lg:justify-start gap-3 px-3 py-2 rounded-lg text-sm text-slate-300 cursor-not-allowed"
-                        title="Próximamente"
-                      >
-                        <span className="material-symbols-outlined text-[20px]">lock</span>
-                        <span className="hidden lg:block">Publicidad</span>
-                      </div>
+                    {/* Publicidad — disabled */}
+                    <div
+                      className="flex items-center justify-center lg:justify-start gap-3 px-3 py-2 rounded-lg text-sm text-slate-300 cursor-not-allowed"
+                      title="Próximamente"
+                    >
+                      <span className="material-symbols-outlined text-[20px]">lock</span>
+                      <span className="hidden lg:block">Publicidad</span>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             );
           }
 
+          // Locked items
+          if (item.locked) {
+            return (
+              <div
+                key={item.href}
+                className="flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-lg text-slate-300 cursor-not-allowed"
+                title="Próximamente"
+              >
+                <span className="material-symbols-outlined">{item.icon}</span>
+                <span className="hidden lg:block flex-1">{item.label}</span>
+                <span className="material-symbols-outlined text-[16px] hidden lg:block">lock</span>
+              </div>
+            );
+          }
+
+          const isActive = pathname === item.href;
           return (
             <Link
               key={item.href}

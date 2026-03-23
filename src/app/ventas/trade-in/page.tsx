@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 
 interface TradeInPrice {
@@ -39,6 +39,8 @@ const emptyForm = {
   notes: "",
 };
 
+type HistoryFilter = "todos" | "pendiente" | "completado" | "cancelado";
+
 export default function TradeInPage() {
   const [tradeInPrices, setTradeInPrices] = useState<TradeInPrice[]>([]);
   const [tradeIns, setTradeIns] = useState<TradeIn[]>([]);
@@ -46,6 +48,14 @@ export default function TradeInPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+
+  // Cotizador state
+  const [quoterModel, setQuoterModel] = useState("");
+  const [quoterCondition, setQuoterCondition] = useState<"A" | "B" | "C">("A");
+  const [quoterBattery, setQuoterBattery] = useState(100);
+
+  // History filter
+  const [historyFilter, setHistoryFilter] = useState<HistoryFilter>("todos");
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -70,6 +80,58 @@ export default function TradeInPage() {
     const bat = rows[0]?.min_battery || 0;
     return { model, a: a?.price_usd || 0, b: b?.price_usd || 0, c: c?.price_usd || 0, bat };
   });
+
+  // Set default quoter model
+  useEffect(() => {
+    if (tradeInModels.length > 0 && !quoterModel) {
+      setQuoterModel(tradeInModels[0]);
+    }
+  }, [tradeInModels, quoterModel]);
+
+  // KPI calculations
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const tradeInsThisMonth = tradeIns.filter((t) => new Date(t.created_at) >= monthStart);
+  const kpiCount = tradeInsThisMonth.length;
+  const kpiPending = tradeIns.filter((t) => t.status === "pendiente").length;
+  const kpiAvgPrice = tradeInsThisMonth.length > 0
+    ? Math.round(tradeInsThisMonth.reduce((sum, t) => sum + (t.price_offered || 0), 0) / tradeInsThisMonth.length)
+    : 0;
+  const kpiTopModel = useMemo(() => {
+    if (tradeInsThisMonth.length === 0) return "—";
+    const counts: Record<string, number> = {};
+    tradeInsThisMonth.forEach((t) => { counts[t.model_received] = (counts[t.model_received] || 0) + 1; });
+    return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] || "—";
+  }, [tradeInsThisMonth]);
+
+  // Cotizador lookup
+  const quoterPrice = useMemo(() => {
+    const match = tradeInPrices.find((p) => p.model === quoterModel && p.condition === quoterCondition);
+    return match?.price_usd || null;
+  }, [tradeInPrices, quoterModel, quoterCondition]);
+
+  const quoterMinBattery = useMemo(() => {
+    const match = tradeInPrices.find((p) => p.model === quoterModel && p.condition === quoterCondition);
+    return match?.min_battery || 0;
+  }, [tradeInPrices, quoterModel, quoterCondition]);
+
+  const batteryBelowMin = quoterBattery < quoterMinBattery;
+
+  // Filtered history
+  const filteredHistory = historyFilter === "todos"
+    ? tradeIns
+    : tradeIns.filter((t) => t.status === historyFilter);
+
+  function openModalFromQuoter() {
+    setForm({
+      ...emptyForm,
+      model_received: quoterModel,
+      condition: quoterCondition,
+      battery_health: quoterBattery,
+      price_offered: quoterPrice ? String(quoterPrice) : "",
+    });
+    setShowAddModal(true);
+  }
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
@@ -104,31 +166,180 @@ export default function TradeInPage() {
     );
   }
 
+  const conditionChipClass = (c: "A" | "B" | "C", active: boolean) => {
+    if (!active) return "bg-slate-100 text-slate-600 hover:bg-slate-200";
+    if (c === "A") return "bg-green-600 text-white shadow-sm shadow-green-200";
+    if (c === "B") return "bg-amber-500 text-white shadow-sm shadow-amber-200";
+    return "bg-red-500 text-white shadow-sm shadow-red-200";
+  };
+
+  function BatteryBar({ value, size = "normal" }: { value: number; size?: "normal" | "mini" }) {
+    const color = value > 85 ? "bg-green-500" : value >= 80 ? "bg-amber-500" : "bg-red-500";
+    const h = size === "mini" ? "h-1.5" : "h-2";
+    return (
+      <div className="flex items-center gap-2">
+        <div className={`flex-1 ${h} bg-slate-100 rounded-full overflow-hidden`} style={{ minWidth: size === "mini" ? 40 : 60 }}>
+          <div className={`${h} ${color} rounded-full transition-all`} style={{ width: `${Math.min(value, 100)}%` }} />
+        </div>
+        <span className={`font-bold ${size === "mini" ? "text-[11px]" : "text-xs"} tabular-nums`}>{value}%</span>
+      </div>
+    );
+  }
+
   return (
     <>
-      <div className="flex justify-between items-end mb-8">
+      {/* Header */}
+      <div className="flex justify-between items-end mb-6">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Trade-in</h2>
           <p className="text-on-surface-variant text-sm mt-1">Cotización y registro de equipos en parte de pago</p>
         </div>
         <button
           onClick={() => { setForm(emptyForm); setShowAddModal(true); }}
-          className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-bold text-sm shadow-md shadow-primary/20"
+          className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-bold text-sm shadow-md shadow-primary/20 hover:brightness-95 transition-all"
         >
           <span className="material-symbols-outlined text-lg">add</span> Registrar Trade-in
         </button>
       </div>
 
-      {/* Pricing Table */}
-      <section className="mb-8">
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="p-2 bg-green-50 rounded-lg">
-              <span className="material-symbols-outlined text-green-600">swap_horiz</span>
+      {/* ============ 1. KPI Cards Row ============ */}
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {[
+          { label: "Trade-ins del Mes", value: String(kpiCount), icon: "swap_horiz", iconBg: "bg-primary/10", iconColor: "text-primary" },
+          { label: "Pendientes", value: String(kpiPending), icon: "pending_actions", iconBg: "bg-amber-50", iconColor: "text-amber-600" },
+          { label: "Modelo Top", value: kpiTopModel, icon: "phone_iphone", iconBg: "bg-blue-50", iconColor: "text-blue-600", small: true },
+          { label: "Valor Promedio", value: kpiAvgPrice > 0 ? `$${kpiAvgPrice} USD` : "—", icon: "attach_money", iconBg: "bg-green-50", iconColor: "text-green-600" },
+        ].map((kpi) => (
+          <div key={kpi.label} className="bg-white rounded-2xl shadow-sm border border-slate-200 px-5 py-4 flex items-center gap-4">
+            <div className={`w-10 h-10 ${kpi.iconBg} rounded-xl flex items-center justify-center shrink-0`}>
+              <span className={`material-symbols-outlined text-xl ${kpi.iconColor}`}>{kpi.icon}</span>
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] uppercase tracking-widest font-bold text-cool-grey">{kpi.label}</p>
+              <p className={`font-bold mt-0.5 truncate ${kpi.small ? "text-sm" : "text-lg"}`}>{kpi.value}</p>
+            </div>
+          </div>
+        ))}
+      </section>
+
+      {/* ============ 2. Cotizador Rápido ============ */}
+      <section className="mb-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+              <span className="material-symbols-outlined text-xl text-primary">calculate</span>
             </div>
             <div>
-              <h3 className="text-lg font-bold">Cotización Trade-in</h3>
-              <p className="text-on-surface-variant text-xs mt-0.5">Referencia de precios para cotizar equipos en parte de pago</p>
+              <h3 className="text-lg font-bold">Cotizador Rápido</h3>
+              <p className="text-[11px] text-cool-grey">Cotizá en vivo frente al cliente</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-6 items-start">
+            {/* Left: Controls */}
+            <div className="space-y-5">
+              {/* Model selector */}
+              <div>
+                <label className="text-[10px] uppercase tracking-widest font-bold text-cool-grey block mb-1.5">Modelo</label>
+                <select
+                  value={quoterModel}
+                  onChange={(e) => setQuoterModel(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm font-medium focus:ring-1 focus:ring-primary/30 focus:outline-none"
+                >
+                  {tradeInModels.map((m) => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Condition chips */}
+              <div>
+                <label className="text-[10px] uppercase tracking-widest font-bold text-cool-grey block mb-2">Condición</label>
+                <div className="flex gap-2">
+                  {(["A", "B", "C"] as const).map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => setQuoterCondition(c)}
+                      className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${conditionChipClass(c, quoterCondition === c)}`}
+                    >
+                      {c === "A" ? "A — Impecable" : c === "B" ? "B — Detalles" : "C — Uso visible"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Battery */}
+              <div>
+                <label className="text-[10px] uppercase tracking-widest font-bold text-cool-grey block mb-1.5">
+                  Batería
+                </label>
+                <div className="flex items-center gap-4">
+                  <input
+                    type="range"
+                    min={50}
+                    max={100}
+                    value={quoterBattery}
+                    onChange={(e) => setQuoterBattery(parseInt(e.target.value))}
+                    className="flex-1 h-2 accent-primary"
+                  />
+                  <div className="flex items-center gap-1 bg-slate-50 rounded-lg border border-slate-200 px-3 py-1.5">
+                    <input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={quoterBattery}
+                      onChange={(e) => setQuoterBattery(Math.min(100, Math.max(0, parseInt(e.target.value) || 0)))}
+                      className="w-10 text-sm font-bold text-center bg-transparent focus:outline-none"
+                    />
+                    <span className="text-xs text-cool-grey">%</span>
+                  </div>
+                </div>
+                {batteryBelowMin && (
+                  <div className="mt-2 flex items-center gap-2 bg-red-50 border border-red-100 rounded-xl px-3 py-2">
+                    <span className="material-symbols-outlined text-red-500 text-base">warning</span>
+                    <span className="text-xs text-red-700 font-medium">Batería por debajo del mínimo ({quoterMinBattery}%)</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="hidden md:block w-px bg-slate-200 self-stretch" />
+
+            {/* Right: Result */}
+            <div className="flex flex-col items-center justify-center text-center py-4">
+              <p className="text-[10px] uppercase tracking-widest font-bold text-cool-grey mb-2">Valor Trade-in</p>
+              {quoterPrice !== null ? (
+                <p className="text-5xl font-black text-primary tabular-nums">${quoterPrice}<span className="text-lg font-bold text-slate-400 ml-2">USD</span></p>
+              ) : (
+                <p className="text-2xl font-bold text-slate-300">Sin precio</p>
+              )}
+              <p className="text-xs text-cool-grey mt-2">
+                {quoterModel} · Estado {quoterCondition} · {quoterBattery}%
+              </p>
+
+              <button
+                onClick={openModalFromQuoter}
+                className="mt-5 flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-bold text-sm shadow-md shadow-primary/20 hover:brightness-95 transition-all"
+              >
+                <span className="material-symbols-outlined text-lg">add_circle</span>
+                Registrar Trade-in
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============ 3. Tabla de Cotización ============ */}
+      <section className="mb-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center">
+              <span className="material-symbols-outlined text-xl text-green-600">swap_horiz</span>
+            </div>
+            <div>
+              <h3 className="text-lg font-bold">Tabla de Cotización</h3>
+              <p className="text-[11px] text-cool-grey">Referencia de precios para cotizar equipos en parte de pago</p>
             </div>
           </div>
 
@@ -141,35 +352,32 @@ export default function TradeInPage() {
             <div className="overflow-x-auto rounded-xl border border-slate-200">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-50">
-                    <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Modelo</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey bg-green-50">Estado A — Impecable</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey bg-amber-50">Estado B — Detalles menores</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey bg-red-50">Estado C — Uso visible</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Batería mín.</th>
+                  <tr>
+                    <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey bg-slate-50">Modelo</th>
+                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-green-700 bg-green-50">Estado A — Impecable</th>
+                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-amber-700 bg-amber-50">Estado B — Detalles</th>
+                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-red-700 bg-red-50">Estado C — Uso visible</th>
+                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey bg-slate-50">Batería mín.</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-50">
+                <tbody>
                   {tradeInTable.map((row, i) => (
-                    <tr key={row.model} className={`hover:bg-slate-50 transition-colors ${i % 2 === 1 ? "bg-slate-50/40" : ""}`}>
-                      <td className="px-6 py-3.5 text-sm font-bold">{row.model}</td>
-                      <td className="px-4 py-3.5">
-                        <span className="text-sm font-bold text-green-700">${row.a}</span>
+                    <tr key={row.model} className={`hover:bg-blue-50/40 transition-colors border-t border-slate-100 ${i % 2 === 1 ? "bg-slate-50/50" : "bg-white"}`}>
+                      <td className="px-6 py-4 text-sm font-bold">{row.model}</td>
+                      <td className="px-4 py-4">
+                        <span className="text-base font-black text-green-700">${row.a}</span>
                         <span className="text-[10px] text-slate-400 ml-1">USD</span>
                       </td>
-                      <td className="px-4 py-3.5">
-                        <span className="text-sm font-bold text-amber-700">${row.b}</span>
+                      <td className="px-4 py-4">
+                        <span className="text-base font-black text-amber-700">${row.b}</span>
                         <span className="text-[10px] text-slate-400 ml-1">USD</span>
                       </td>
-                      <td className="px-4 py-3.5">
-                        <span className="text-sm font-bold text-red-600">${row.c}</span>
+                      <td className="px-4 py-4">
+                        <span className="text-base font-black text-red-600">${row.c}</span>
                         <span className="text-[10px] text-slate-400 ml-1">USD</span>
                       </td>
-                      <td className="px-4 py-3.5">
-                        <div className="flex items-center gap-1.5">
-                          <span className="material-symbols-outlined text-sm text-slate-400">battery_5_bar</span>
-                          <span className="text-sm font-bold">{row.bat}%</span>
-                        </div>
+                      <td className="px-4 py-4 w-36">
+                        <BatteryBar value={row.bat} size="mini" />
                       </td>
                     </tr>
                   ))}
@@ -187,17 +395,49 @@ export default function TradeInPage() {
         </div>
       </section>
 
-      {/* Trade-in History */}
+      {/* ============ 4. Historial ============ */}
       <section>
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-          <div className="p-6 border-b border-slate-100 flex items-center gap-2">
-            <span className="material-symbols-outlined text-primary">history</span>
-            <h3 className="text-lg font-bold">Historial de Trade-ins</h3>
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div className="p-6 border-b border-slate-100">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+                  <span className="material-symbols-outlined text-xl text-primary">history</span>
+                </div>
+                <h3 className="text-lg font-bold">Historial de Trade-ins</h3>
+              </div>
+              {/* Filter chips */}
+              <div className="flex gap-2">
+                {(
+                  [
+                    { key: "todos", label: "Todos" },
+                    { key: "pendiente", label: "Pendiente" },
+                    { key: "completado", label: "Completado" },
+                    { key: "cancelado", label: "Cancelado" },
+                  ] as { key: HistoryFilter; label: string }[]
+                ).map((f) => (
+                  <button
+                    key={f.key}
+                    onClick={() => setHistoryFilter(f.key)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+                      historyFilter === f.key
+                        ? "bg-primary text-white"
+                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-          {tradeIns.length === 0 ? (
+
+          {filteredHistory.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-cool-grey">
               <span className="material-symbols-outlined text-3xl mb-2">swap_horiz</span>
-              <p className="text-xs font-medium">Sin trade-ins registrados</p>
+              <p className="text-xs font-medium">
+                {historyFilter === "todos" ? "Sin trade-ins registrados" : `Sin trade-ins con estado "${historyFilter}"`}
+              </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -208,31 +448,41 @@ export default function TradeInPage() {
                     <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Cliente</th>
                     <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Modelo Recibido</th>
                     <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Condición</th>
+                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Batería</th>
                     <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Precio</th>
                     <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Estado</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-50">
-                  {tradeIns.map((t) => (
-                    <tr key={t.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-6 py-4 text-sm">
+                <tbody>
+                  {filteredHistory.map((t, i) => (
+                    <tr key={t.id} className={`hover:bg-blue-50/40 transition-colors border-t border-slate-100 ${i % 2 === 1 ? "bg-slate-50/50" : ""}`}>
+                      <td className="px-6 py-4 text-sm tabular-nums">
                         {new Date(t.created_at).toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric" })}
                       </td>
                       <td className="px-4 py-4">
-                        <p className="text-sm font-medium">{t.client_name}</p>
-                        <p className="text-[10px] text-cool-grey">{t.client_phone}</p>
+                        <p className="text-sm font-bold">{t.client_name}</p>
+                        {t.client_phone && <p className="text-[10px] text-cool-grey mt-0.5">{t.client_phone}</p>}
                       </td>
                       <td className="px-4 py-4 text-sm font-bold">{t.model_received}</td>
                       <td className="px-4 py-4">
-                        <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
+                        <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-black ${
                           t.condition === "A" ? "bg-green-100 text-green-700" : t.condition === "B" ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700"
                         }`}>{t.condition}</span>
                       </td>
+                      <td className="px-4 py-4 w-28">
+                        <BatteryBar value={t.battery_health} size="mini" />
+                      </td>
                       <td className="px-4 py-4 text-sm font-bold">{formatPrice(t.price_offered)}</td>
                       <td className="px-4 py-4">
-                        <span className={`px-2.5 py-0.5 text-[10px] font-bold rounded-full ${
-                          t.status === "completado" ? "bg-green-100 text-green-700" : t.status === "cancelado" ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"
-                        }`}>{t.status.toUpperCase()}</span>
+                        <span className={`px-3 py-1 text-[10px] font-bold rounded-full ${
+                          t.status === "completado"
+                            ? "bg-green-100 text-green-700"
+                            : t.status === "cancelado"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-amber-100 text-amber-700"
+                        }`}>
+                          {t.status.toUpperCase()}
+                        </span>
                       </td>
                     </tr>
                   ))}
@@ -243,7 +493,7 @@ export default function TradeInPage() {
         </div>
       </section>
 
-      {/* Add Modal */}
+      {/* ============ Add Modal ============ */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setShowAddModal(false)}>
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md" onClick={(e) => e.stopPropagation()}>
@@ -255,48 +505,48 @@ export default function TradeInPage() {
             </div>
             <form onSubmit={handleAdd} className="p-6 space-y-4">
               <div>
-                <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Cliente *</label>
+                <label className="text-[10px] font-bold text-cool-grey uppercase tracking-widest">Cliente *</label>
                 <input required value={form.client_name} onChange={(e) => setForm({ ...form, client_name: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30" />
+                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30 focus:outline-none" />
               </div>
               <div>
-                <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Teléfono</label>
+                <label className="text-[10px] font-bold text-cool-grey uppercase tracking-widest">Teléfono</label>
                 <input value={form.client_phone} onChange={(e) => setForm({ ...form, client_phone: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30" />
+                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30 focus:outline-none" />
               </div>
               <div>
-                <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Modelo Recibido *</label>
+                <label className="text-[10px] font-bold text-cool-grey uppercase tracking-widest">Modelo Recibido *</label>
                 <input required value={form.model_received} onChange={(e) => setForm({ ...form, model_received: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30"
+                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30 focus:outline-none"
                   placeholder="iPhone 13 Pro" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Condición</label>
+                  <label className="text-[10px] font-bold text-cool-grey uppercase tracking-widest">Condición</label>
                   <select value={form.condition} onChange={(e) => setForm({ ...form, condition: e.target.value })}
-                    className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30">
+                    className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30 focus:outline-none">
                     <option value="A">A — Impecable</option>
                     <option value="B">B — Detalles</option>
                     <option value="C">C — Uso visible</option>
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Batería %</label>
+                  <label className="text-[10px] font-bold text-cool-grey uppercase tracking-widest">Batería %</label>
                   <input type="number" min={0} max={100} value={form.battery_health}
                     onChange={(e) => setForm({ ...form, battery_health: parseInt(e.target.value) || 0 })}
-                    className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30" />
+                    className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30 focus:outline-none" />
                 </div>
               </div>
               <div>
-                <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Precio Ofrecido (USD)</label>
+                <label className="text-[10px] font-bold text-cool-grey uppercase tracking-widest">Precio Ofrecido (USD)</label>
                 <input type="number" step="0.01" value={form.price_offered}
                   onChange={(e) => setForm({ ...form, price_offered: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30" />
+                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30 focus:outline-none" />
               </div>
               <div>
-                <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Notas</label>
+                <label className="text-[10px] font-bold text-cool-grey uppercase tracking-widest">Notas</label>
                 <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30 resize-none"
+                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30 focus:outline-none resize-none"
                   rows={2} />
               </div>
               <div className="flex gap-3 pt-2">
