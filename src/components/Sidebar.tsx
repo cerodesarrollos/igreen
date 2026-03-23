@@ -94,14 +94,18 @@ export default function Sidebar() {
                       );
                     })}
 
-                    {/* Publicidad — disabled */}
-                    <div
-                      className="flex items-center justify-center lg:justify-start gap-3 px-3 py-2 rounded-lg text-sm text-slate-300 cursor-not-allowed"
-                      title="Próximamente"
+                    {/* Publicidad */}
+                    <Link
+                      href="/ventas/publicidad"
+                      className={`flex items-center justify-center lg:justify-start gap-3 px-3 py-2 rounded-lg transition-all text-sm ${
+                        pathname === "/ventas/publicidad"
+                          ? "text-primary font-bold bg-primary/5"
+                          : "text-cool-grey hover:bg-slate-50"
+                      }`}
                     >
-                      <span className="material-symbols-outlined text-[20px]">lock</span>
+                      <span className="material-symbols-outlined text-[20px]">campaign</span>
                       <span className="hidden lg:block">Publicidad</span>
-                    </div>
+                    </Link>
                   </div>
                 )}
               </div>
