@@ -80,16 +80,16 @@ const MONTH_NAMES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Jul
 const DAY_NAMES = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
 /* ── Calendar View ── */
-function CalendarView({ appointments, onDayClick }: { appointments: Appointment[]; onDayClick: (date: string) => void }) {
+function CalendarView({ appointments, onDayClick }: { appointments: Appointment[]; onDayClick?: (date: string) => void }) {
   const today = new Date();
   const [calYear, setCalYear] = useState(today.getFullYear());
   const [calMonth, setCalMonth] = useState(today.getMonth());
+  const todayISO = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+  const [selectedDay, setSelectedDay] = useState<string>(todayISO);
 
   const daysInMonth = getDaysInMonth(calYear, calMonth);
   const firstDay = getFirstDayOfWeek(calYear, calMonth);
   const prevMonthDays = getDaysInMonth(calYear, calMonth - 1);
-
-  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
 
   const byDate = useMemo(() => {
     const map: Record<string, Appointment[]> = {};
@@ -132,83 +132,147 @@ function CalendarView({ appointments, onDayClick }: { appointments: Appointment[
     }
   }
 
+  const selectedAppts = byDate[selectedDay] || [];
+  const selectedDate = new Date(selectedDay + "T12:00:00");
+  const selectedLabel = selectedDay === todayISO ? "Hoy" : selectedDate.toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" });
+
+  function handleDayClick(dateStr: string) {
+    setSelectedDay(dateStr);
+    if (onDayClick) onDayClick(dateStr);
+  }
+
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-      {/* Nav header */}
-      <div className="flex items-center justify-between px-6 py-5">
-        <button onClick={prevMonth} className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors">
-          <span className="material-symbols-outlined text-lg text-slate-500">chevron_left</span>
-        </button>
-        <h3 className="text-base font-bold tracking-tight">{MONTH_NAMES[calMonth]} {calYear}</h3>
-        <button onClick={nextMonth} className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors">
-          <span className="material-symbols-outlined text-lg text-slate-500">chevron_right</span>
-        </button>
-      </div>
-      {/* Day names */}
-      <div className="grid grid-cols-7 px-2">
-        {DAY_NAMES.map((d, i) => (
-          <div key={d} className={`py-2 text-center text-[10px] font-semibold uppercase tracking-wider ${i >= 5 ? "text-slate-300" : "text-slate-400"}`}>{d}</div>
-        ))}
-      </div>
-      {/* Day cells */}
-      <div className="grid grid-cols-7 px-2 pb-2">
-        {cells.map((cell, idx) => {
-          const isToday = cell.dateStr === todayStr;
-          const dayAppts = byDate[cell.dateStr] || [];
-          const hasAppts = dayAppts.length > 0;
-          return (
-            <div
-              key={idx}
-              onClick={() => cell.inMonth && onDayClick(cell.dateStr)}
-              className={`min-h-[80px] m-0.5 p-2 rounded-xl transition-all ${
-                cell.inMonth ? "cursor-pointer hover:bg-slate-50 hover:shadow-sm" : ""
-              } ${cell.isWeekend && cell.inMonth ? "bg-slate-50/50" : ""}`}
-            >
-              <div className="flex items-center gap-1.5">
-                {isToday ? (
-                  <span className="w-7 h-7 flex items-center justify-center rounded-full bg-primary text-white text-xs font-bold">
-                    {cell.day}
-                  </span>
-                ) : (
-                  <span className={`text-sm font-semibold pl-1 ${cell.inMonth ? "text-slate-700" : "text-slate-200"}`}>
-                    {cell.day}
-                  </span>
-                )}
-                {hasAppts && !isToday && (
-                  <span className="text-[9px] font-bold text-primary">{dayAppts.length}</span>
-                )}
-                {hasAppts && isToday && (
-                  <span className="text-[9px] font-bold text-primary/80">{dayAppts.length}</span>
-                )}
-              </div>
-              <div className="mt-1.5 space-y-1">
-                {dayAppts.slice(0, 2).map((a) => {
-                  const t = new Date(a.scheduled_at);
-                  const dotColor = STATUS_DOT_COLORS[a.status] || "bg-slate-300";
-                  const bgColor: Record<string, string> = {
-                    confirmado: "bg-green-50",
-                    pendiente: "bg-amber-50",
-                    completado: "bg-blue-50",
-                    no_show: "bg-red-50",
-                    cancelado: "bg-slate-50",
-                  };
-                  return (
-                    <div key={a.id} className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md ${bgColor[a.status] || "bg-slate-50"}`}>
-                      <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dotColor}`} />
-                      <span className="text-[9px] text-slate-500 flex-shrink-0 font-medium">
-                        {t.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })}
-                      </span>
-                      <span className="text-[9px] font-semibold truncate text-slate-700">{a.client_name.split(" ")[0]}</span>
+    <div className="grid grid-cols-12 gap-5">
+      {/* Calendario — izquierda */}
+      <div className="col-span-8 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        {/* Nav header */}
+        <div className="flex items-center justify-between px-6 py-4">
+          <button onClick={prevMonth} className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors">
+            <span className="material-symbols-outlined text-lg text-slate-500">chevron_left</span>
+          </button>
+          <h3 className="text-base font-bold tracking-tight">{MONTH_NAMES[calMonth]} {calYear}</h3>
+          <button onClick={nextMonth} className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors">
+            <span className="material-symbols-outlined text-lg text-slate-500">chevron_right</span>
+          </button>
+        </div>
+        {/* Day names */}
+        <div className="grid grid-cols-7 px-2">
+          {DAY_NAMES.map((d, i) => (
+            <div key={d} className={`py-2 text-center text-[10px] font-semibold uppercase tracking-wider ${i >= 5 ? "text-slate-300" : "text-slate-400"}`}>{d}</div>
+          ))}
+        </div>
+        {/* Day cells */}
+        <div className="grid grid-cols-7 px-2 pb-2">
+          {cells.map((cell, idx) => {
+            const isToday = cell.dateStr === todayISO;
+            const isSelected = cell.dateStr === selectedDay && cell.inMonth;
+            const dayAppts = byDate[cell.dateStr] || [];
+            const hasAppts = dayAppts.length > 0;
+            return (
+              <div
+                key={idx}
+                onClick={() => cell.inMonth && handleDayClick(cell.dateStr)}
+                className={`min-h-[72px] m-0.5 p-2 rounded-xl transition-all ${
+                  cell.inMonth ? "cursor-pointer hover:bg-slate-50" : ""
+                } ${cell.isWeekend && cell.inMonth ? "bg-slate-50/40" : ""
+                } ${isSelected && !isToday ? "ring-2 ring-primary/40 bg-primary/5" : ""}`}
+              >
+                <div className="flex items-center gap-1">
+                  {isToday ? (
+                    <span className={`w-7 h-7 flex items-center justify-center rounded-full bg-primary text-white text-xs font-bold ${isSelected ? "ring-2 ring-primary/30 ring-offset-1" : ""}`}>
+                      {cell.day}
+                    </span>
+                  ) : (
+                    <span className={`text-sm font-semibold pl-1 ${cell.inMonth ? "text-slate-700" : "text-slate-200"}`}>
+                      {cell.day}
+                    </span>
+                  )}
+                  {hasAppts && (
+                    <div className="flex gap-0.5 ml-auto">
+                      {dayAppts.slice(0, 4).map((a) => (
+                        <span key={a.id} className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT_COLORS[a.status] || "bg-slate-300"}`} />
+                      ))}
                     </div>
-                  );
-                })}
-                {dayAppts.length > 2 && (
-                  <span className="text-[9px] text-primary font-bold pl-1">+{dayAppts.length - 2} más</span>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Detalle del día — derecha */}
+      <div className="col-span-4">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden sticky top-4">
+          {/* Header */}
+          <div className="px-5 py-4 border-b border-slate-100">
+            <h3 className="text-sm font-bold capitalize">{selectedLabel}</h3>
+            <p className="text-[10px] text-slate-400 mt-0.5">
+              {selectedAppts.length} turno{selectedAppts.length !== 1 ? "s" : ""}
+            </p>
+          </div>
+
+          {/* Turnos del día */}
+          <div className="p-4 space-y-3 max-h-[520px] overflow-y-auto">
+            {selectedAppts.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-slate-400">
+                <span className="material-symbols-outlined text-3xl mb-2">event_available</span>
+                <p className="text-xs font-medium">Sin turnos este día</p>
+              </div>
+            ) : (
+              selectedAppts.map((a) => {
+                const t = new Date(a.scheduled_at);
+                const borderColor = STATUS_BORDER_COLORS[a.status] || "border-l-slate-300";
+                return (
+                  <div key={a.id} className={`border border-slate-100 border-l-4 ${borderColor} rounded-xl p-4 hover:shadow-sm transition-shadow`}>
+                    {/* Hora + Estado */}
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-sm text-slate-400">schedule</span>
+                        <span className="text-sm font-bold">
+                          {t.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })} hs
+                        </span>
+                      </div>
+                      {appointmentStatusBadge(a.status)}
+                    </div>
+                    {/* Cliente */}
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          <span className="text-xs font-bold text-primary">
+                            {a.client_name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold">{a.client_name}</p>
+                          <div className="flex items-center gap-1 text-[11px] text-slate-500">
+                            <span className="material-symbols-outlined text-xs">phone</span>
+                            {a.client_phone}
+                          </div>
+                        </div>
+                      </div>
+                      {a.notes && (
+                        <div className="flex items-start gap-1.5 bg-slate-50 rounded-lg px-3 py-2 mt-1">
+                          <span className="material-symbols-outlined text-xs text-slate-400 mt-0.5">notes</span>
+                          <p className="text-[11px] text-slate-600">{a.notes}</p>
+                        </div>
+                      )}
+                    </div>
+                    {/* Acciones rápidas */}
+                    <div className="flex gap-2 mt-3 pt-3 border-t border-slate-50">
+                      <button className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-green-50 text-green-700 text-[10px] font-bold hover:bg-green-100 transition-colors">
+                        <span className="material-symbols-outlined text-xs">chat</span> WhatsApp
+                      </button>
+                      <button className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-50 text-slate-600 text-[10px] font-bold hover:bg-slate-100 transition-colors">
+                        <span className="material-symbols-outlined text-xs">edit</span> Editar
+                      </button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
