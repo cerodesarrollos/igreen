@@ -322,8 +322,13 @@ export default function VentasStockPage() {
   // Sale modal
   const [showSaleModal, setShowSaleModal] = useState(false);
   const [saleProduct, setSaleProduct] = useState<Product | null>(null);
-  const [saleForm, setSaleForm] = useState({ payment_method: "efectivo", sale_price: "", notes: "" });
+  const [saleForm, setSaleForm] = useState({ payment_method: "efectivo", sale_price: "", notes: "", client_name: "", client_phone: "", client_id: "" });
   const [savingSale, setSavingSale] = useState(false);
+  const [saleConfirmation, setSaleConfirmation] = useState<{ product: Product; sale_price: number; payment_method: string } | null>(null);
+
+  // Delete product
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletingProduct, setDeletingProduct] = useState(false);
 
   // Add product modal
   const [showAddModal, setShowAddModal] = useState(false);
@@ -390,7 +395,11 @@ export default function VentasStockPage() {
       payment_method: "efectivo",
       sale_price: product.sale_price?.toString() || "",
       notes: "",
+      client_name: "",
+      client_phone: "",
+      client_id: "",
     });
+    setSaleConfirmation(null);
     setShowSaleModal(true);
   }
 
@@ -398,24 +407,61 @@ export default function VentasStockPage() {
     e.preventDefault();
     if (!saleProduct) return;
     setSavingSale(true);
+    const finalPrice = parseFloat(saleForm.sale_price) || saleProduct.sale_price || 0;
     const payload = {
       product_id: saleProduct.id,
-      sale_price: parseFloat(saleForm.sale_price) || saleProduct.sale_price || 0,
+      sale_price: finalPrice,
       cost_price: saleProduct.cost_price || 0,
       payment_method: saleForm.payment_method,
       notes: saleForm.notes || null,
+      client_name: saleForm.client_name || null,
+      client_phone: saleForm.client_phone || null,
       sold_at: new Date().toISOString(),
     };
     const { error } = await supabase.from("ig_sales").insert(payload);
     if (!error) {
       await supabase.from("ig_products").update({ status: "vendido", sold_at: new Date().toISOString() }).eq("id", saleProduct.id);
-      setShowSaleModal(false);
-      setSaleProduct(null);
+      // Activity log
+      await supabase.from("ig_activity_log").insert({
+        action: "sale",
+        entity: "product",
+        entity_id: saleProduct.id,
+        description: `Vendido ${saleProduct.model} ${saleProduct.capacity} por $${finalPrice} USD`,
+        created_at: new Date().toISOString(),
+      });
+      // Show confirmation instead of closing
+      setSaleConfirmation({
+        product: saleProduct,
+        sale_price: finalPrice,
+        payment_method: saleForm.payment_method,
+      });
       await fetchData();
     } else {
       alert("Error al registrar venta: " + error.message);
     }
     setSavingSale(false);
+  }
+
+  /* Delete Product */
+  async function handleDeleteProduct() {
+    if (!selectedProduct) return;
+    setDeletingProduct(true);
+    const { error } = await supabase.from("ig_products").delete().eq("id", selectedProduct.id);
+    if (!error) {
+      await supabase.from("ig_activity_log").insert({
+        action: "delete",
+        entity: "product",
+        entity_id: selectedProduct.id,
+        description: `Eliminado ${selectedProduct.model} ${selectedProduct.capacity}`,
+        created_at: new Date().toISOString(),
+      });
+      setSelectedProduct(null);
+      setShowDeleteConfirm(false);
+      await fetchData();
+    } else {
+      alert("Error al eliminar: " + error.message);
+    }
+    setDeletingProduct(false);
   }
 
   /* Add Product */
@@ -827,6 +873,37 @@ export default function VentasStockPage() {
                     </button>
                   )}
                 </div>
+
+                {/* Delete Button */}
+                <div className="pt-4 border-t border-slate-100 mt-4">
+                  {!showDeleteConfirm ? (
+                    <button
+                      onClick={() => setShowDeleteConfirm(true)}
+                      className="w-full py-2.5 text-red-500 hover:bg-red-50 rounded-full text-xs font-bold transition-colors flex items-center justify-center gap-1"
+                    >
+                      <span className="material-symbols-outlined text-sm">delete</span> Eliminar Equipo
+                    </button>
+                  ) : (
+                    <div className="space-y-2">
+                      <p className="text-xs text-red-600 font-bold text-center">¿Confirmar eliminación?</p>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setShowDeleteConfirm(false)}
+                          className="flex-1 py-2.5 bg-slate-200 rounded-full text-xs font-bold hover:bg-slate-300 transition-colors"
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          onClick={handleDeleteProduct}
+                          disabled={deletingProduct}
+                          className="flex-1 py-2.5 bg-red-500 text-white rounded-full text-xs font-bold hover:bg-red-600 transition-colors disabled:opacity-50"
+                        >
+                          {deletingProduct ? "Eliminando..." : "Sí, eliminar"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </>
             ) : (
               <div className="flex flex-col items-center justify-center py-12 text-cool-grey">
@@ -841,58 +918,133 @@ export default function VentasStockPage() {
 
       {/* ── Sale Modal ── */}
       {showSaleModal && saleProduct && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setShowSaleModal(false)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => { if (!saleConfirmation) { setShowSaleModal(false); } }}>
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md" onClick={(e) => e.stopPropagation()}>
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="text-lg font-bold">Registrar Venta</h3>
-              <button onClick={() => setShowSaleModal(false)} className="text-cool-grey hover:text-on-surface">
-                <span className="material-symbols-outlined">close</span>
-              </button>
-            </div>
-            <form onSubmit={handleRegisterSale} className="p-6 space-y-4">
-              <div className="bg-slate-50 p-4 rounded-xl">
-                <p className="text-xs font-bold text-primary">{saleProduct.model}</p>
-                <p className="text-[10px] text-on-surface-variant font-mono">{saleProduct.imei}</p>
-                <p className="text-xs mt-1">{saleProduct.capacity} · {saleProduct.color} · {saleProduct.condition}</p>
-              </div>
+            {saleConfirmation ? (
+              /* ── Confirmation State ── */
+              <div className="p-6 space-y-5">
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <span className="material-symbols-outlined text-3xl text-green-600">check_circle</span>
+                  </div>
+                  <h3 className="text-lg font-bold">Venta Registrada ✅</h3>
+                </div>
 
-              <div>
-                <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Precio de Venta (USD) *</label>
-                <input type="number" step="0.01" required value={saleForm.sale_price}
-                  onChange={(e) => setSaleForm({ ...saleForm, sale_price: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30" />
-              </div>
+                <div className="bg-slate-50 p-4 rounded-xl space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-on-surface-variant">Equipo</span>
+                    <span className="text-xs font-bold">{saleConfirmation.product.model} {saleConfirmation.product.capacity}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-on-surface-variant">Precio</span>
+                    <span className="text-xs font-bold">{formatPrice(saleConfirmation.sale_price)}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-on-surface-variant">Método de Pago</span>
+                    <span className="text-xs font-bold capitalize">{saleConfirmation.payment_method.replace("_", " ")}</span>
+                  </div>
+                </div>
 
-              <div>
-                <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Método de Pago *</label>
-                <select value={saleForm.payment_method} onChange={(e) => setSaleForm({ ...saleForm, payment_method: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30">
-                  <option value="efectivo">Efectivo</option>
-                  <option value="transferencia">Transferencia</option>
-                  <option value="tarjeta_debito">Tarjeta Débito</option>
-                  <option value="tarjeta_credito">Tarjeta Crédito</option>
-                  <option value="mixto">Mixto</option>
-                </select>
-              </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <a
+                    href={`/ventas/print/garantia?product_id=${saleConfirmation.product.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="py-3 bg-blue-50 text-blue-700 rounded-full text-xs font-bold hover:bg-blue-100 transition-colors flex items-center justify-center gap-1"
+                  >
+                    🖨️ Imprimir Garantía
+                  </a>
+                  <a
+                    href={`/ventas/print/ticket?product_id=${saleConfirmation.product.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="py-3 bg-blue-50 text-blue-700 rounded-full text-xs font-bold hover:bg-blue-100 transition-colors flex items-center justify-center gap-1"
+                  >
+                    🧾 Imprimir Ticket
+                  </a>
+                </div>
 
-              <div>
-                <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Notas</label>
-                <textarea value={saleForm.notes} onChange={(e) => setSaleForm({ ...saleForm, notes: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30 resize-none" rows={2}
-                  placeholder="Notas sobre la venta..." />
-              </div>
-
-              <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setShowSaleModal(false)}
-                  className="flex-1 py-3 bg-slate-200 rounded-full text-sm font-bold hover:bg-slate-300 transition-colors">
-                  Cancelar
+                <button
+                  onClick={() => { setShowSaleModal(false); setSaleProduct(null); setSaleConfirmation(null); }}
+                  className="w-full py-3 bg-slate-200 rounded-full text-sm font-bold hover:bg-slate-300 transition-colors"
+                >
+                  Cerrar
                 </button>
-                <button type="submit" disabled={savingSale}
-                  className="flex-1 py-3 bg-primary text-white rounded-full text-sm font-bold shadow-md shadow-primary/20 hover:brightness-95 transition-all disabled:opacity-50">
-                  {savingSale ? "Registrando..." : "Confirmar Venta"}
-                </button>
               </div>
-            </form>
+            ) : (
+              /* ── Sale Form ── */
+              <>
+                <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                  <h3 className="text-lg font-bold">Registrar Venta</h3>
+                  <button onClick={() => setShowSaleModal(false)} className="text-cool-grey hover:text-on-surface">
+                    <span className="material-symbols-outlined">close</span>
+                  </button>
+                </div>
+                <form onSubmit={handleRegisterSale} className="p-6 space-y-4">
+                  <div className="bg-slate-50 p-4 rounded-xl">
+                    <p className="text-xs font-bold text-primary">{saleProduct.model}</p>
+                    <p className="text-[10px] text-on-surface-variant font-mono">{saleProduct.imei}</p>
+                    <p className="text-xs mt-1">{saleProduct.capacity} · {saleProduct.color} · {saleProduct.condition}</p>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Precio de Venta (USD) *</label>
+                    <input type="number" step="0.01" required value={saleForm.sale_price}
+                      onChange={(e) => setSaleForm({ ...saleForm, sale_price: e.target.value })}
+                      className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30" />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Método de Pago *</label>
+                    <select value={saleForm.payment_method} onChange={(e) => setSaleForm({ ...saleForm, payment_method: e.target.value })}
+                      className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30">
+                      <option value="efectivo">Efectivo</option>
+                      <option value="transferencia">Transferencia</option>
+                      <option value="tarjeta_debito">Tarjeta Débito</option>
+                      <option value="tarjeta_credito">Tarjeta Crédito</option>
+                      <option value="mixto">Mixto</option>
+                    </select>
+                  </div>
+
+                  {/* Client fields */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Nombre Cliente</label>
+                      <input type="text" value={saleForm.client_name}
+                        onChange={(e) => setSaleForm({ ...saleForm, client_name: e.target.value })}
+                        className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30"
+                        placeholder="Opcional" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Teléfono Cliente</label>
+                      <input type="text" value={saleForm.client_phone}
+                        onChange={(e) => setSaleForm({ ...saleForm, client_phone: e.target.value })}
+                        className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30"
+                        placeholder="Opcional" />
+                    </div>
+                  </div>
+                  <input type="hidden" value={saleForm.client_id} />
+
+                  <div>
+                    <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Notas</label>
+                    <textarea value={saleForm.notes} onChange={(e) => setSaleForm({ ...saleForm, notes: e.target.value })}
+                      className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30 resize-none" rows={2}
+                      placeholder="Notas sobre la venta..." />
+                  </div>
+
+                  <div className="flex gap-3 pt-2">
+                    <button type="button" onClick={() => setShowSaleModal(false)}
+                      className="flex-1 py-3 bg-slate-200 rounded-full text-sm font-bold hover:bg-slate-300 transition-colors">
+                      Cancelar
+                    </button>
+                    <button type="submit" disabled={savingSale}
+                      className="flex-1 py-3 bg-primary text-white rounded-full text-sm font-bold shadow-md shadow-primary/20 hover:brightness-95 transition-all disabled:opacity-50">
+                      {savingSale ? "Registrando..." : "Confirmar Venta"}
+                    </button>
+                  </div>
+                </form>
+              </>
+            )}
           </div>
         </div>
       )}
