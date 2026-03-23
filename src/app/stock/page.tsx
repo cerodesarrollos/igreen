@@ -27,6 +27,37 @@ interface Product {
   updated_at: string;
 }
 
+/* ───── iPhone Catalog ───── */
+const IPHONE_CATALOG: Record<string, { capacities: string[]; colors: string[] }> = {
+  "iPhone 11": { capacities: ["64GB", "128GB", "256GB"], colors: ["Negro", "Blanco", "Rojo", "Amarillo", "Verde", "Violeta"] },
+  "iPhone 11 Pro": { capacities: ["64GB", "256GB", "512GB"], colors: ["Gris Espacial", "Plata", "Oro", "Verde Noche"] },
+  "iPhone 11 Pro Max": { capacities: ["64GB", "256GB", "512GB"], colors: ["Gris Espacial", "Plata", "Oro", "Verde Noche"] },
+  "iPhone 12 mini": { capacities: ["64GB", "128GB", "256GB"], colors: ["Negro", "Blanco", "Rojo", "Azul", "Verde"] },
+  "iPhone 12": { capacities: ["64GB", "128GB", "256GB"], colors: ["Negro", "Blanco", "Rojo", "Azul", "Verde"] },
+  "iPhone 12 Pro": { capacities: ["128GB", "256GB", "512GB"], colors: ["Grafito", "Plata", "Oro", "Azul Pacífico"] },
+  "iPhone 12 Pro Max": { capacities: ["128GB", "256GB", "512GB"], colors: ["Grafito", "Plata", "Oro", "Azul Pacífico"] },
+  "iPhone 13 mini": { capacities: ["128GB", "256GB", "512GB"], colors: ["Negro Noche", "Luz de Estrella", "Rojo", "Azul", "Rosa", "Verde"] },
+  "iPhone 13": { capacities: ["128GB", "256GB", "512GB"], colors: ["Negro Noche", "Luz de Estrella", "Rojo", "Azul", "Rosa", "Verde"] },
+  "iPhone 13 Pro": { capacities: ["128GB", "256GB", "512GB", "1TB"], colors: ["Grafito", "Plata", "Oro", "Azul Sierra", "Verde Alpino"] },
+  "iPhone 13 Pro Max": { capacities: ["128GB", "256GB", "512GB", "1TB"], colors: ["Grafito", "Plata", "Oro", "Azul Sierra", "Verde Alpino"] },
+  "iPhone 14": { capacities: ["128GB", "256GB", "512GB"], colors: ["Negro Noche", "Luz de Estrella", "Rojo", "Azul", "Violeta", "Amarillo"] },
+  "iPhone 14 Plus": { capacities: ["128GB", "256GB", "512GB"], colors: ["Negro Noche", "Luz de Estrella", "Rojo", "Azul", "Violeta", "Amarillo"] },
+  "iPhone 14 Pro": { capacities: ["128GB", "256GB", "512GB", "1TB"], colors: ["Negro Espacial", "Plata", "Oro", "Violeta Oscuro"] },
+  "iPhone 14 Pro Max": { capacities: ["128GB", "256GB", "512GB", "1TB"], colors: ["Negro Espacial", "Plata", "Oro", "Violeta Oscuro"] },
+  "iPhone 15": { capacities: ["128GB", "256GB", "512GB"], colors: ["Negro", "Azul", "Verde", "Amarillo", "Rosa"] },
+  "iPhone 15 Plus": { capacities: ["128GB", "256GB", "512GB"], colors: ["Negro", "Azul", "Verde", "Amarillo", "Rosa"] },
+  "iPhone 15 Pro": { capacities: ["128GB", "256GB", "512GB", "1TB"], colors: ["Titanio Negro", "Titanio Blanco", "Titanio Natural", "Titanio Azul"] },
+  "iPhone 15 Pro Max": { capacities: ["256GB", "512GB", "1TB"], colors: ["Titanio Negro", "Titanio Blanco", "Titanio Natural", "Titanio Azul"] },
+  "iPhone 16": { capacities: ["128GB", "256GB", "512GB"], colors: ["Negro", "Blanco", "Azul", "Verde", "Rosa"] },
+  "iPhone 16 Plus": { capacities: ["128GB", "256GB", "512GB"], colors: ["Negro", "Blanco", "Azul", "Verde", "Rosa"] },
+  "iPhone 16 Pro": { capacities: ["128GB", "256GB", "512GB", "1TB"], colors: ["Titanio Negro", "Titanio Blanco", "Titanio Natural", "Titanio Desierto"] },
+  "iPhone 16 Pro Max": { capacities: ["256GB", "512GB", "1TB"], colors: ["Titanio Negro", "Titanio Blanco", "Titanio Natural", "Titanio Desierto"] },
+  "iPhone SE (2da)": { capacities: ["64GB", "128GB", "256GB"], colors: ["Negro", "Blanco", "Rojo"] },
+  "iPhone SE (3ra)": { capacities: ["64GB", "128GB", "256GB"], colors: ["Negro Noche", "Luz de Estrella", "Rojo"] },
+};
+
+const MODEL_NAMES = Object.keys(IPHONE_CATALOG);
+
 const emptyForm = {
   model: "",
   imei: "",
@@ -565,9 +596,15 @@ export default function StockPage() {
               {/* Model */}
               <div>
                 <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Modelo *</label>
-                <input required value={form.model} onChange={(e) => setForm({ ...form, model: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30"
-                  placeholder="Ej: iPhone 14 Pro Max" />
+                <select required value={form.model} onChange={(e) => {
+                  const m = e.target.value;
+                  const spec = IPHONE_CATALOG[m];
+                  setForm({ ...form, model: m, capacity: spec ? spec.capacities[0] : "", color: spec ? spec.colors[0] : "" });
+                }}
+                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30">
+                  <option value="">Seleccionar modelo...</option>
+                  {MODEL_NAMES.map((m) => <option key={m} value={m}>{m}</option>)}
+                </select>
               </div>
               {/* IMEI */}
               <div>
@@ -580,15 +617,29 @@ export default function StockPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Capacidad</label>
-                  <input value={form.capacity} onChange={(e) => setForm({ ...form, capacity: e.target.value })}
-                    className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30"
-                    placeholder="128GB" />
+                  {form.model && IPHONE_CATALOG[form.model] ? (
+                    <select value={form.capacity} onChange={(e) => setForm({ ...form, capacity: e.target.value })}
+                      className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30">
+                      {IPHONE_CATALOG[form.model].capacities.map((c) => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  ) : (
+                    <input value={form.capacity} onChange={(e) => setForm({ ...form, capacity: e.target.value })}
+                      className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30"
+                      placeholder="128GB" />
+                  )}
                 </div>
                 <div>
                   <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Color</label>
-                  <input value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })}
-                    className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30"
-                    placeholder="Negro" />
+                  {form.model && IPHONE_CATALOG[form.model] ? (
+                    <select value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })}
+                      className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30">
+                      {IPHONE_CATALOG[form.model].colors.map((c) => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  ) : (
+                    <input value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })}
+                      className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30"
+                      placeholder="Negro" />
+                  )}
                 </div>
               </div>
               {/* Condition + Battery */}
@@ -686,8 +737,15 @@ export default function StockPage() {
             <form onSubmit={handleEditProduct} className="p-6 space-y-4">
               <div>
                 <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Modelo *</label>
-                <input required value={editForm.model} onChange={(e) => setEditForm({ ...editForm, model: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30" />
+                <select required value={editForm.model} onChange={(e) => {
+                  const m = e.target.value;
+                  const spec = IPHONE_CATALOG[m];
+                  setEditForm({ ...editForm, model: m, capacity: spec ? spec.capacities[0] : editForm.capacity, color: spec ? spec.colors[0] : editForm.color });
+                }}
+                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30">
+                  <option value="">Seleccionar modelo...</option>
+                  {MODEL_NAMES.map((m) => <option key={m} value={m}>{m}</option>)}
+                </select>
               </div>
               <div>
                 <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">IMEI *</label>
@@ -697,13 +755,27 @@ export default function StockPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Capacidad</label>
-                  <input value={editForm.capacity} onChange={(e) => setEditForm({ ...editForm, capacity: e.target.value })}
-                    className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30" />
+                  {editForm.model && IPHONE_CATALOG[editForm.model] ? (
+                    <select value={editForm.capacity} onChange={(e) => setEditForm({ ...editForm, capacity: e.target.value })}
+                      className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30">
+                      {IPHONE_CATALOG[editForm.model].capacities.map((c) => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  ) : (
+                    <input value={editForm.capacity} onChange={(e) => setEditForm({ ...editForm, capacity: e.target.value })}
+                      className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30" />
+                  )}
                 </div>
                 <div>
                   <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Color</label>
-                  <input value={editForm.color} onChange={(e) => setEditForm({ ...editForm, color: e.target.value })}
-                    className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30" />
+                  {editForm.model && IPHONE_CATALOG[editForm.model] ? (
+                    <select value={editForm.color} onChange={(e) => setEditForm({ ...editForm, color: e.target.value })}
+                      className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30">
+                      {IPHONE_CATALOG[editForm.model].colors.map((c) => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  ) : (
+                    <input value={editForm.color} onChange={(e) => setEditForm({ ...editForm, color: e.target.value })}
+                      className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30" />
+                  )}
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
