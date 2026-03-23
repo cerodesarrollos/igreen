@@ -1,13 +1,88 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
+
+/* ───── types ───── */
+interface ActivityLog {
+  id: string;
+  entity_type: string;
+  action: string;
+  description: string;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+}
+
+/* ───── component ───── */
 export default function DashboardPage() {
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [disponibles, setDisponibles] = useState(0);
+  const [vendidosMes, setVendidosMes] = useState(0);
+  const [turnosHoy, setTurnosHoy] = useState(0);
+  const [recentActivity, setRecentActivity] = useState<ActivityLog[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchDashboard() {
+      setLoading(true);
+      const now = new Date();
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+      const todayStr = now.toISOString().slice(0, 10);
+
+      const [prodRes, salesRes, aptRes, actRes] = await Promise.all([
+        supabase.from("ig_products").select("id, status"),
+        supabase.from("ig_sales").select("id, sold_at, created_at").gte("sold_at", monthStart),
+        supabase.from("ig_appointments").select("id, scheduled_at").gte("scheduled_at", todayStr + "T00:00:00").lte("scheduled_at", todayStr + "T23:59:59"),
+        supabase.from("ig_activity_log").select("*").order("created_at", { ascending: false }).limit(5),
+      ]);
+
+      if (prodRes.data) {
+        setTotalProducts(prodRes.data.length);
+        setDisponibles(prodRes.data.filter((p) => p.status === "disponible").length);
+      }
+      if (salesRes.data) setVendidosMes(salesRes.data.length);
+      if (aptRes.data) setTurnosHoy(aptRes.data.length);
+      if (actRes.data) setRecentActivity(actRes.data as ActivityLog[]);
+      setLoading(false);
+    }
+    fetchDashboard();
+  }, []);
+
+  function timeAgo(dateStr: string) {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 60) return `hace ${mins}m`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `hace ${hours}h`;
+    const days = Math.floor(hours / 24);
+    return `hace ${days}d`;
+  }
+
+  function actionColor(action: string) {
+    if (action.includes("venta") || action.includes("sold")) return "bg-primary";
+    if (action.includes("create") || action.includes("add")) return "bg-blue-500";
+    if (action.includes("update") || action.includes("edit")) return "bg-amber-500";
+    return "bg-slate-300";
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-32">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <span className="ml-3 text-sm text-cool-grey">Cargando dashboard...</span>
+      </div>
+    );
+  }
+
   return (
     <>
       {/* KPI Cards */}
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[
-          { label: "Ingresos hoy", value: "$42,850", change: "+12.5%", icon: "payments", up: true },
-          { label: "Equipos taller", value: "28", change: "+4%", icon: "devices", up: true },
-          { label: "Stock bajo", value: "12", change: "-2%", icon: "inventory_2", up: false },
-          { label: "Sin leer", value: "7", change: "+8%", icon: "mail", up: true },
+          { label: "Equipos en stock", value: disponibles.toString(), icon: "phone_iphone", up: true },
+          { label: "Total productos", value: totalProducts.toString(), icon: "devices", up: true },
+          { label: "Vendidos este mes", value: vendidosMes.toString(), icon: "sell", up: true },
+          { label: "Turnos hoy", value: turnosHoy.toString(), icon: "event", up: true },
         ].map((kpi) => (
           <div key={kpi.label} className="bg-white p-4 rounded-xl border border-slate-200 flex items-center justify-between">
             <div>
@@ -15,9 +90,6 @@ export default function DashboardPage() {
               <h3 className="text-xl font-black mt-0.5">{kpi.value}</h3>
             </div>
             <div className="text-right">
-              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${kpi.up ? "text-primary bg-primary/10" : "text-red-500 bg-red-50"}`}>
-                {kpi.change}
-              </span>
               <div className="mt-2 text-cool-grey">
                 <span className="material-symbols-outlined text-lg">{kpi.icon}</span>
               </div>
@@ -31,45 +103,52 @@ export default function DashboardPage() {
         <div className="col-span-12 lg:col-span-3 space-y-6">
           <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm h-full">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-black uppercase tracking-widest">Equipos pendientes</h2>
-              <button className="text-cool-grey hover:text-on-surface transition-colors">
-                <span className="material-symbols-outlined text-xl">filter_list</span>
-              </button>
-            </div>
-            <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-              <span className="px-2.5 py-1 bg-slate-100 text-[10px] font-bold text-cool-grey rounded border border-slate-200 cursor-pointer">Todos</span>
-              <span className="px-2.5 py-1 bg-primary/10 text-[10px] font-bold text-primary rounded border border-primary/20 cursor-pointer">Listos</span>
-              <span className="px-2.5 py-1 bg-slate-100 text-[10px] font-bold text-cool-grey rounded border border-slate-200 cursor-pointer">Esperando</span>
+              <h2 className="text-sm font-black uppercase tracking-widest">Resumen Rápido</h2>
             </div>
             <div className="space-y-4">
-              {[
-                { name: "Carlos Mendez", device: "iPhone 14 Pro Max", icon: "smartphone", time: "3 DÍAS", urgent: true },
-                { name: "Ana Sofia Ruiz", device: "MacBook Air M2", icon: "laptop_mac", time: "1 DÍA", urgent: false },
-                { name: "Julio Cesar", device: "Apple Watch S8", icon: "watch", time: "HOY", urgent: false },
-              ].map((item) => (
-                <div key={item.name} className="flex items-center justify-between group p-2.5 rounded-lg border border-transparent hover:border-slate-100 hover:bg-slate-50 transition-all">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-cool-grey">
-                      <span className="material-symbols-outlined text-lg">{item.icon}</span>
-                    </div>
-                    <div>
-                      <p className="font-bold text-xs">{item.name}</p>
-                      <p className="text-[10px] text-cool-grey">{item.device}</p>
-                    </div>
+              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
+                    <span className="material-symbols-outlined text-lg text-green-600">check_circle</span>
                   </div>
-                  <p className={`text-[10px] font-black ${item.urgent ? "text-red-500" : "text-primary"}`}>{item.time}</p>
+                  <div>
+                    <p className="font-bold text-xs">Disponibles</p>
+                    <p className="text-[10px] text-cool-grey">Para venta</p>
+                  </div>
                 </div>
-              ))}
+                <p className="text-lg font-black text-primary">{disponibles}</p>
+              </div>
+              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+                    <span className="material-symbols-outlined text-lg text-blue-600">sell</span>
+                  </div>
+                  <div>
+                    <p className="font-bold text-xs">Vendidos (mes)</p>
+                    <p className="text-[10px] text-cool-grey">Este mes</p>
+                  </div>
+                </div>
+                <p className="text-lg font-black text-blue-600">{vendidosMes}</p>
+              </div>
+              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-amber-50 rounded-lg flex items-center justify-center">
+                    <span className="material-symbols-outlined text-lg text-amber-600">event</span>
+                  </div>
+                  <div>
+                    <p className="font-bold text-xs">Turnos hoy</p>
+                    <p className="text-[10px] text-cool-grey">Programados</p>
+                  </div>
+                </div>
+                <p className="text-lg font-black text-amber-600">{turnosHoy}</p>
+              </div>
             </div>
-            <button className="w-full mt-6 py-2 text-[11px] font-bold text-cool-grey border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors uppercase tracking-widest">
-              Ver todos
-            </button>
           </div>
         </div>
 
-        {/* Center Column: Revenue + Tickets */}
+        {/* Center Column: Weekly Revenue + Tickets (static, keep design) */}
         <div className="col-span-12 lg:col-span-6 space-y-6">
-          {/* Weekly Revenue Chart */}
+          {/* Weekly Revenue Chart — static placeholder */}
           <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
             <div className="flex items-center justify-between mb-6">
               <div>
@@ -105,7 +184,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Service Tickets Table */}
+          {/* Service Tickets Table — static placeholder */}
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
             <div className="flex items-center justify-between p-5 border-b border-slate-100">
               <h2 className="text-sm font-black uppercase tracking-widest">Tickets de Servicio</h2>
@@ -113,39 +192,9 @@ export default function DashboardPage() {
                 VER TODO <span className="material-symbols-outlined text-[10px]">arrow_forward</span>
               </a>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="text-[10px] uppercase tracking-widest text-cool-grey bg-slate-50 border-b border-slate-100">
-                    <th className="px-5 py-3 font-bold">Ticket</th>
-                    <th className="px-5 py-3 font-bold">Cliente</th>
-                    <th className="px-5 py-3 font-bold">Equipo</th>
-                    <th className="px-5 py-3 font-bold">Estado</th>
-                    <th className="px-5 py-3 font-bold text-right">Op</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-50">
-                  {[
-                    { ticket: "#IG-9842", client: "Laura Morales", device: "iPhone 13 Pro", status: "Listo", color: "bg-primary text-white" },
-                    { ticket: "#IG-9841", client: "Roberto Blanco", device: "MacBook Pro M1", status: "En reparación", color: "bg-amber-100 text-amber-700" },
-                    { ticket: "#IG-9840", client: "Elena Prieto", device: "iPad Pro 11\"", status: "Ingresado", color: "bg-slate-100 text-cool-grey" },
-                  ].map((row) => (
-                    <tr key={row.ticket} className="hover:bg-slate-50 transition-colors text-[11px]">
-                      <td className="px-5 py-3 font-bold">{row.ticket}</td>
-                      <td className="px-5 py-3">{row.client}</td>
-                      <td className="px-5 py-3">{row.device}</td>
-                      <td className="px-5 py-3">
-                        <span className={`px-2 py-0.5 ${row.color} text-[9px] font-black uppercase rounded`}>{row.status}</span>
-                      </td>
-                      <td className="px-5 py-3 text-right">
-                        <button className="text-cool-grey hover:text-on-surface">
-                          <span className="material-symbols-outlined text-base">more_horiz</span>
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="flex flex-col items-center justify-center py-12 text-cool-grey">
+              <span className="material-symbols-outlined text-3xl mb-2">confirmation_number</span>
+              <p className="text-xs font-medium">Próximamente — Tickets de servicio técnico</p>
             </div>
           </div>
         </div>
@@ -153,24 +202,27 @@ export default function DashboardPage() {
         {/* Right Column: Real-time Feed */}
         <div className="col-span-12 lg:col-span-3 space-y-6">
           <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm h-full">
-            <h2 className="text-sm font-black uppercase tracking-widest mb-6">Actividad en tiempo real</h2>
-            <div className="space-y-6 relative ml-2">
-              <div className="absolute left-[-8px] top-0 bottom-0 w-px bg-slate-100" />
-              {[
-                { text: "#IG-9842 Listo", sub: "Matias • hace 14m", color: "bg-primary" },
-                { text: "Repuestos pedidos MB Air", sub: "PO-2231 • hace 2h", color: "bg-amber-500" },
-                { text: "Nuevo Ticket iPhone 14", sub: "Cliente: M. Vazquez • hace 4h", color: "bg-blue-500" },
-                { text: "Reporte diario impreso", sub: "Kennet • hace 5h", color: "bg-slate-300" },
-              ].map((feed, i) => (
-                <div key={i} className="relative pl-4">
-                  <div className={`absolute left-[-11px] top-1 w-1.5 h-1.5 rounded-full ${feed.color} ring-4 ring-white`} />
-                  <div>
-                    <p className="text-[11px] font-bold">{feed.text}</p>
-                    <p className="text-[9px] text-cool-grey mt-0.5">{feed.sub}</p>
+            <h2 className="text-sm font-black uppercase tracking-widest mb-6">Actividad reciente</h2>
+
+            {recentActivity.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-8 text-cool-grey">
+                <span className="material-symbols-outlined text-3xl mb-2">history</span>
+                <p className="text-xs font-medium">Sin actividad registrada</p>
+              </div>
+            ) : (
+              <div className="space-y-6 relative ml-2">
+                <div className="absolute left-[-8px] top-0 bottom-0 w-px bg-slate-100" />
+                {recentActivity.map((act) => (
+                  <div key={act.id} className="relative pl-4">
+                    <div className={`absolute left-[-11px] top-1 w-1.5 h-1.5 rounded-full ${actionColor(act.action)} ring-4 ring-white`} />
+                    <div>
+                      <p className="text-[11px] font-bold">{act.description || `${act.entity_type}: ${act.action}`}</p>
+                      <p className="text-[9px] text-cool-grey mt-0.5">{timeAgo(act.created_at)}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
 
             <div className="mt-10 pt-6 border-t border-slate-100">
               <p className="text-[10px] font-bold text-cool-grey uppercase tracking-widest mb-4">Acciones Rápidas</p>
