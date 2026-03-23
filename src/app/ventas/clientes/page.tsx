@@ -174,12 +174,8 @@ export default function ClientesPage() {
 
   return (
     <>
-      {/* Header */}
-      <div className="flex justify-between items-end mb-8">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Clientes</h2>
-          <p className="text-on-surface-variant text-sm mt-1">Base de datos de clientes</p>
-        </div>
+      {/* Action button */}
+      <div className="flex justify-end mb-6">
         <button
           onClick={openAdd}
           className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-bold text-sm shadow-md shadow-primary/20 hover:brightness-95 transition-all"

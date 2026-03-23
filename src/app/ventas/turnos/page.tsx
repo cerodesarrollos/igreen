@@ -408,10 +408,6 @@ export default function TurnosPage() {
     <>
       <div className="flex justify-between items-end mb-8">
         <div className="flex items-center gap-4">
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight">Turnos</h2>
-            <p className="text-on-surface-variant text-sm mt-1">Agenda de citas para venta de equipos</p>
-          </div>
           {/* View toggle chips */}
           <div className="flex items-center gap-1.5 ml-2">
             {viewOptions.map((opt) => (

@@ -134,11 +134,6 @@ export default function VentasResumenPage() {
 
   return (
     <>
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold tracking-tight">Venta de iPhone</h2>
-        <p className="text-on-surface-variant text-sm mt-1">Resumen general del módulo de ventas</p>
-      </div>
-
       {/* FILA 1 — KPIs clickeables */}
       <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
         {kpiCards.map((kpi) => (

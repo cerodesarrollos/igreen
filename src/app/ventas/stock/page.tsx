@@ -512,12 +512,6 @@ export default function VentasStockPage() {
 
   return (
     <>
-      {/* ── Header ── */}
-      <div className="mb-6">
-        <h2 className="text-3xl font-bold tracking-tight">Stock de Equipos</h2>
-        <p className="text-on-surface-variant text-sm mt-1">Gestión de inventario iPhone — alta, edición y venta</p>
-      </div>
-
       {/* ── KPI Cards (compactas) ── */}
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         {[
