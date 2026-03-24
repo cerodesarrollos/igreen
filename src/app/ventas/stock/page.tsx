@@ -669,10 +669,10 @@ export default function VentasStockPage() {
                           {isOpen && (
                             <tr key={`${p.id}-detail`} className="border-b border-white/[0.05] bg-white/[0.02]">
                               <td colSpan={9} className="px-6 py-5">
-                                <div className="grid grid-cols-[auto_1fr_auto] gap-6">
+                                <div className="grid grid-cols-[auto_1fr_auto] gap-6 items-start">
 
                                   {/* Col 1 — Fotos 2×2 */}
-                                  <div className="grid grid-cols-2 gap-1.5 w-[120px]">
+                                  <div className="grid grid-cols-2 gap-1.5 w-[120px] self-start pr-5 border-r border-white/[0.05]">
                                     {[...(p.photos || []), null, null, null, null].slice(0, 4).map((photo, n) => (
                                       <div key={n} className="w-[55px] h-[55px] rounded-lg bg-white/[0.04] border border-white/[0.07] flex items-center justify-center overflow-hidden">
                                         {photo
@@ -704,7 +704,7 @@ export default function VentasStockPage() {
                                   </div>
 
                                   {/* Col 3 — Precios + Acciones */}
-                                  <div className="flex flex-col gap-3 min-w-[160px]">
+                                  <div className="flex flex-col gap-3 min-w-[160px] self-start pl-5 border-l border-white/[0.05]">
                                     {/* Precios */}
                                     <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3 space-y-2">
                                       <div className="flex justify-between items-baseline">
