@@ -823,8 +823,6 @@ export default function VentasStockPage() {
                                   </div>
                                 </div>
                               </td>
-                                </div>
-                              </td>
                             </tr>
                           )}
                         </>
