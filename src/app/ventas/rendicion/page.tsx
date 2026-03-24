@@ -103,8 +103,8 @@ export default function RendicionPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-32">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-        <span className="ml-3 text-sm text-cool-grey">Cargando rendición...</span>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-400" />
+        <span className="ml-3 text-sm text-white/45">Cargando rendición...</span>
       </div>
     );
   }
@@ -194,8 +194,8 @@ export default function RendicionPage() {
             onClick={() => setPeriod(p.key)}
             className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
               period === p.key
-                ? "bg-primary text-white"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                ? "bg-violet-600/20 border border-violet-500/30 text-violet-300"
+                : "bg-white/[0.06] text-white/55 hover:bg-white/[0.08]"
             }`}
           >
             {p.label}
@@ -207,14 +207,14 @@ export default function RendicionPage() {
               type="date"
               value={customFrom}
               onChange={(e) => setCustomFrom(e.target.value)}
-              className="border border-slate-200 rounded-xl px-3 py-1.5 text-xs"
+              className="border border-white/[0.08] rounded-xl px-3 py-1.5 text-xs"
             />
-            <span className="text-xs text-slate-400">→</span>
+            <span className="text-xs text-white/45">→</span>
             <input
               type="date"
               value={customTo}
               onChange={(e) => setCustomTo(e.target.value)}
-              className="border border-slate-200 rounded-xl px-3 py-1.5 text-xs"
+              className="border border-white/[0.08] rounded-xl px-3 py-1.5 text-xs"
             />
           </div>
         )}
@@ -223,18 +223,18 @@ export default function RendicionPage() {
       {/* ── KPI Cards ── */}
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
-          { label: "Stock Consignación", value: stockCount.toString(), icon: "inventory_2", bg: "bg-purple-100", color: "text-purple-600" },
-          { label: "Vendidos Mes", value: soldThisMonth.toString(), icon: "sell", bg: "bg-green-100", color: "text-green-600" },
-          { label: "Ganancia Total", value: formatPrice(totalProfit), icon: "trending_up", bg: "bg-blue-100", color: "text-blue-600" },
-          { label: "Pendiente Liquidar", value: formatPrice(pendingAmount), icon: "hourglass_top", bg: "bg-amber-100", color: "text-amber-600" },
+          { label: "Stock Consignación", value: stockCount.toString(), icon: "inventory_2", bg: "bg-violet-500/15", color: "text-violet-400" },
+          { label: "Vendidos Mes", value: soldThisMonth.toString(), icon: "sell", bg: "bg-emerald-500/15", color: "text-emerald-400" },
+          { label: "Ganancia Total", value: formatPrice(totalProfit), icon: "trending_up", bg: "bg-blue-500/15", color: "text-blue-400" },
+          { label: "Pendiente Liquidar", value: formatPrice(pendingAmount), icon: "hourglass_top", bg: "bg-amber-500/15", color: "text-amber-400" },
         ].map((kpi) => (
-          <div key={kpi.label} className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+          <div key={kpi.label} className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 p-5">
             <div className="flex items-center gap-3 mb-3">
               <div className={`w-10 h-10 rounded-xl ${kpi.bg} flex items-center justify-center`}>
                 <span className={`material-symbols-outlined text-xl ${kpi.color}`}>{kpi.icon}</span>
               </div>
             </div>
-            <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-1">{kpi.label}</p>
+            <p className="text-[10px] uppercase tracking-widest font-bold text-white/45 mb-1">{kpi.label}</p>
             <p className="text-xl font-bold tracking-tight">{kpi.value}</p>
           </div>
         ))}
@@ -244,10 +244,10 @@ export default function RendicionPage() {
       {ownerSummaries.length > 0 && (
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
           {ownerSummaries.map((o) => (
-            <div key={o.owner} className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+            <div key={o.owner} className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 p-5">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">
-                  <span className="text-sm font-bold text-purple-700">{o.owner.charAt(0).toUpperCase()}</span>
+                <div className="w-10 h-10 rounded-xl bg-violet-500/15 flex items-center justify-center">
+                  <span className="text-sm font-bold text-violet-400">{o.owner.charAt(0).toUpperCase()}</span>
                 </div>
                 <div>
                   <h4 className="text-sm font-bold">{o.owner}</h4>
@@ -255,22 +255,22 @@ export default function RendicionPage() {
               </div>
               <div className="grid grid-cols-2 gap-3 mb-4">
                 <div>
-                  <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400">En Stock</p>
+                  <p className="text-[10px] uppercase tracking-widest font-bold text-white/45">En Stock</p>
                   <p className="text-lg font-bold">{o.enStock}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400">Vendidos</p>
+                  <p className="text-[10px] uppercase tracking-widest font-bold text-white/45">Vendidos</p>
                   <p className="text-lg font-bold">{o.totalSold}</p>
                 </div>
                 <div className="col-span-2">
-                  <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400">Adeudado</p>
-                  <p className="text-lg font-bold text-amber-600">{formatPrice(o.totalOwed)}</p>
+                  <p className="text-[10px] uppercase tracking-widest font-bold text-white/45">Adeudado</p>
+                  <p className="text-lg font-bold text-amber-400">{formatPrice(o.totalOwed)}</p>
                 </div>
               </div>
               <button
                 onClick={() => { setModalProvider(o.owner); setShowModal(true); }}
                 disabled={o.totalOwed === 0}
-                className="w-full px-4 py-2 bg-primary text-white rounded-xl text-sm font-bold hover:brightness-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full px-4 py-2 bg-violet-600/20 border border-violet-500/30 text-violet-300 rounded-xl text-sm font-bold hover:brightness-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 <span className="material-symbols-outlined text-sm">price_check</span>
                 Liquidar
@@ -281,12 +281,12 @@ export default function RendicionPage() {
       )}
 
       {/* ── Movements Table ── */}
-      <section className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-8">
-        <div className="px-6 py-4 border-b border-slate-100">
-          <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400">Movimientos</p>
+      <section className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 overflow-hidden mb-8">
+        <div className="px-6 py-4 border-b border-white/[0.06]">
+          <p className="text-[10px] uppercase tracking-widest font-bold text-white/45">Movimientos</p>
         </div>
         {consignmentSales.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-slate-400">
+          <div className="flex flex-col items-center justify-center py-12 text-white/45">
             <span className="material-symbols-outlined text-4xl mb-3">account_balance</span>
             <p className="text-sm font-medium">Sin movimientos en este período</p>
           </div>
@@ -294,36 +294,36 @@ export default function RendicionPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50">
-                  <th className="px-6 py-3 text-[10px] uppercase tracking-widest font-bold text-slate-400">Fecha</th>
-                  <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-slate-400">Producto</th>
-                  <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-slate-400">Venta</th>
-                  <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-slate-400">Costo</th>
-                  <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-slate-400">Ganancia</th>
-                  <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-slate-400">Proveedor</th>
-                  <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-slate-400">Estado</th>
+                <tr className="bg-white/[0.03]">
+                  <th className="px-6 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Fecha</th>
+                  <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Producto</th>
+                  <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Venta</th>
+                  <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Costo</th>
+                  <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Ganancia</th>
+                  <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Proveedor</th>
+                  <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Estado</th>
                 </tr>
               </thead>
               <tbody>
                 {consignmentSales.map((r, i) => (
                   <tr
                     key={`${r.product_id}-${i}`}
-                    className={`hover:bg-slate-50 transition-colors ${i % 2 === 1 ? "bg-slate-50/50" : ""}`}
+                    className={`hover:bg-white/[0.03] transition-colors ${i % 2 === 1 ? "bg-white/[0.02]" : ""}`}
                   >
-                    <td className="px-6 py-3 text-sm text-slate-500">
+                    <td className="px-6 py-3 text-sm text-white/50">
                       {new Date(r.sold_at).toLocaleDateString("es-AR")}
                     </td>
                     <td className="px-4 py-3 text-sm font-medium">{r.productLabel}</td>
                     <td className="px-4 py-3 text-sm">{formatPrice(r.sale_price)}</td>
                     <td className="px-4 py-3 text-sm">{formatPrice(r.cost_price)}</td>
-                    <td className="px-4 py-3 text-sm font-medium text-green-600">{formatPrice(r.profit)}</td>
+                    <td className="px-4 py-3 text-sm font-medium text-emerald-400">{formatPrice(r.profit)}</td>
                     <td className="px-4 py-3 text-sm">{r.provider}</td>
                     <td className="px-4 py-3">
                       <span
                         className={`px-2.5 py-0.5 text-[10px] font-bold rounded-full ${
                           r.settled
-                            ? "bg-green-100 text-green-700"
-                            : "bg-amber-100 text-amber-700"
+                            ? "bg-emerald-500/15 text-emerald-400"
+                            : "bg-amber-500/15 text-amber-400"
                         }`}
                       >
                         {r.settled ? "LIQUIDADO" : "PENDIENTE"}
@@ -339,34 +339,34 @@ export default function RendicionPage() {
 
       {/* ── Liquidation Modal ── */}
       {showModal && modalProvider && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[80vh] flex flex-col">
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#1a1a1d] border border-white/[0.10] rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col">
+            <div className="p-6 border-b border-white/[0.06] flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-bold">Liquidar — {modalProvider}</h3>
-                <p className="text-xs text-slate-400 mt-0.5">{modalItems.length} items pendientes</p>
+                <p className="text-xs text-white/45 mt-0.5">{modalItems.length} items pendientes</p>
               </div>
               <button
                 onClick={() => { setShowModal(false); setModalProvider(null); }}
-                className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
+                className="p-2 hover:bg-white/[0.06] rounded-xl transition-colors"
               >
-                <span className="material-symbols-outlined text-slate-400">close</span>
+                <span className="material-symbols-outlined text-white/45">close</span>
               </button>
             </div>
 
             <div className="flex-1 overflow-y-auto p-6">
               {modalItems.length === 0 ? (
-                <p className="text-sm text-slate-400 text-center py-8">No hay items pendientes de liquidación</p>
+                <p className="text-sm text-white/45 text-center py-8">No hay items pendientes de liquidación</p>
               ) : (
                 <div className="space-y-3">
                   {modalItems.map((item, i) => (
                     <div
                       key={`${item.product_id}-${i}`}
-                      className="flex items-center justify-between p-3 bg-slate-50 rounded-xl"
+                      className="flex items-center justify-between p-3 bg-white/[0.03] rounded-xl"
                     >
                       <div>
                         <p className="text-sm font-medium">{item.productLabel}</p>
-                        <p className="text-xs text-slate-400">
+                        <p className="text-xs text-white/45">
                           {new Date(item.sold_at).toLocaleDateString("es-AR")}
                         </p>
                       </div>
@@ -377,9 +377,9 @@ export default function RendicionPage() {
               )}
             </div>
 
-            <div className="p-6 border-t border-slate-100">
+            <div className="p-6 border-t border-white/[0.06]">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-sm text-slate-500">Total a liquidar</span>
+                <span className="text-sm text-white/50">Total a liquidar</span>
                 <span className="text-xl font-bold">
                   {formatPrice(modalItems.reduce((s, r) => s + r.cost_price, 0))}
                 </span>
@@ -387,7 +387,7 @@ export default function RendicionPage() {
               <button
                 onClick={handleSettle}
                 disabled={settling || modalItems.length === 0}
-                className="w-full px-4 py-3 bg-primary text-white rounded-xl text-sm font-bold hover:brightness-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full px-4 py-3 bg-violet-600/20 border border-violet-500/30 text-violet-300 rounded-xl text-sm font-bold hover:brightness-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {settling ? (
                   <>

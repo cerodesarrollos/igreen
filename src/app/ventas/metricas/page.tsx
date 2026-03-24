@@ -343,8 +343,8 @@ export default function MetricasPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-32">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-        <span className="ml-3 text-sm text-cool-grey">Cargando métricas...</span>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-400" />
+        <span className="ml-3 text-sm text-white/45">Cargando métricas...</span>
       </div>
     );
   }
@@ -366,8 +366,8 @@ export default function MetricasPage() {
             onClick={() => setPeriod(p.key)}
             className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
               period === p.key
-                ? "bg-primary text-white"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                ? "bg-violet-600/20 border border-violet-500/30 text-violet-300"
+                : "bg-white/[0.06] text-white/55 hover:bg-white/[0.08]"
             }`}
           >
             {p.label}
@@ -378,28 +378,28 @@ export default function MetricasPage() {
       {/* ── KPI Cards ── */}
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
-          { label: "Ventas del Mes", value: `${totalSalesCount} — ${formatPrice(totalSalesAmount)}`, icon: "sell", bg: "bg-blue-100", color: "text-blue-600" },
-          { label: "Ticket Promedio", value: formatPrice(avgTicket), icon: "confirmation_number", bg: "bg-green-100", color: "text-green-600" },
+          { label: "Ventas del Mes", value: `${totalSalesCount} — ${formatPrice(totalSalesAmount)}`, icon: "sell", bg: "bg-blue-500/15", color: "text-blue-400" },
+          { label: "Ticket Promedio", value: formatPrice(avgTicket), icon: "confirmation_number", bg: "bg-emerald-500/15", color: "text-emerald-400" },
           { label: "Margen Promedio %", value: `${avgMargin.toFixed(1)}%`, icon: "percent", bg: "bg-orange-100", color: "text-orange-600" },
-          { label: "Garantías Activas", value: activeWarranties.toString(), icon: "verified_user", bg: "bg-purple-100", color: "text-purple-600" },
+          { label: "Garantías Activas", value: activeWarranties.toString(), icon: "verified_user", bg: "bg-violet-500/15", color: "text-violet-400" },
         ].map((kpi) => (
-          <div key={kpi.label} className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+          <div key={kpi.label} className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 p-5">
             <div className="flex items-center gap-3 mb-3">
               <div className={`w-10 h-10 rounded-xl ${kpi.bg} flex items-center justify-center`}>
                 <span className={`material-symbols-outlined text-xl ${kpi.color}`}>{kpi.icon}</span>
               </div>
             </div>
-            <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-1">{kpi.label}</p>
+            <p className="text-[10px] uppercase tracking-widest font-bold text-white/45 mb-1">{kpi.label}</p>
             <p className="text-xl font-bold tracking-tight">{kpi.value}</p>
           </div>
         ))}
       </section>
 
       {/* ── Revenue Chart ── */}
-      <section className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8">
-        <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-4">Ingresos por período</p>
+      <section className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 p-6 mb-8">
+        <p className="text-[10px] uppercase tracking-widest font-bold text-white/45 mb-4">Ingresos por período</p>
         {chartData.every((b) => b.revenue === 0) ? (
-          <div className="flex flex-col items-center justify-center py-12 text-slate-400">
+          <div className="flex flex-col items-center justify-center py-12 text-white/45">
             <span className="material-symbols-outlined text-4xl mb-3">bar_chart</span>
             <p className="text-sm font-medium">Sin datos de ventas para este período</p>
           </div>
@@ -413,12 +413,12 @@ export default function MetricasPage() {
                     style={{ height: `${(b.revenue / maxChart) * 100}%`, minHeight: b.revenue > 0 ? "4px" : "0" }}
                     title={formatPrice(b.revenue)}
                   />
-                  <span className="text-[8px] text-slate-400 whitespace-nowrap">{b.label}</span>
+                  <span className="text-[8px] text-white/45 whitespace-nowrap">{b.label}</span>
                 </div>
               ))}
             </div>
             <div className="flex gap-4 mt-3">
-              <span className="flex items-center gap-1 text-xs text-slate-400">
+              <span className="flex items-center gap-1 text-xs text-white/45">
                 <span className="w-3 h-3 rounded-sm bg-primary/80 inline-block" />
                 Ingresos
               </span>
@@ -428,12 +428,12 @@ export default function MetricasPage() {
       </section>
 
       {/* ── Top Models Table ── */}
-      <section className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-8">
-        <div className="px-6 py-4 border-b border-slate-100">
-          <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400">Top Modelos</p>
+      <section className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 overflow-hidden mb-8">
+        <div className="px-6 py-4 border-b border-white/[0.06]">
+          <p className="text-[10px] uppercase tracking-widest font-bold text-white/45">Top Modelos</p>
         </div>
         {topModels.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-slate-400">
+          <div className="flex flex-col items-center justify-center py-12 text-white/45">
             <span className="material-symbols-outlined text-4xl mb-3">phone_iphone</span>
             <p className="text-sm font-medium">Sin ventas en este período</p>
           </div>
@@ -441,18 +441,18 @@ export default function MetricasPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50">
-                  <th className="px-6 py-3 text-[10px] uppercase tracking-widest font-bold text-slate-400">Modelo</th>
-                  <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-slate-400">Unidades</th>
-                  <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-slate-400">Ingresos</th>
-                  <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-slate-400">Margen Prom.</th>
+                <tr className="bg-white/[0.03]">
+                  <th className="px-6 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Modelo</th>
+                  <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Unidades</th>
+                  <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Ingresos</th>
+                  <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Margen Prom.</th>
                 </tr>
               </thead>
               <tbody>
                 {topModels.map((m, i) => (
                   <tr
                     key={m.model}
-                    className={`hover:bg-slate-50 transition-colors ${i % 2 === 1 ? "bg-slate-50/50" : ""}`}
+                    className={`hover:bg-white/[0.03] transition-colors ${i % 2 === 1 ? "bg-white/[0.02]" : ""}`}
                   >
                     <td className="px-6 py-3 text-sm font-medium">{m.model}</td>
                     <td className="px-4 py-3 text-sm">{m.units}</td>
@@ -467,34 +467,34 @@ export default function MetricasPage() {
       </section>
 
       {/* ── Warranty Section ── */}
-      <section className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8">
-        <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-4">Garantías</p>
+      <section className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 p-6 mb-8">
+        <p className="text-[10px] uppercase tracking-widest font-bold text-white/45 mb-4">Garantías</p>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div className="bg-slate-50 rounded-xl p-4">
-            <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-1">Activas</p>
+          <div className="bg-white/[0.03] rounded-xl p-4">
+            <p className="text-[10px] uppercase tracking-widest font-bold text-white/45 mb-1">Activas</p>
             <p className="text-xl font-bold">{activeWarranties}</p>
           </div>
-          <div className="bg-slate-50 rounded-xl p-4">
-            <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-1">Tasa Falla</p>
+          <div className="bg-white/[0.03] rounded-xl p-4">
+            <p className="text-[10px] uppercase tracking-widest font-bold text-white/45 mb-1">Tasa Falla</p>
             <p className="text-xl font-bold">{failureRate.toFixed(1)}%</p>
           </div>
-          <div className="bg-slate-50 rounded-xl p-4">
-            <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-1">Prom. Días a Falla</p>
+          <div className="bg-white/[0.03] rounded-xl p-4">
+            <p className="text-[10px] uppercase tracking-widest font-bold text-white/45 mb-1">Prom. Días a Falla</p>
             <p className="text-xl font-bold">{Math.round(avgDaysToFail)}d</p>
           </div>
-          <div className="bg-slate-50 rounded-xl p-4">
-            <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-1">Reclamos Período</p>
+          <div className="bg-white/[0.03] rounded-xl p-4">
+            <p className="text-[10px] uppercase tracking-widest font-bold text-white/45 mb-1">Reclamos Período</p>
             <p className="text-xl font-bold">{filteredWarranties.length}</p>
           </div>
         </div>
         {topFailModels.length > 0 && (
           <div>
-            <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-2">Top Modelos con Falla</p>
+            <p className="text-[10px] uppercase tracking-widest font-bold text-white/45 mb-2">Top Modelos con Falla</p>
             <div className="space-y-2">
               {topFailModels.map(([model, count]) => (
                 <div key={model} className="flex items-center justify-between p-3 bg-red-50 rounded-xl">
                   <span className="text-sm font-medium text-red-700">{model}</span>
-                  <span className="px-2.5 py-0.5 bg-red-100 text-red-700 text-[10px] font-bold rounded-full">
+                  <span className="px-2.5 py-0.5 bg-red-500/15 text-red-400 text-[10px] font-bold rounded-full">
                     {count} falla{count > 1 ? "s" : ""}
                   </span>
                 </div>
@@ -505,16 +505,16 @@ export default function MetricasPage() {
       </section>
 
       {/* ── Expenses Section ── */}
-      <section className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8">
+      <section className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 p-6 mb-8">
         <div className="flex justify-between items-center mb-4">
-          <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400">Gastos Operativos</p>
+          <p className="text-[10px] uppercase tracking-widest font-bold text-white/45">Gastos Operativos</p>
           <button
             onClick={() => {
               setExpenseForm({ ...emptyExpenseForm, date: new Date().toISOString().slice(0, 10) });
               setEditingExpenseId(null);
               setShowExpenseForm(!showExpenseForm);
             }}
-            className="flex items-center gap-1 px-3 py-1.5 bg-primary text-white rounded-full text-xs font-bold hover:brightness-95 transition-all"
+            className="flex items-center gap-1 px-3 py-1.5 bg-violet-600/20 border border-violet-500/30 text-violet-300 rounded-full text-xs font-bold hover:brightness-95 transition-all"
           >
             <span className="material-symbols-outlined text-sm">add</span>
             Agregar
@@ -523,12 +523,12 @@ export default function MetricasPage() {
 
         {/* Inline form */}
         {showExpenseForm && (
-          <div className="bg-slate-50 rounded-xl p-4 mb-4 space-y-3">
+          <div className="bg-white/[0.03] rounded-xl p-4 mb-4 space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <select
                 value={expenseForm.category}
                 onChange={(e) => setExpenseForm({ ...expenseForm, category: e.target.value })}
-                className="border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white"
+                className="border border-white/[0.08] rounded-xl px-3 py-2 text-sm bg-[#1a1a1d]"
               >
                 {EXPENSE_CATEGORIES.map((c) => (
                   <option key={c} value={c}>{c}</option>
@@ -539,14 +539,14 @@ export default function MetricasPage() {
                 placeholder="Descripción"
                 value={expenseForm.description || ""}
                 onChange={(e) => setExpenseForm({ ...expenseForm, description: e.target.value })}
-                className="border border-slate-200 rounded-xl px-3 py-2 text-sm"
+                className="border border-white/[0.08] rounded-xl px-3 py-2 text-sm"
               />
               <input
                 type="number"
                 placeholder="Monto USD"
                 value={expenseForm.amount || ""}
                 onChange={(e) => setExpenseForm({ ...expenseForm, amount: Number(e.target.value) })}
-                className="border border-slate-200 rounded-xl px-3 py-2 text-sm"
+                className="border border-white/[0.08] rounded-xl px-3 py-2 text-sm"
               />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -554,7 +554,7 @@ export default function MetricasPage() {
                 type="date"
                 value={expenseForm.date}
                 onChange={(e) => setExpenseForm({ ...expenseForm, date: e.target.value })}
-                className="border border-slate-200 rounded-xl px-3 py-2 text-sm"
+                className="border border-white/[0.08] rounded-xl px-3 py-2 text-sm"
               />
               <label className="flex items-center gap-2 text-sm">
                 <input
@@ -569,7 +569,7 @@ export default function MetricasPage() {
                 <select
                   value={expenseForm.recurring_period || ""}
                   onChange={(e) => setExpenseForm({ ...expenseForm, recurring_period: e.target.value })}
-                  className="border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white"
+                  className="border border-white/[0.08] rounded-xl px-3 py-2 text-sm bg-[#1a1a1d]"
                 >
                   <option value="">Período</option>
                   <option value="semanal">Semanal</option>
@@ -582,13 +582,13 @@ export default function MetricasPage() {
               <button
                 onClick={saveExpense}
                 disabled={savingExpense || !expenseForm.amount}
-                className="px-4 py-2 bg-primary text-white rounded-xl text-sm font-bold hover:brightness-95 transition-all disabled:opacity-50"
+                className="px-4 py-2 bg-violet-600/20 border border-violet-500/30 text-violet-300 rounded-xl text-sm font-bold hover:brightness-95 transition-all disabled:opacity-50"
               >
                 {savingExpense ? "Guardando..." : editingExpenseId ? "Actualizar" : "Guardar"}
               </button>
               <button
                 onClick={() => { setShowExpenseForm(false); setEditingExpenseId(null); }}
-                className="px-4 py-2 bg-slate-200 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-300 transition-all"
+                className="px-4 py-2 bg-white/[0.08] text-white/55 rounded-xl text-sm font-bold hover:bg-white/[0.10] transition-all"
               >
                 Cancelar
               </button>
@@ -597,7 +597,7 @@ export default function MetricasPage() {
         )}
 
         {filteredExpenses.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-slate-400">
+          <div className="flex flex-col items-center justify-center py-12 text-white/45">
             <span className="material-symbols-outlined text-4xl mb-3">receipt_long</span>
             <p className="text-sm font-medium">Sin gastos registrados para este período</p>
           </div>
@@ -606,30 +606,30 @@ export default function MetricasPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-50">
-                    <th className="px-6 py-3 text-[10px] uppercase tracking-widest font-bold text-slate-400">Categoría</th>
-                    <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-slate-400">Descripción</th>
-                    <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-slate-400">Monto</th>
-                    <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-slate-400">Fecha</th>
-                    <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-slate-400" />
+                  <tr className="bg-white/[0.03]">
+                    <th className="px-6 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Categoría</th>
+                    <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Descripción</th>
+                    <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Monto</th>
+                    <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Fecha</th>
+                    <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45" />
                   </tr>
                 </thead>
                 <tbody>
                   {filteredExpenses.map((e, i) => (
-                    <tr key={e.id} className={`hover:bg-slate-50 transition-colors ${i % 2 === 1 ? "bg-slate-50/50" : ""}`}>
+                    <tr key={e.id} className={`hover:bg-white/[0.03] transition-colors ${i % 2 === 1 ? "bg-white/[0.02]" : ""}`}>
                       <td className="px-6 py-3 text-sm">
-                        <span className="px-2.5 py-0.5 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-full">{e.category}</span>
+                        <span className="px-2.5 py-0.5 bg-white/[0.06] text-white/55 text-[10px] font-bold rounded-full">{e.category}</span>
                         {e.recurring && (
-                          <span className="ml-1.5 px-2 py-0.5 bg-blue-100 text-blue-600 text-[10px] font-bold rounded-full">↻ Recurrente</span>
+                          <span className="ml-1.5 px-2 py-0.5 bg-blue-500/15 text-blue-400 text-[10px] font-bold rounded-full">↻ Recurrente</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-sm text-slate-500">{e.description || "—"}</td>
+                      <td className="px-4 py-3 text-sm text-white/50">{e.description || "—"}</td>
                       <td className="px-4 py-3 text-sm font-medium">{formatPrice(e.amount)}</td>
-                      <td className="px-4 py-3 text-sm text-slate-500">{new Date(e.date).toLocaleDateString("es-AR")}</td>
+                      <td className="px-4 py-3 text-sm text-white/50">{new Date(e.date).toLocaleDateString("es-AR")}</td>
                       <td className="px-4 py-3 text-sm">
                         <div className="flex gap-1">
-                          <button onClick={() => editExpense(e)} className="p-1 hover:bg-slate-100 rounded-lg transition-colors">
-                            <span className="material-symbols-outlined text-sm text-slate-400">edit</span>
+                          <button onClick={() => editExpense(e)} className="p-1 hover:bg-white/[0.06] rounded-lg transition-colors">
+                            <span className="material-symbols-outlined text-sm text-white/45">edit</span>
                           </button>
                           <button onClick={() => deleteExpense(e.id)} className="p-1 hover:bg-red-50 rounded-lg transition-colors">
                             <span className="material-symbols-outlined text-sm text-red-400">delete</span>
@@ -641,8 +641,8 @@ export default function MetricasPage() {
                 </tbody>
               </table>
             </div>
-            <div className="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center">
-              <span className="text-sm text-slate-500 font-medium">Total del período</span>
+            <div className="mt-4 pt-4 border-t border-white/[0.06] flex justify-between items-center">
+              <span className="text-sm text-white/50 font-medium">Total del período</span>
               <span className="text-lg font-bold">{formatPrice(totalExpensesAmount)}</span>
             </div>
           </>
@@ -650,16 +650,16 @@ export default function MetricasPage() {
       </section>
 
       {/* ── Instagram Insights ── */}
-      <section className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+      <section className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 p-6">
         <div className="flex items-center gap-2 mb-5">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 flex items-center justify-center">
             <span className="text-white text-xs font-bold">IG</span>
           </div>
-          <h2 className="text-[10px] uppercase tracking-widest font-bold text-slate-400">Instagram Insights — Últimos 30 días</h2>
+          <h2 className="text-[10px] uppercase tracking-widest font-bold text-white/45">Instagram Insights — Últimos 30 días</h2>
         </div>
 
         {igLoading ? (
-          <div className="flex items-center gap-3 py-8 justify-center text-slate-400">
+          <div className="flex items-center gap-3 py-8 justify-center text-white/45">
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-pink-400" />
             <span className="text-sm">Cargando datos de Instagram...</span>
           </div>
@@ -673,16 +673,16 @@ export default function MetricasPage() {
             {/* KPI row */}
             <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
               {[
-                { label: "Seguidores", value: (igInsights.profile.followers_count ?? 0).toLocaleString("es-AR"), icon: "group", color: "text-purple-600", bg: "bg-purple-100" },
-                { label: "Alcance 30d", value: (igInsights.metrics.reach ?? 0).toLocaleString("es-AR"), icon: "radar", color: "text-green-600", bg: "bg-green-100" },
+                { label: "Seguidores", value: (igInsights.profile.followers_count ?? 0).toLocaleString("es-AR"), icon: "group", color: "text-violet-400", bg: "bg-violet-500/15" },
+                { label: "Alcance 30d", value: (igInsights.metrics.reach ?? 0).toLocaleString("es-AR"), icon: "radar", color: "text-emerald-400", bg: "bg-emerald-500/15" },
                 { label: "Visitas al perfil", value: (igInsights.metrics.profile_views ?? 0).toLocaleString("es-AR"), icon: "person_search", color: "text-pink-600", bg: "bg-pink-100" },
                 { label: "Clicks al sitio", value: (igInsights.metrics.website_clicks ?? 0).toLocaleString("es-AR"), icon: "link", color: "text-orange-600", bg: "bg-orange-100" },
               ].map((kpi) => (
-                <div key={kpi.label} className="bg-slate-50 rounded-xl p-4">
+                <div key={kpi.label} className="bg-white/[0.03] rounded-xl p-4">
                   <div className={`w-8 h-8 rounded-lg ${kpi.bg} flex items-center justify-center mb-2`}>
                     <span className={`material-symbols-outlined text-sm ${kpi.color}`}>{kpi.icon}</span>
                   </div>
-                  <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400">{kpi.label}</p>
+                  <p className="text-[10px] uppercase tracking-widest font-bold text-white/45">{kpi.label}</p>
                   <p className="text-xl font-bold mt-0.5">{kpi.value}</p>
                 </div>
               ))}
@@ -691,10 +691,10 @@ export default function MetricasPage() {
             {/* Últimos posts */}
             {igInsights.media.length > 0 && (
               <>
-                <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-3">Últimas Publicaciones</p>
+                <p className="text-[10px] uppercase tracking-widest font-bold text-white/45 mb-3">Últimas Publicaciones</p>
                 <div className="grid grid-cols-3 lg:grid-cols-9 gap-2">
                   {igInsights.media.slice(0, 9).map((post) => (
-                    <div key={post.id} className="relative group aspect-square rounded-xl overflow-hidden bg-slate-100">
+                    <div key={post.id} className="relative group aspect-square rounded-xl overflow-hidden bg-white/[0.06]">
                       {post.media_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
@@ -704,7 +704,7 @@ export default function MetricasPage() {
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <span className="material-symbols-outlined text-slate-300">image</span>
+                          <span className="material-symbols-outlined text-white/35">image</span>
                         </div>
                       )}
                       {/* Hover overlay */}

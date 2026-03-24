@@ -172,10 +172,10 @@ export default function PublicidadPage() {
 
   function statusBadge(s: ScheduledPost["status"]) {
     const map = {
-      publicado: "bg-green-100 text-green-700",
-      programado: "bg-blue-100 text-blue-700",
-      borrador: "bg-amber-100 text-amber-700",
-      error: "bg-red-100 text-red-700",
+      publicado: "bg-emerald-500/15 text-emerald-400",
+      programado: "bg-blue-500/15 text-blue-400",
+      borrador: "bg-amber-500/15 text-amber-400",
+      error: "bg-red-500/15 text-red-400",
     };
     const labels = { publicado: "Publicado", programado: "Programado", borrador: "Pendiente aprobación", error: "Error" };
     return (
@@ -191,8 +191,8 @@ export default function PublicidadPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-32">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-        <span className="ml-3 text-sm text-cool-grey">Cargando...</span>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-400" />
+        <span className="ml-3 text-sm text-white/45">Cargando...</span>
       </div>
     );
   }
@@ -202,18 +202,18 @@ export default function PublicidadPage() {
       {/* ── KPI Cards ── */}
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[
-          { label: "Disponibles para publicar", value: products.length.toString(), icon: "smartphone", bg: "bg-blue-100", color: "text-blue-600" },
-          { label: "Publicados", value: publishedPosts.length.toString(), icon: "check_circle", bg: "bg-green-100", color: "text-green-600" },
-          { label: "Pendientes aprobación", value: pendingPosts.length.toString(), icon: "pending", bg: "bg-amber-100", color: "text-amber-600" },
-          { label: "Modo agente", value: supervisado ? "Supervisado" : "Automático", icon: "smart_toy", bg: "bg-purple-100", color: "text-purple-600" },
+          { label: "Disponibles para publicar", value: products.length.toString(), icon: "smartphone", bg: "bg-blue-500/15", color: "text-blue-400" },
+          { label: "Publicados", value: publishedPosts.length.toString(), icon: "check_circle", bg: "bg-emerald-500/15", color: "text-emerald-400" },
+          { label: "Pendientes aprobación", value: pendingPosts.length.toString(), icon: "pending", bg: "bg-amber-500/15", color: "text-amber-400" },
+          { label: "Modo agente", value: supervisado ? "Supervisado" : "Automático", icon: "smart_toy", bg: "bg-violet-500/15", color: "text-violet-400" },
         ].map((kpi) => (
-          <div key={kpi.label} className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+          <div key={kpi.label} className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 p-5">
             <div className="flex items-center gap-3 mb-3">
               <div className={`w-10 h-10 rounded-xl ${kpi.bg} flex items-center justify-center`}>
                 <span className={`material-symbols-outlined text-xl ${kpi.color}`}>{kpi.icon}</span>
               </div>
             </div>
-            <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-1">{kpi.label}</p>
+            <p className="text-[10px] uppercase tracking-widest font-bold text-white/45 mb-1">{kpi.label}</p>
             <p className="text-xl font-bold tracking-tight">{kpi.value}</p>
           </div>
         ))}
@@ -225,34 +225,34 @@ export default function PublicidadPage() {
 
           {/* Cola del agente — pendientes */}
           {pendingPosts.length > 0 && (
-            <div className="bg-white rounded-2xl shadow-sm border border-amber-200 p-5">
+            <div className="bg-[#1a1a1d] border border-white/[0.08] rounded-2xl border border-amber-200 p-5">
               <div className="flex items-center gap-2 mb-4">
                 <span className="material-symbols-outlined text-amber-500">pending_actions</span>
-                <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400">Cola del Agente — Pendientes de Aprobación</p>
+                <p className="text-[10px] uppercase tracking-widest font-bold text-white/45">Cola del Agente — Pendientes de Aprobación</p>
               </div>
               <div className="space-y-3">
                 {pendingPosts.map((post) => {
                   const prod = products.find((p) => p.id === post.product_id);
                   return (
-                    <div key={post.id} className="flex items-center gap-4 bg-slate-50 rounded-xl p-3 border border-slate-100">
+                    <div key={post.id} className="flex items-center gap-4 bg-white/[0.03] rounded-xl p-3 border border-white/[0.06]">
                       {post.image_url && (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={post.image_url} alt="" className="w-14 h-14 object-cover rounded-lg flex-shrink-0" />
                       )}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-bold truncate">{prod?.model || "Equipo"}</p>
-                        <p className="text-xs text-slate-500 truncate">{post.caption.split("\n")[0]}</p>
+                        <p className="text-xs text-white/50 truncate">{post.caption.split("\n")[0]}</p>
                       </div>
                       <div className="flex gap-2 flex-shrink-0">
                         <button
                           onClick={() => approvePost(post)}
-                          className="px-3 py-1.5 bg-green-100 text-green-700 text-xs font-bold rounded-lg hover:bg-green-200 transition-colors"
+                          className="px-3 py-1.5 bg-emerald-500/15 text-emerald-400 text-xs font-bold rounded-lg hover:bg-green-200 transition-colors"
                         >
                           ✓ Publicar
                         </button>
                         <button
                           onClick={() => rejectPost(post.id)}
-                          className="px-3 py-1.5 bg-red-100 text-red-700 text-xs font-bold rounded-lg hover:bg-red-200 transition-colors"
+                          className="px-3 py-1.5 bg-red-500/15 text-red-400 text-xs font-bold rounded-lg hover:bg-red-200 transition-colors"
                         >
                           ✕
                         </button>
@@ -265,13 +265,13 @@ export default function PublicidadPage() {
           )}
 
           {/* Stock disponible para publicar */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+          <div className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 p-5">
             <div className="flex items-center justify-between mb-4">
-              <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400">Stock Disponible para Publicar</p>
+              <p className="text-[10px] uppercase tracking-widest font-bold text-white/45">Stock Disponible para Publicar</p>
             </div>
 
             {products.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-slate-400">
+              <div className="flex flex-col items-center justify-center py-12 text-white/45">
                 <span className="material-symbols-outlined text-4xl mb-3">inventory_2</span>
                 <p className="text-sm font-medium">No hay equipos disponibles</p>
                 <p className="text-xs mt-1">Cargá stock desde la sección Stock</p>
@@ -279,23 +279,23 @@ export default function PublicidadPage() {
             ) : (
               <div className="space-y-3">
                 {products.map((p) => (
-                  <div key={p.id} className="flex items-center gap-4 p-3 bg-slate-50 rounded-xl border border-slate-100 hover:border-slate-300 transition-colors">
+                  <div key={p.id} className="flex items-center gap-4 p-3 bg-white/[0.03] rounded-xl border border-white/[0.06] hover:border-white/[0.10] transition-colors">
                     {p.photos?.[0] ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={p.photos[0]} alt={p.model} className="w-14 h-14 object-cover rounded-lg flex-shrink-0" />
                     ) : (
-                      <div className="w-14 h-14 rounded-lg bg-slate-200 flex items-center justify-center flex-shrink-0">
-                        <span className="material-symbols-outlined text-slate-400">smartphone</span>
+                      <div className="w-14 h-14 rounded-lg bg-white/[0.08] flex items-center justify-center flex-shrink-0">
+                        <span className="material-symbols-outlined text-white/45">smartphone</span>
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-bold">{p.model} {p.capacity}</p>
-                      <p className="text-xs text-slate-500">{p.color} · Cond. {p.condition}{p.battery_health ? ` · 🔋${p.battery_health}%` : ""}</p>
-                      {p.sale_price && <p className="text-sm font-bold text-primary mt-0.5">${p.sale_price.toLocaleString()} USD</p>}
+                      <p className="text-xs text-white/50">{p.color} · Cond. {p.condition}{p.battery_health ? ` · 🔋${p.battery_health}%` : ""}</p>
+                      {p.sale_price && <p className="text-sm font-bold text-violet-400 mt-0.5">${p.sale_price.toLocaleString()} USD</p>}
                     </div>
                     <button
                       onClick={() => openModal(p)}
-                      className="flex items-center gap-1.5 px-4 py-2 bg-primary text-white rounded-full text-xs font-bold hover:brightness-95 transition-all shadow-sm shadow-primary/20 flex-shrink-0"
+                      className="flex items-center gap-1.5 px-4 py-2 bg-violet-600/20 border border-violet-500/30 text-violet-300 rounded-full text-xs font-bold hover:brightness-95 transition-all  flex-shrink-0"
                     >
                       <span className="material-symbols-outlined text-sm">campaign</span>
                       Publicar
@@ -308,25 +308,25 @@ export default function PublicidadPage() {
 
           {/* Historial de publicados */}
           {publishedPosts.length > 0 && (
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-              <div className="px-5 py-4 border-b border-slate-100">
-                <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400">Publicados en Instagram</p>
+            <div className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 overflow-hidden">
+              <div className="px-5 py-4 border-b border-white/[0.06]">
+                <p className="text-[10px] uppercase tracking-widest font-bold text-white/45">Publicados en Instagram</p>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-slate-50">
-                      <th className="px-5 py-3 text-[10px] uppercase tracking-widest font-bold text-slate-400">Post</th>
-                      <th className="px-3 py-3 text-[10px] uppercase tracking-widest font-bold text-slate-400">Estado</th>
-                      <th className="px-3 py-3 text-[10px] uppercase tracking-widest font-bold text-slate-400">Fecha</th>
-                      <th className="px-3 py-3 text-[10px] uppercase tracking-widest font-bold text-slate-400">IG Media ID</th>
+                    <tr className="bg-white/[0.03]">
+                      <th className="px-5 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Post</th>
+                      <th className="px-3 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Estado</th>
+                      <th className="px-3 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Fecha</th>
+                      <th className="px-3 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">IG Media ID</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-50">
+                  <tbody className="divide-y divide-white/[0.04]">
                     {publishedPosts.map((post) => {
                       const prod = products.find((p) => p.id === post.product_id);
                       return (
-                        <tr key={post.id} className="hover:bg-slate-50 transition-colors">
+                        <tr key={post.id} className="hover:bg-white/[0.03] transition-colors">
                           <td className="px-5 py-3">
                             <div className="flex items-center gap-3">
                               {post.image_url && (
@@ -337,16 +337,16 @@ export default function PublicidadPage() {
                             </div>
                           </td>
                           <td className="px-3 py-3">{statusBadge(post.status)}</td>
-                          <td className="px-3 py-3 text-xs text-slate-500">
+                          <td className="px-3 py-3 text-xs text-white/50">
                             {post.published_at ? new Date(post.published_at).toLocaleDateString("es-AR") : "—"}
                           </td>
-                          <td className="px-3 py-3 text-xs text-slate-400 font-mono">
+                          <td className="px-3 py-3 text-xs text-white/45 font-mono">
                             {post.ig_media_id ? (
                               <a
                                 href={`https://www.instagram.com/p/${post.ig_media_id}/`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-primary hover:underline"
+                                className="text-violet-400 hover:underline"
                               >
                                 {post.ig_media_id.slice(0, 12)}...
                               </a>
@@ -365,12 +365,12 @@ export default function PublicidadPage() {
         {/* ── Derecha: Configuración agente ── */}
         <div className="col-span-12 lg:col-span-4 space-y-6">
           {/* Modo agente */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
-            <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-4">Modo del Agente 🤖</p>
+          <div className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 p-5">
+            <p className="text-[10px] uppercase tracking-widest font-bold text-white/45 mb-4">Modo del Agente 🤖</p>
             <div className="flex items-center justify-between mb-3">
               <div>
                 <p className="text-sm font-bold">{supervisado ? "Supervisado" : "Automático"}</p>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-white/50 mt-0.5">
                   {supervisado
                     ? "Pide aprobación antes de publicar"
                     : "Publica sin confirmación"}
@@ -378,12 +378,12 @@ export default function PublicidadPage() {
               </div>
               <button
                 onClick={() => setSupervisado(!supervisado)}
-                className={`relative w-12 h-6 rounded-full transition-colors ${supervisado ? "bg-primary" : "bg-slate-300"}`}
+                className={`relative w-12 h-6 rounded-full transition-colors ${supervisado ? "bg-primary" : "bg-white/[0.20]"}`}
               >
-                <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${supervisado ? "left-7" : "left-1"}`} />
+                <span className={`absolute top-1 w-4 h-4 bg-[#1a1a1d] rounded-full transition-transform ${supervisado ? "left-7" : "left-1"}`} />
               </button>
             </div>
-            <div className={`p-3 rounded-xl text-xs ${supervisado ? "bg-amber-50 text-amber-700" : "bg-green-50 text-green-700"}`}>
+            <div className={`p-3 rounded-xl text-xs ${supervisado ? "bg-amber-500/15 text-amber-400" : "bg-emerald-500/15 text-emerald-400"}`}>
               {supervisado
                 ? "⚠️ Cada post necesita tu aprobación antes de publicarse en Instagram."
                 : "✅ El agente publica automáticamente cuando detecta stock nuevo."}
@@ -391,20 +391,20 @@ export default function PublicidadPage() {
           </div>
 
           {/* Caption template info */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
-            <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-3">Caption Automático</p>
-            <p className="text-xs text-slate-500 leading-relaxed">
+          <div className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 p-5">
+            <p className="text-[10px] uppercase tracking-widest font-bold text-white/45 mb-3">Caption Automático</p>
+            <p className="text-xs text-white/50 leading-relaxed">
               El sistema genera el caption automáticamente con modelo, condición, batería, precio y ubicación.
               Podés editarlo antes de publicar.
             </p>
-            <div className="mt-3 p-3 bg-slate-50 rounded-xl text-xs text-slate-600 font-mono whitespace-pre-wrap leading-relaxed">
+            <div className="mt-3 p-3 bg-white/[0.03] rounded-xl text-xs text-white/55 font-mono whitespace-pre-wrap leading-relaxed">
               {`📱 iPhone 14 Pro 256GB\n✅ Excelente estado\n🔋 Batería 94%\n💰 $750 USD\n📍 iGreen - Los Ríos 1774`}
             </div>
           </div>
 
           {/* Reglas */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
-            <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-3">Reglas del Agente</p>
+          <div className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 p-5">
+            <p className="text-[10px] uppercase tracking-widest font-bold text-white/45 mb-3">Reglas del Agente</p>
             <div className="space-y-3">
               {[
                 { label: "Auto-publicar stock nuevo", value: supervisado ? "Con aprobación" : "Automático" },
@@ -412,9 +412,9 @@ export default function PublicidadPage() {
                 { label: "Hashtags automáticos", value: "✅ Activo" },
                 { label: "Foto requerida", value: "✅ Sí" },
               ].map((rule) => (
-                <div key={rule.label} className="flex justify-between items-center py-2 border-b border-slate-100 last:border-0">
-                  <p className="text-xs text-slate-600">{rule.label}</p>
-                  <p className="text-xs font-bold text-slate-700">{rule.value}</p>
+                <div key={rule.label} className="flex justify-between items-center py-2 border-b border-white/[0.06] last:border-0">
+                  <p className="text-xs text-white/55">{rule.label}</p>
+                  <p className="text-xs font-bold text-white/70">{rule.value}</p>
                 </div>
               ))}
             </div>
@@ -425,15 +425,15 @@ export default function PublicidadPage() {
       {/* ── Modal publicar ── */}
       {showModal && selectedProduct && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+          <div className="bg-[#1a1a1d] border border-white/[0.08] rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <h3 className="text-lg font-bold">Publicar en Instagram</h3>
-                  <p className="text-sm text-slate-500">{selectedProduct.model} {selectedProduct.capacity}</p>
+                  <p className="text-sm text-white/50">{selectedProduct.model} {selectedProduct.capacity}</p>
                 </div>
-                <button onClick={() => setShowModal(false)} className="p-1 hover:bg-slate-100 rounded-lg">
-                  <span className="material-symbols-outlined text-slate-400">close</span>
+                <button onClick={() => setShowModal(false)} className="p-1 hover:bg-white/[0.06] rounded-lg">
+                  <span className="material-symbols-outlined text-white/45">close</span>
                 </button>
               </div>
 
@@ -442,38 +442,38 @@ export default function PublicidadPage() {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={imageUrl} alt="Preview" className="w-full aspect-square object-cover rounded-xl mb-4" />
               ) : (
-                <div className="w-full aspect-square bg-slate-100 rounded-xl mb-4 flex flex-col items-center justify-center">
-                  <span className="material-symbols-outlined text-4xl text-slate-300 mb-2">add_photo_alternate</span>
-                  <p className="text-xs text-slate-400">Sin foto — el agente no puede publicar sin imagen</p>
+                <div className="w-full aspect-square bg-white/[0.06] rounded-xl mb-4 flex flex-col items-center justify-center">
+                  <span className="material-symbols-outlined text-4xl text-white/35 mb-2">add_photo_alternate</span>
+                  <p className="text-xs text-white/45">Sin foto — el agente no puede publicar sin imagen</p>
                 </div>
               )}
 
               {/* URL de imagen */}
               <div className="mb-4">
-                <label className="block text-xs font-bold text-slate-600 mb-1">URL de la imagen *</label>
+                <label className="block text-xs font-bold text-white/55 mb-1">URL de la imagen *</label>
                 <input
                   type="url"
                   value={imageUrl}
                   onChange={(e) => setImageUrl(e.target.value)}
                   placeholder="https://..."
-                  className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
+                  className="w-full border border-white/[0.08] rounded-xl px-3 py-2 text-sm"
                 />
-                <p className="text-[10px] text-slate-400 mt-1">Debe ser una URL pública accesible por Meta</p>
+                <p className="text-[10px] text-white/45 mt-1">Debe ser una URL pública accesible por Meta</p>
               </div>
 
               {/* Caption */}
               <div className="mb-4">
-                <label className="block text-xs font-bold text-slate-600 mb-1">Caption</label>
+                <label className="block text-xs font-bold text-white/55 mb-1">Caption</label>
                 <textarea
                   value={caption}
                   onChange={(e) => setCaption(e.target.value)}
                   rows={8}
-                  className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm font-mono resize-none"
+                  className="w-full border border-white/[0.08] rounded-xl px-3 py-2 text-sm font-mono resize-none"
                 />
               </div>
 
               {publishError && (
-                <div className="mb-4 p-3 bg-red-50 text-red-700 text-xs rounded-xl">
+                <div className="mb-4 p-3 bg-red-500/15 text-red-400 text-xs rounded-xl">
                   ❌ {publishError}
                 </div>
               )}
@@ -481,14 +481,14 @@ export default function PublicidadPage() {
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowModal(false)}
-                  className="flex-1 px-4 py-2.5 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200 transition-all"
+                  className="flex-1 px-4 py-2.5 bg-white/[0.06] text-white/55 rounded-xl text-sm font-bold hover:bg-white/[0.08] transition-all"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handlePublish}
                   disabled={publishing || !imageUrl}
-                  className="flex-1 px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-bold hover:brightness-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2.5 bg-violet-600/20 border border-violet-500/30 text-violet-300 rounded-xl text-sm font-bold hover:brightness-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {publishing ? (
                     <>

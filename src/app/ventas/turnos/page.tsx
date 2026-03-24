@@ -16,11 +16,11 @@ interface Appointment {
 type ViewMode = "lista" | "calendario" | "kanban";
 
 const STATUS_COLORS: Record<string, string> = {
-  confirmado: "bg-green-100 text-green-700",
-  pendiente: "bg-amber-100 text-amber-700",
-  completado: "bg-blue-100 text-blue-700",
-  no_show: "bg-red-100 text-red-700",
-  cancelado: "bg-slate-200 text-slate-600",
+  confirmado: "bg-emerald-500/15 text-emerald-400",
+  pendiente: "bg-amber-500/15 text-amber-400",
+  completado: "bg-blue-500/15 text-blue-400",
+  no_show: "bg-red-500/15 text-red-400",
+  cancelado: "bg-white/[0.08] text-white/55",
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -51,7 +51,7 @@ const KANBAN_COLUMNS = ["pendiente", "confirmado", "completado", "no_show", "can
 
 function appointmentStatusBadge(s: string) {
   return (
-    <span className={`px-2.5 py-0.5 ${STATUS_COLORS[s] || "bg-slate-100 text-slate-600"} text-[10px] font-bold rounded-full whitespace-nowrap`}>
+    <span className={`px-2.5 py-0.5 ${STATUS_COLORS[s] || "bg-white/[0.06] text-white/55"} text-[10px] font-bold rounded-full whitespace-nowrap`}>
       {STATUS_LABELS[s] || s.toUpperCase()}
     </span>
   );
@@ -95,7 +95,7 @@ function AppointmentActions({
       {isPendiente && (
         <button
           onClick={() => onStatusChange(appointment.id, "confirmado")}
-          className={`${btnBase} bg-blue-50 text-blue-700 hover:bg-blue-100`}
+          className={`${btnBase} bg-blue-500/15 text-blue-400 hover:bg-blue-500/15`}
           title="Confirmar turno"
         >
           <span className="material-symbols-outlined text-xs">check_circle</span>
@@ -106,7 +106,7 @@ function AppointmentActions({
       {canChangeStatus && (
         <button
           onClick={() => onStatusChange(appointment.id, "completado")}
-          className={`${btnBase} bg-green-50 text-green-700 hover:bg-green-100`}
+          className={`${btnBase} bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/15`}
           title="Marcar como completado"
         >
           <span className="material-symbols-outlined text-xs">task_alt</span>
@@ -117,7 +117,7 @@ function AppointmentActions({
       {canChangeStatus && (
         <button
           onClick={() => onStatusChange(appointment.id, "no_show")}
-          className={`${btnBase} bg-red-50 text-red-700 hover:bg-red-100`}
+          className={`${btnBase} bg-red-500/15 text-red-400 hover:bg-red-500/15`}
           title="Marcar como No Show"
         >
           <span className="material-symbols-outlined text-xs">person_off</span>
@@ -128,7 +128,7 @@ function AppointmentActions({
       {canChangeStatus && (
         <button
           onClick={() => onStatusChange(appointment.id, "cancelado")}
-          className={`${btnBase} bg-slate-100 text-slate-600 hover:bg-slate-200`}
+          className={`${btnBase} bg-white/[0.06] text-white/55 hover:bg-white/[0.08]`}
           title="Cancelar turno"
         >
           <span className="material-symbols-outlined text-xs">cancel</span>
@@ -138,7 +138,7 @@ function AppointmentActions({
       {/* Editar */}
       <button
         onClick={() => onEdit(appointment)}
-        className={`${btnBase} bg-slate-50 text-slate-600 hover:bg-slate-100`}
+        className={`${btnBase} bg-white/[0.03] text-white/55 hover:bg-white/[0.06]`}
         title="Editar turno"
       >
         <span className="material-symbols-outlined text-xs">edit</span>
@@ -157,7 +157,7 @@ function AppointmentActions({
               </button>
               <button
                 onClick={() => setConfirmDelete(false)}
-                className={`${btnBase} bg-slate-100 text-slate-600 hover:bg-slate-200`}
+                className={`${btnBase} bg-white/[0.06] text-white/55 hover:bg-white/[0.08]`}
               >
                 No
               </button>
@@ -165,7 +165,7 @@ function AppointmentActions({
           ) : (
             <button
               onClick={() => setConfirmDelete(true)}
-              className={`${btnBase} bg-red-50 text-red-600 hover:bg-red-100`}
+              className={`${btnBase} bg-red-500/15 text-red-400 hover:bg-red-500/15`}
               title="Eliminar turno"
             >
               <span className="material-symbols-outlined text-xs">delete</span>
@@ -267,21 +267,21 @@ function CalendarView({
   return (
     <div className="grid grid-cols-12 gap-5">
       {/* Calendario — izquierda */}
-      <div className="col-span-8 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="col-span-8 rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 overflow-hidden">
         {/* Nav header */}
         <div className="flex items-center justify-between px-6 py-4">
-          <button onClick={prevMonth} className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors">
-            <span className="material-symbols-outlined text-lg text-slate-500">chevron_left</span>
+          <button onClick={prevMonth} className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-white/[0.06] transition-colors">
+            <span className="material-symbols-outlined text-lg text-white/50">chevron_left</span>
           </button>
           <h3 className="text-base font-bold tracking-tight">{MONTH_NAMES[calMonth]} {calYear}</h3>
-          <button onClick={nextMonth} className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors">
-            <span className="material-symbols-outlined text-lg text-slate-500">chevron_right</span>
+          <button onClick={nextMonth} className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-white/[0.06] transition-colors">
+            <span className="material-symbols-outlined text-lg text-white/50">chevron_right</span>
           </button>
         </div>
         {/* Day names */}
         <div className="grid grid-cols-7 px-2">
           {DAY_NAMES.map((d, i) => (
-            <div key={d} className={`py-2 text-center text-[10px] font-semibold uppercase tracking-wider ${i >= 5 ? "text-slate-300" : "text-slate-400"}`}>{d}</div>
+            <div key={d} className={`py-2 text-center text-[10px] font-semibold uppercase tracking-wider ${i >= 5 ? "text-white/35" : "text-white/45"}`}>{d}</div>
           ))}
         </div>
         {/* Day cells */}
@@ -296,17 +296,17 @@ function CalendarView({
                 key={idx}
                 onClick={() => cell.inMonth && handleDayClick(cell.dateStr)}
                 className={`min-h-[72px] m-0.5 p-2 rounded-xl transition-all ${
-                  cell.inMonth ? "cursor-pointer hover:bg-slate-50" : ""
-                } ${cell.isWeekend && cell.inMonth ? "bg-slate-50/40" : ""
-                } ${isSelected && !isToday ? "ring-2 ring-primary/40 bg-primary/5" : ""}`}
+                  cell.inMonth ? "cursor-pointer hover:bg-white/[0.03]" : ""
+                } ${cell.isWeekend && cell.inMonth ? "bg-white/[0.02]" : ""
+                } ${isSelected && !isToday ? "ring-2 ring-violet-500/40 bg-violet-500/10" : ""}`}
               >
                 <div className="flex items-center gap-1">
                   {isToday ? (
-                    <span className={`w-7 h-7 flex items-center justify-center rounded-full bg-primary text-white text-xs font-bold ${isSelected ? "ring-2 ring-primary/30 ring-offset-1" : ""}`}>
+                    <span className={`w-7 h-7 flex items-center justify-center rounded-full bg-violet-600/20 border border-violet-500/30 text-violet-300 text-xs font-bold ${isSelected ? "ring-2 ring-violet-500/30 ring-offset-1" : ""}`}>
                       {cell.day}
                     </span>
                   ) : (
-                    <span className={`text-sm font-semibold pl-1 ${cell.inMonth ? "text-slate-700" : "text-slate-200"}`}>
+                    <span className={`text-sm font-semibold pl-1 ${cell.inMonth ? "text-white/70" : "text-white/20"}`}>
                       {cell.day}
                     </span>
                   )}
@@ -326,11 +326,11 @@ function CalendarView({
 
       {/* Detalle del día — derecha */}
       <div className="col-span-4">
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden sticky top-4">
+        <div className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 overflow-hidden sticky top-4">
           {/* Header */}
-          <div className="px-5 py-4 border-b border-slate-100">
+          <div className="px-5 py-4 border-b border-white/[0.06]">
             <h3 className="text-sm font-bold capitalize">{selectedLabel}</h3>
-            <p className="text-[10px] text-slate-400 mt-0.5">
+            <p className="text-[10px] text-white/45 mt-0.5">
               {selectedAppts.length} turno{selectedAppts.length !== 1 ? "s" : ""}
             </p>
           </div>
@@ -338,7 +338,7 @@ function CalendarView({
           {/* Turnos del día */}
           <div className="p-4 space-y-3 max-h-[520px] overflow-y-auto">
             {selectedAppts.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-slate-400">
+              <div className="flex flex-col items-center justify-center py-12 text-white/45">
                 <span className="material-symbols-outlined text-3xl mb-2">event_available</span>
                 <p className="text-xs font-medium">Sin turnos este día</p>
               </div>
@@ -347,11 +347,11 @@ function CalendarView({
                 const t = new Date(a.scheduled_at);
                 const borderColor = STATUS_BORDER_COLORS[a.status] || "border-l-slate-300";
                 return (
-                  <div key={a.id} className={`border border-slate-100 border-l-4 ${borderColor} rounded-xl p-4 hover:shadow-sm transition-shadow`}>
+                  <div key={a.id} className={`border border-white/[0.06] border-l-4 ${borderColor} rounded-xl p-4  transition-shadow`}>
                     {/* Hora + Estado */}
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-sm text-slate-400">schedule</span>
+                        <span className="material-symbols-outlined text-sm text-white/45">schedule</span>
                         <span className="text-sm font-bold">
                           {t.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })} hs
                         </span>
@@ -361,28 +361,28 @@ function CalendarView({
                     {/* Cliente */}
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                          <span className="text-xs font-bold text-primary">
+                        <div className="w-8 h-8 rounded-full bg-violet-500/15 flex items-center justify-center flex-shrink-0">
+                          <span className="text-xs font-bold text-violet-400">
                             {a.client_name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
                           </span>
                         </div>
                         <div>
                           <p className="text-sm font-semibold">{a.client_name}</p>
-                          <div className="flex items-center gap-1 text-[11px] text-slate-500">
+                          <div className="flex items-center gap-1 text-[11px] text-white/50">
                             <span className="material-symbols-outlined text-xs">phone</span>
                             {a.client_phone}
                           </div>
                         </div>
                       </div>
                       {a.notes && (
-                        <div className="flex items-start gap-1.5 bg-slate-50 rounded-lg px-3 py-2 mt-1">
-                          <span className="material-symbols-outlined text-xs text-slate-400 mt-0.5">notes</span>
-                          <p className="text-[11px] text-slate-600">{a.notes}</p>
+                        <div className="flex items-start gap-1.5 bg-white/[0.03] rounded-lg px-3 py-2 mt-1">
+                          <span className="material-symbols-outlined text-xs text-white/45 mt-0.5">notes</span>
+                          <p className="text-[11px] text-white/55">{a.notes}</p>
                         </div>
                       )}
                     </div>
                     {/* Acciones rápidas */}
-                    <div className="mt-3 pt-3 border-t border-slate-50">
+                    <div className="mt-3 pt-3 border-t border-white/[0.06]">
                       <AppointmentActions
                         appointment={a}
                         onStatusChange={onStatusChange}
@@ -418,36 +418,36 @@ function KanbanView({ appointments }: { appointments: Appointment[] }) {
       {KANBAN_COLUMNS.map((col) => {
         const items = grouped[col] || [];
         return (
-          <div key={col} className="flex-shrink-0 w-72 bg-slate-50 rounded-xl">
+          <div key={col} className="flex-shrink-0 w-72 bg-white/[0.03] rounded-xl">
             {/* Column header */}
-            <div className="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-widest text-cool-grey">{STATUS_LABELS[col]}</span>
-              <span className="px-2 py-0.5 bg-slate-200 text-slate-600 text-[10px] font-bold rounded-full">{items.length}</span>
+            <div className="px-4 py-3 border-b border-white/[0.08] flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-widest text-white/45">{STATUS_LABELS[col]}</span>
+              <span className="px-2 py-0.5 bg-white/[0.08] text-white/55 text-[10px] font-bold rounded-full">{items.length}</span>
             </div>
             {/* Cards */}
             <div className="p-3 space-y-3 min-h-[200px]">
               {items.length === 0 && (
-                <p className="text-xs text-slate-400 text-center py-8">Sin turnos</p>
+                <p className="text-xs text-white/45 text-center py-8">Sin turnos</p>
               )}
               {items.map((a) => {
                 const d = new Date(a.scheduled_at);
                 return (
                   <div
                     key={a.id}
-                    className={`bg-white rounded-xl shadow-sm border border-slate-200 border-l-4 ${STATUS_BORDER_COLORS[a.status] || "border-l-slate-300"} p-4 hover:shadow-md transition-shadow`}
+                    className={`rounded-xl p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 border-l-4 ${STATUS_BORDER_COLORS[a.status] || "border-l-slate-300"} p-4  transition-shadow`}
                   >
                     <p className="text-sm font-bold truncate">{a.client_name}</p>
                     <div className="mt-2 space-y-1">
-                      <div className="flex items-center gap-1.5 text-xs text-on-surface-variant">
+                      <div className="flex items-center gap-1.5 text-xs text-white/50">
                         <span className="material-symbols-outlined text-sm">schedule</span>
                         {d.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })}
                       </div>
-                      <div className="flex items-center gap-1.5 text-xs text-on-surface-variant">
+                      <div className="flex items-center gap-1.5 text-xs text-white/50">
                         <span className="material-symbols-outlined text-sm">calendar_today</span>
                         {d.toLocaleDateString("es-AR", { day: "2-digit", month: "short" })}
                       </div>
                       {a.client_phone && (
-                        <div className="flex items-center gap-1.5 text-xs text-on-surface-variant">
+                        <div className="flex items-center gap-1.5 text-xs text-white/50">
                           <span className="material-symbols-outlined text-sm">phone</span>
                           {a.client_phone}
                         </div>
@@ -574,8 +574,8 @@ export default function TurnosPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-32">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        <span className="ml-3 text-sm text-cool-grey">Cargando turnos...</span>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-400"></div>
+        <span className="ml-3 text-sm text-white/45">Cargando turnos...</span>
       </div>
     );
   }
@@ -598,8 +598,8 @@ export default function TurnosPage() {
                 onClick={() => setView(opt.value)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
                   view === opt.value
-                    ? "bg-primary text-white shadow-sm"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    ? "bg-violet-600/20 border border-violet-500/30 text-violet-300"
+                    : "bg-white/[0.06] text-white/55 hover:bg-white/[0.08]"
                 }`}
               >
                 <span className="material-symbols-outlined text-sm">{opt.icon}</span>
@@ -610,7 +610,7 @@ export default function TurnosPage() {
         </div>
         <button
           onClick={openAddModal}
-          className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-bold text-sm shadow-md shadow-primary/20"
+          className="flex items-center gap-2 px-6 py-3 bg-violet-600/20 border border-violet-500/30 text-violet-300 rounded-full font-bold text-sm "
         >
           <span className="material-symbols-outlined text-lg">add</span> Nuevo Turno
         </button>
@@ -621,7 +621,7 @@ export default function TurnosPage() {
         {/* Status filter: hidden in kanban view */}
         {view !== "kanban" && (
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[10px] font-bold text-cool-grey uppercase tracking-widest mr-1">Estado</span>
+            <span className="text-[10px] font-bold text-white/45 uppercase tracking-widest mr-1">Estado</span>
             {[
               { value: "todos", label: "Todos" },
               { value: "pendiente", label: "Pendiente" },
@@ -635,8 +635,8 @@ export default function TurnosPage() {
                 onClick={() => setStatusFilter(opt.value)}
                 className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
                   statusFilter === opt.value
-                    ? "bg-primary text-white shadow-sm"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    ? "bg-violet-600/20 border border-violet-500/30 text-violet-300"
+                    : "bg-white/[0.06] text-white/55 hover:bg-white/[0.08]"
                 }`}
               >
                 {opt.label}
@@ -645,7 +645,7 @@ export default function TurnosPage() {
           </div>
         )}
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[10px] font-bold text-cool-grey uppercase tracking-widest mr-1">Fecha</span>
+          <span className="text-[10px] font-bold text-white/45 uppercase tracking-widest mr-1">Fecha</span>
           {[
             { value: "", label: "Todos" },
             { value: new Date().toISOString().slice(0, 10), label: "Hoy" },
@@ -655,8 +655,8 @@ export default function TurnosPage() {
               onClick={() => setDateFilter(opt.value)}
               className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
                 dateFilter === opt.value
-                  ? "bg-primary text-white shadow-sm"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  ? "bg-violet-600/20 border border-violet-500/30 text-violet-300"
+                  : "bg-white/[0.06] text-white/55 hover:bg-white/[0.08]"
               }`}
             >
               {opt.label}
@@ -664,16 +664,16 @@ export default function TurnosPage() {
           ))}
           <div className="flex items-center gap-1 ml-1">
             <input type="date" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)}
-              className="px-2.5 py-1 bg-white rounded-full border border-slate-200 text-xs focus:ring-1 focus:ring-primary/30" />
+              className="px-2.5 py-1 bg-[#1a1a1d] rounded-full border border-white/[0.08] text-xs focus:ring-1 focus:ring-violet-500/30" />
           </div>
         </div>
       </div>
 
       {/* ── Vista: Lista ── */}
       {view === "lista" && (
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="rounded-xl p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 overflow-hidden">
           {filtered.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-cool-grey">
+            <div className="flex flex-col items-center justify-center py-20 text-white/45">
               <span className="material-symbols-outlined text-4xl mb-3">calendar_month</span>
               <p className="text-sm font-medium">No hay turnos para mostrar</p>
             </div>
@@ -681,28 +681,28 @@ export default function TurnosPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-50">
-                    <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Fecha / Hora</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Cliente</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Teléfono</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Estado</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Notas</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Acciones</th>
+                  <tr className="bg-white/[0.03]">
+                    <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45">Fecha / Hora</th>
+                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45">Cliente</th>
+                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45">Teléfono</th>
+                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45">Estado</th>
+                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45">Notas</th>
+                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45">Acciones</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-50">
+                <tbody className="divide-y divide-white/[0.04]">
                   {filtered.map((a) => {
                     const d = new Date(a.scheduled_at);
                     return (
-                      <tr key={a.id} className="hover:bg-slate-50 transition-colors">
+                      <tr key={a.id} className="hover:bg-white/[0.03] transition-colors">
                         <td className="px-6 py-4">
                           <p className="text-sm font-bold">{d.toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric" })}</p>
-                          <p className="text-[10px] text-cool-grey">{d.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })}</p>
+                          <p className="text-[10px] text-white/45">{d.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })}</p>
                         </td>
                         <td className="px-4 py-4 text-sm font-medium">{a.client_name}</td>
-                        <td className="px-4 py-4 text-sm text-on-surface-variant">{a.client_phone}</td>
+                        <td className="px-4 py-4 text-sm text-white/50">{a.client_phone}</td>
                         <td className="px-4 py-4">{appointmentStatusBadge(a.status)}</td>
-                        <td className="px-4 py-4 text-xs text-on-surface-variant max-w-[200px] truncate">{a.notes || "—"}</td>
+                        <td className="px-4 py-4 text-xs text-white/50 max-w-[200px] truncate">{a.notes || "—"}</td>
                         <td className="px-4 py-4">
                           <AppointmentActions
                             appointment={a}
@@ -718,7 +718,7 @@ export default function TurnosPage() {
               </table>
             </div>
           )}
-          <div className="p-4 bg-slate-50 text-xs font-medium text-cool-grey border-t border-slate-100">
+          <div className="p-4 bg-white/[0.03] text-xs font-medium text-white/45 border-t border-white/[0.06]">
             {filtered.length} turno{filtered.length !== 1 ? "s" : ""}
           </div>
         </div>
@@ -740,35 +740,35 @@ export default function TurnosPage() {
 
       {/* Add/Edit Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setShowModal(false)}>
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md" onClick={(e) => e.stopPropagation()}>
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setShowModal(false)}>
+          <div className="bg-[#1a1a1d] border border-white/[0.10] rounded-2xl shadow-2xl w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6 border-b border-white/[0.06] flex items-center justify-between">
               <h3 className="text-lg font-bold">{editingId ? "Editar Turno" : "Nuevo Turno"}</h3>
-              <button onClick={() => setShowModal(false)} className="text-cool-grey hover:text-on-surface">
+              <button onClick={() => setShowModal(false)} className="text-white/45 hover:text-white/80">
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
             <form onSubmit={handleSave} className="p-6 space-y-4">
               <div>
-                <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Nombre del Cliente *</label>
+                <label className="text-xs font-bold text-white/45 uppercase tracking-widest">Nombre del Cliente *</label>
                 <input required value={form.client_name} onChange={(e) => setForm({ ...form, client_name: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30" />
+                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-violet-500/30" />
               </div>
               <div>
-                <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Teléfono *</label>
+                <label className="text-xs font-bold text-white/45 uppercase tracking-widest">Teléfono *</label>
                 <input required value={form.client_phone} onChange={(e) => setForm({ ...form, client_phone: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30"
+                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-violet-500/30"
                   placeholder="+54 11 ..." />
               </div>
               <div>
-                <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Fecha y Hora *</label>
+                <label className="text-xs font-bold text-white/45 uppercase tracking-widest">Fecha y Hora *</label>
                 <input type="datetime-local" required value={form.scheduled_at} onChange={(e) => setForm({ ...form, scheduled_at: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30" />
+                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-violet-500/30" />
               </div>
               <div>
-                <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Estado</label>
+                <label className="text-xs font-bold text-white/45 uppercase tracking-widest">Estado</label>
                 <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30">
+                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-violet-500/30">
                   <option value="pendiente">Pendiente</option>
                   <option value="confirmado">Confirmado</option>
                   {editingId && <option value="completado">Completado</option>}
@@ -777,18 +777,18 @@ export default function TurnosPage() {
                 </select>
               </div>
               <div>
-                <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Notas</label>
+                <label className="text-xs font-bold text-white/45 uppercase tracking-widest">Notas</label>
                 <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30 resize-none"
+                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-violet-500/30 resize-none"
                   rows={2} placeholder="Detalles del turno..." />
               </div>
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setShowModal(false)}
-                  className="flex-1 py-3 bg-slate-200 rounded-full text-sm font-bold hover:bg-slate-300 transition-colors">
+                  className="flex-1 py-3 bg-white/[0.08] rounded-full text-sm font-bold hover:bg-white/[0.10] transition-colors">
                   Cancelar
                 </button>
                 <button type="submit" disabled={saving}
-                  className="flex-1 py-3 bg-primary text-white rounded-full text-sm font-bold shadow-md shadow-primary/20 hover:brightness-95 transition-all disabled:opacity-50">
+                  className="flex-1 py-3 bg-violet-600/20 border border-violet-500/30 text-violet-300 rounded-full text-sm font-bold  hover:brightness-95 transition-all disabled:opacity-50">
                   {saving ? "Guardando..." : editingId ? "Guardar Cambios" : "Crear Turno"}
                 </button>
               </div>

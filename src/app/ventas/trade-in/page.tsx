@@ -210,17 +210,17 @@ export default function TradeInPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-32">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        <span className="ml-3 text-sm text-cool-grey">Cargando trade-in...</span>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-400"></div>
+        <span className="ml-3 text-sm text-white/45">Cargando trade-in...</span>
       </div>
     );
   }
 
   const conditionChipClass = (c: "A" | "B" | "C", active: boolean) => {
-    if (!active) return "bg-slate-100 text-slate-600 hover:bg-slate-200";
-    if (c === "A") return "bg-green-600 text-white shadow-sm shadow-green-200";
-    if (c === "B") return "bg-amber-500 text-white shadow-sm shadow-amber-200";
-    return "bg-red-500 text-white shadow-sm shadow-red-200";
+    if (!active) return "bg-white/[0.06] text-white/55 hover:bg-white/[0.08]";
+    if (c === "A") return "bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 shadow-green-200";
+    if (c === "B") return "bg-amber-500 text-white shadow-amber-200";
+    return "bg-red-500 text-white shadow-red-200";
   };
 
   function BatteryBar({ value, size = "normal" }: { value: number; size?: "normal" | "mini" }) {
@@ -228,7 +228,7 @@ export default function TradeInPage() {
     const h = size === "mini" ? "h-1.5" : "h-2";
     return (
       <div className="flex items-center gap-2">
-        <div className={`flex-1 ${h} bg-slate-100 rounded-full overflow-hidden`} style={{ minWidth: size === "mini" ? 40 : 60 }}>
+        <div className={`flex-1 ${h} bg-white/[0.06] rounded-full overflow-hidden`} style={{ minWidth: size === "mini" ? 40 : 60 }}>
           <div className={`${h} ${color} rounded-full transition-all`} style={{ width: `${Math.min(value, 100)}%` }} />
         </div>
         <span className={`font-bold ${size === "mini" ? "text-[11px]" : "text-xs"} tabular-nums`}>{value}%</span>
@@ -242,7 +242,7 @@ export default function TradeInPage() {
       <div className="flex justify-end mb-6">
         <button
           onClick={() => { setEditingId(null); setForm(emptyForm); setShowAddModal(true); }}
-          className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-bold text-sm shadow-md shadow-primary/20 hover:brightness-95 transition-all"
+          className="flex items-center gap-2 px-6 py-3 bg-violet-600/20 border border-violet-500/30 text-violet-300 rounded-full font-bold text-sm  hover:brightness-95 transition-all"
         >
           <span className="material-symbols-outlined text-lg">add</span> Registrar Trade-in
         </button>
@@ -251,17 +251,17 @@ export default function TradeInPage() {
       {/* ============ 1. KPI Cards Row ============ */}
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[
-          { label: "Trade-ins del Mes", value: String(kpiCount), icon: "swap_horiz", iconBg: "bg-primary/10", iconColor: "text-primary" },
-          { label: "Pendientes", value: String(kpiPending), icon: "pending_actions", iconBg: "bg-amber-50", iconColor: "text-amber-600" },
-          { label: "Modelo Top", value: kpiTopModel, icon: "phone_iphone", iconBg: "bg-blue-50", iconColor: "text-blue-600", small: true },
-          { label: "Valor Promedio", value: kpiAvgPrice > 0 ? `$${kpiAvgPrice} USD` : "—", icon: "attach_money", iconBg: "bg-green-50", iconColor: "text-green-600" },
+          { label: "Trade-ins del Mes", value: String(kpiCount), icon: "swap_horiz", iconBg: "bg-violet-500/15", iconColor: "text-violet-400" },
+          { label: "Pendientes", value: String(kpiPending), icon: "pending_actions", iconBg: "bg-amber-50", iconColor: "text-amber-400" },
+          { label: "Modelo Top", value: kpiTopModel, icon: "phone_iphone", iconBg: "bg-blue-50", iconColor: "text-blue-400", small: true },
+          { label: "Valor Promedio", value: kpiAvgPrice > 0 ? `$${kpiAvgPrice} USD` : "—", icon: "attach_money", iconBg: "bg-green-50", iconColor: "text-emerald-400" },
         ].map((kpi) => (
-          <div key={kpi.label} className="bg-white rounded-2xl shadow-sm border border-slate-200 px-5 py-4 flex items-center gap-4">
+          <div key={kpi.label} className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 px-5 py-4 flex items-center gap-4">
             <div className={`w-10 h-10 ${kpi.iconBg} rounded-xl flex items-center justify-center shrink-0`}>
               <span className={`material-symbols-outlined text-xl ${kpi.iconColor}`}>{kpi.icon}</span>
             </div>
             <div className="min-w-0">
-              <p className="text-[10px] uppercase tracking-widest font-bold text-cool-grey">{kpi.label}</p>
+              <p className="text-[10px] uppercase tracking-widest font-bold text-white/45">{kpi.label}</p>
               <p className={`font-bold mt-0.5 truncate ${kpi.small ? "text-sm" : "text-lg"}`}>{kpi.value}</p>
             </div>
           </div>
@@ -270,14 +270,14 @@ export default function TradeInPage() {
 
       {/* ============ 2. Cotizador Rápido ============ */}
       <section className="mb-6">
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+        <div className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 p-6">
           <div className="flex items-center gap-3 mb-5">
-            <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
-              <span className="material-symbols-outlined text-xl text-primary">calculate</span>
+            <div className="w-10 h-10 bg-violet-500/15 rounded-xl flex items-center justify-center">
+              <span className="material-symbols-outlined text-xl text-violet-400">calculate</span>
             </div>
             <div>
               <h3 className="text-lg font-bold">Cotizador Rápido</h3>
-              <p className="text-[11px] text-cool-grey">Cotizá en vivo frente al cliente</p>
+              <p className="text-[11px] text-white/45">Cotizá en vivo frente al cliente</p>
             </div>
           </div>
 
@@ -286,11 +286,11 @@ export default function TradeInPage() {
             <div className="space-y-5">
               {/* Model selector */}
               <div>
-                <label className="text-[10px] uppercase tracking-widest font-bold text-cool-grey block mb-1.5">Modelo</label>
+                <label className="text-[10px] uppercase tracking-widest font-bold text-white/45 block mb-1.5">Modelo</label>
                 <select
                   value={quoterModel}
                   onChange={(e) => setQuoterModel(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm font-medium focus:ring-1 focus:ring-primary/30 focus:outline-none"
+                  className="w-full px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm font-medium focus:ring-1 focus:ring-violet-500/30 focus:outline-none"
                 >
                   {tradeInModels.map((m) => (
                     <option key={m} value={m}>{m}</option>
@@ -300,7 +300,7 @@ export default function TradeInPage() {
 
               {/* Condition chips */}
               <div>
-                <label className="text-[10px] uppercase tracking-widest font-bold text-cool-grey block mb-2">Condición</label>
+                <label className="text-[10px] uppercase tracking-widest font-bold text-white/45 block mb-2">Condición</label>
                 <div className="flex gap-2">
                   {(["A", "B", "C"] as const).map((c) => (
                     <button
@@ -316,7 +316,7 @@ export default function TradeInPage() {
 
               {/* Battery */}
               <div>
-                <label className="text-[10px] uppercase tracking-widest font-bold text-cool-grey block mb-1.5">
+                <label className="text-[10px] uppercase tracking-widest font-bold text-white/45 block mb-1.5">
                   Batería
                 </label>
                 <div className="flex items-center gap-4">
@@ -328,7 +328,7 @@ export default function TradeInPage() {
                     onChange={(e) => setQuoterBattery(parseInt(e.target.value))}
                     className="flex-1 h-2 accent-primary"
                   />
-                  <div className="flex items-center gap-1 bg-slate-50 rounded-lg border border-slate-200 px-3 py-1.5">
+                  <div className="flex items-center gap-1 bg-white/[0.03] rounded-lg border border-white/[0.08] px-3 py-1.5">
                     <input
                       type="number"
                       min={0}
@@ -337,7 +337,7 @@ export default function TradeInPage() {
                       onChange={(e) => setQuoterBattery(Math.min(100, Math.max(0, parseInt(e.target.value) || 0)))}
                       className="w-10 text-sm font-bold text-center bg-transparent focus:outline-none"
                     />
-                    <span className="text-xs text-cool-grey">%</span>
+                    <span className="text-xs text-white/45">%</span>
                   </div>
                 </div>
                 {batteryBelowMin && (
@@ -350,23 +350,23 @@ export default function TradeInPage() {
             </div>
 
             {/* Divider */}
-            <div className="hidden md:block w-px bg-slate-200 self-stretch" />
+            <div className="hidden md:block w-px bg-white/[0.08] self-stretch" />
 
             {/* Right: Result */}
             <div className="flex flex-col items-center justify-center text-center py-4">
-              <p className="text-[10px] uppercase tracking-widest font-bold text-cool-grey mb-2">Valor Trade-in</p>
+              <p className="text-[10px] uppercase tracking-widest font-bold text-white/45 mb-2">Valor Trade-in</p>
               {quoterPrice !== null ? (
-                <p className="text-5xl font-black text-primary tabular-nums">${quoterPrice}<span className="text-lg font-bold text-slate-400 ml-2">USD</span></p>
+                <p className="text-5xl font-black text-violet-400 tabular-nums">${quoterPrice}<span className="text-lg font-bold text-white/45 ml-2">USD</span></p>
               ) : (
-                <p className="text-2xl font-bold text-slate-300">Sin precio</p>
+                <p className="text-2xl font-bold text-white/35">Sin precio</p>
               )}
-              <p className="text-xs text-cool-grey mt-2">
+              <p className="text-xs text-white/45 mt-2">
                 {quoterModel} · Estado {quoterCondition} · {quoterBattery}%
               </p>
 
               <button
                 onClick={openModalFromQuoter}
-                className="mt-5 flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-bold text-sm shadow-md shadow-primary/20 hover:brightness-95 transition-all"
+                className="mt-5 flex items-center gap-2 px-6 py-3 bg-violet-600/20 border border-violet-500/30 text-violet-300 rounded-full font-bold text-sm  hover:brightness-95 transition-all"
               >
                 <span className="material-symbols-outlined text-lg">add_circle</span>
                 Registrar Trade-in
@@ -378,49 +378,49 @@ export default function TradeInPage() {
 
       {/* ============ 3. Tabla de Cotización ============ */}
       <section className="mb-6">
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+        <div className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 p-6">
           <div className="flex items-center gap-3 mb-5">
             <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center">
-              <span className="material-symbols-outlined text-xl text-green-600">swap_horiz</span>
+              <span className="material-symbols-outlined text-xl text-emerald-400">swap_horiz</span>
             </div>
             <div>
               <h3 className="text-lg font-bold">Tabla de Cotización</h3>
-              <p className="text-[11px] text-cool-grey">Referencia de precios para cotizar equipos en parte de pago</p>
+              <p className="text-[11px] text-white/45">Referencia de precios para cotizar equipos en parte de pago</p>
             </div>
           </div>
 
           {tradeInTable.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-cool-grey">
+            <div className="flex flex-col items-center justify-center py-12 text-white/45">
               <span className="material-symbols-outlined text-4xl mb-3">swap_horiz</span>
               <p className="text-sm font-medium">No hay precios de trade-in cargados</p>
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-xl border border-slate-200">
+            <div className="overflow-x-auto rounded-xl border border-white/[0.08]">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr>
-                    <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey bg-slate-50">Modelo</th>
+                    <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45 bg-white/[0.03]">Modelo</th>
                     <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-green-700 bg-green-50">Estado A — Impecable</th>
                     <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-amber-700 bg-amber-50">Estado B — Detalles</th>
                     <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-red-700 bg-red-50">Estado C — Uso visible</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey bg-slate-50">Batería mín.</th>
+                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45 bg-white/[0.03]">Batería mín.</th>
                   </tr>
                 </thead>
                 <tbody>
                   {tradeInTable.map((row, i) => (
-                    <tr key={row.model} className={`hover:bg-blue-50/40 transition-colors border-t border-slate-100 ${i % 2 === 1 ? "bg-slate-50/50" : "bg-white"}`}>
+                    <tr key={row.model} className={`hover:bg-blue-50/40 transition-colors border-t border-white/[0.06] ${i % 2 === 1 ? "bg-white/[0.02]" : "bg-[#1a1a1d]"}`}>
                       <td className="px-6 py-4 text-sm font-bold">{row.model}</td>
                       <td className="px-4 py-4">
                         <span className="text-base font-black text-green-700">${row.a}</span>
-                        <span className="text-[10px] text-slate-400 ml-1">USD</span>
+                        <span className="text-[10px] text-white/45 ml-1">USD</span>
                       </td>
                       <td className="px-4 py-4">
                         <span className="text-base font-black text-amber-700">${row.b}</span>
-                        <span className="text-[10px] text-slate-400 ml-1">USD</span>
+                        <span className="text-[10px] text-white/45 ml-1">USD</span>
                       </td>
                       <td className="px-4 py-4">
                         <span className="text-base font-black text-red-600">${row.c}</span>
-                        <span className="text-[10px] text-slate-400 ml-1">USD</span>
+                        <span className="text-[10px] text-white/45 ml-1">USD</span>
                       </td>
                       <td className="px-4 py-4 w-36">
                         <BatteryBar value={row.bat} size="mini" />
@@ -433,7 +433,7 @@ export default function TradeInPage() {
           )}
 
           <div className="mt-5 flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
-            <span className="material-symbols-outlined text-blue-600 text-lg mt-0.5">smart_toy</span>
+            <span className="material-symbols-outlined text-blue-400 text-lg mt-0.5">smart_toy</span>
             <p className="text-xs text-blue-800 leading-relaxed">
               El agente IA usa esta tabla para cotizar equipos automáticamente. Cuando un cliente envía fotos, GPT Vision analiza el estado y cotiza según estos valores de referencia.
             </p>
@@ -443,12 +443,12 @@ export default function TradeInPage() {
 
       {/* ============ 4. Historial ============ */}
       <section>
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          <div className="p-6 border-b border-slate-100">
+        <div className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 overflow-hidden">
+          <div className="p-6 border-b border-white/[0.06]">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
-                  <span className="material-symbols-outlined text-xl text-primary">history</span>
+                <div className="w-10 h-10 bg-violet-500/15 rounded-xl flex items-center justify-center">
+                  <span className="material-symbols-outlined text-xl text-violet-400">history</span>
                 </div>
                 <h3 className="text-lg font-bold">Historial de Trade-ins</h3>
               </div>
@@ -467,8 +467,8 @@ export default function TradeInPage() {
                     onClick={() => setHistoryFilter(f.key)}
                     className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
                       historyFilter === f.key
-                        ? "bg-primary text-white"
-                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                        ? "bg-violet-600/20 border border-violet-500/30 text-violet-300"
+                        : "bg-white/[0.06] text-white/55 hover:bg-white/[0.08]"
                     }`}
                   >
                     {f.label}
@@ -479,7 +479,7 @@ export default function TradeInPage() {
           </div>
 
           {filteredHistory.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-cool-grey">
+            <div className="flex flex-col items-center justify-center py-16 text-white/45">
               <span className="material-symbols-outlined text-3xl mb-2">swap_horiz</span>
               <p className="text-xs font-medium">
                 {historyFilter === "todos" ? "Sin trade-ins registrados" : `Sin trade-ins con estado "${historyFilter}"`}
@@ -489,16 +489,16 @@ export default function TradeInPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-50">
-                    <th className="px-3 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey w-8"></th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Fecha</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Cliente</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Modelo Recibido</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Condición</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Batería</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Precio</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Estado</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Acciones</th>
+                  <tr className="bg-white/[0.03]">
+                    <th className="px-3 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45 w-8"></th>
+                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45">Fecha</th>
+                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45">Cliente</th>
+                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45">Modelo Recibido</th>
+                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45">Condición</th>
+                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45">Batería</th>
+                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45">Precio</th>
+                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45">Estado</th>
+                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -506,11 +506,11 @@ export default function TradeInPage() {
                     <>
                       <tr
                         key={t.id}
-                        className={`hover:bg-blue-50/40 transition-colors border-t border-slate-100 cursor-pointer ${i % 2 === 1 ? "bg-slate-50/50" : ""}`}
+                        className={`hover:bg-blue-50/40 transition-colors border-t border-white/[0.06] cursor-pointer ${i % 2 === 1 ? "bg-white/[0.02]" : ""}`}
                         onClick={() => setExpandedId(expandedId === t.id ? null : t.id)}
                       >
                         <td className="px-3 py-4 text-center">
-                          <span className={`material-symbols-outlined text-sm text-cool-grey transition-transform inline-block ${expandedId === t.id ? "rotate-90" : ""}`}>
+                          <span className={`material-symbols-outlined text-sm text-white/45 transition-transform inline-block ${expandedId === t.id ? "rotate-90" : ""}`}>
                             chevron_right
                           </span>
                         </td>
@@ -519,12 +519,12 @@ export default function TradeInPage() {
                         </td>
                         <td className="px-4 py-4">
                           <p className="text-sm font-bold">{t.client_name}</p>
-                          {t.client_phone && <p className="text-[10px] text-cool-grey mt-0.5">{t.client_phone}</p>}
+                          {t.client_phone && <p className="text-[10px] text-white/45 mt-0.5">{t.client_phone}</p>}
                         </td>
                         <td className="px-4 py-4 text-sm font-bold">{t.model_received}</td>
                         <td className="px-4 py-4">
                           <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-black ${
-                            t.condition === "A" ? "bg-green-100 text-green-700" : t.condition === "B" ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700"
+                            t.condition === "A" ? "bg-emerald-500/15 text-emerald-400" : t.condition === "B" ? "bg-amber-500/15 text-amber-400" : "bg-red-500/15 text-red-400"
                           }`}>{t.condition}</span>
                         </td>
                         <td className="px-4 py-4 w-28">
@@ -534,10 +534,10 @@ export default function TradeInPage() {
                         <td className="px-4 py-4">
                           <span className={`px-3 py-1 text-[10px] font-bold rounded-full ${
                             t.status === "completado"
-                              ? "bg-green-100 text-green-700"
+                              ? "bg-emerald-500/15 text-emerald-400"
                               : t.status === "cancelado"
-                              ? "bg-red-100 text-red-700"
-                              : "bg-amber-100 text-amber-700"
+                              ? "bg-red-500/15 text-red-400"
+                              : "bg-amber-500/15 text-amber-400"
                           }`}>
                             {t.status.toUpperCase()}
                           </span>
@@ -547,7 +547,7 @@ export default function TradeInPage() {
                             {/* Edit button */}
                             <button
                               onClick={() => openEditModal(t)}
-                              className="p-1.5 rounded-lg hover:bg-slate-100 text-cool-grey hover:text-primary transition-colors"
+                              className="p-1.5 rounded-lg hover:bg-white/[0.06] text-white/45 hover:text-violet-400 transition-colors"
                               title="Editar"
                             >
                               <span className="material-symbols-outlined text-base">edit</span>
@@ -558,14 +558,14 @@ export default function TradeInPage() {
                               <>
                                 <button
                                   onClick={() => handleStatusChange(t.id, "completado")}
-                                  className="p-1.5 rounded-lg hover:bg-green-50 text-cool-grey hover:text-green-600 transition-colors"
+                                  className="p-1.5 rounded-lg hover:bg-green-50 text-white/45 hover:text-emerald-400 transition-colors"
                                   title="Completar (equipo recibido)"
                                 >
                                   <span className="material-symbols-outlined text-base">check_circle</span>
                                 </button>
                                 <button
                                   onClick={() => handleStatusChange(t.id, "cancelado")}
-                                  className="p-1.5 rounded-lg hover:bg-red-50 text-cool-grey hover:text-red-600 transition-colors"
+                                  className="p-1.5 rounded-lg hover:bg-red-50 text-white/45 hover:text-red-600 transition-colors"
                                   title="Cancelar"
                                 >
                                   <span className="material-symbols-outlined text-base">cancel</span>
@@ -577,7 +577,7 @@ export default function TradeInPage() {
                             {(t.status === "pendiente" || t.status === "cancelado") && (
                               <button
                                 onClick={() => setDeleteConfirmId(t.id)}
-                                className="p-1.5 rounded-lg hover:bg-red-50 text-cool-grey hover:text-red-600 transition-colors"
+                                className="p-1.5 rounded-lg hover:bg-red-50 text-white/45 hover:text-red-600 transition-colors"
                                 title="Eliminar"
                               >
                                 <span className="material-symbols-outlined text-base">delete</span>
@@ -589,11 +589,11 @@ export default function TradeInPage() {
 
                       {/* Expanded detail row */}
                       {expandedId === t.id && (
-                        <tr key={`${t.id}-detail`} className="bg-slate-50/80">
+                        <tr key={`${t.id}-detail`} className="bg-white/[0.03]/80">
                           <td colSpan={9} className="px-6 py-4">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                               <div>
-                                <p className="text-[10px] uppercase tracking-widest font-bold text-cool-grey mb-1">Fecha y Hora</p>
+                                <p className="text-[10px] uppercase tracking-widest font-bold text-white/45 mb-1">Fecha y Hora</p>
                                 <p className="font-medium">
                                   {new Date(t.created_at).toLocaleDateString("es-AR", { weekday: "long", day: "2-digit", month: "long", year: "numeric" })}
                                   {" — "}
@@ -601,17 +601,17 @@ export default function TradeInPage() {
                                 </p>
                               </div>
                               <div>
-                                <p className="text-[10px] uppercase tracking-widest font-bold text-cool-grey mb-1">Notas</p>
+                                <p className="text-[10px] uppercase tracking-widest font-bold text-white/45 mb-1">Notas</p>
                                 <p className="font-medium">{t.notes || "Sin notas"}</p>
                               </div>
                               <div>
-                                <p className="text-[10px] uppercase tracking-widest font-bold text-cool-grey mb-1">Cotizado por</p>
-                                <p className="font-medium text-cool-grey">—</p>
+                                <p className="text-[10px] uppercase tracking-widest font-bold text-white/45 mb-1">Cotizado por</p>
+                                <p className="font-medium text-white/45">—</p>
                               </div>
                               {t.status === "completado" && (
                                 <div className="md:col-span-3">
-                                  <p className="text-[10px] uppercase tracking-widest font-bold text-cool-grey mb-1">Producto vinculado</p>
-                                  <button className="flex items-center gap-2 text-xs text-primary font-bold hover:underline">
+                                  <p className="text-[10px] uppercase tracking-widest font-bold text-white/45 mb-1">Producto vinculado</p>
+                                  <button className="flex items-center gap-2 text-xs text-violet-400 font-bold hover:underline">
                                     <span className="material-symbols-outlined text-sm">link</span>
                                     Vincular a producto
                                   </button>
@@ -632,67 +632,67 @@ export default function TradeInPage() {
 
       {/* ============ Add/Edit Modal ============ */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => { setShowAddModal(false); setEditingId(null); }}>
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md" onClick={(e) => e.stopPropagation()}>
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => { setShowAddModal(false); setEditingId(null); }}>
+          <div className="bg-[#1a1a1d] border border-white/[0.10] rounded-2xl shadow-2xl w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6 border-b border-white/[0.06] flex items-center justify-between">
               <h3 className="text-lg font-bold">{editingId ? "Editar Trade-in" : "Registrar Trade-in"}</h3>
-              <button onClick={() => { setShowAddModal(false); setEditingId(null); }} className="text-cool-grey hover:text-on-surface">
+              <button onClick={() => { setShowAddModal(false); setEditingId(null); }} className="text-white/45 hover:text-white/80">
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="text-[10px] font-bold text-cool-grey uppercase tracking-widest">Cliente *</label>
+                <label className="text-[10px] font-bold text-white/45 uppercase tracking-widest">Cliente *</label>
                 <input required value={form.client_name} onChange={(e) => setForm({ ...form, client_name: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30 focus:outline-none" />
+                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-violet-500/30 focus:outline-none" />
               </div>
               <div>
-                <label className="text-[10px] font-bold text-cool-grey uppercase tracking-widest">Teléfono</label>
+                <label className="text-[10px] font-bold text-white/45 uppercase tracking-widest">Teléfono</label>
                 <input value={form.client_phone} onChange={(e) => setForm({ ...form, client_phone: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30 focus:outline-none" />
+                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-violet-500/30 focus:outline-none" />
               </div>
               <div>
-                <label className="text-[10px] font-bold text-cool-grey uppercase tracking-widest">Modelo Recibido *</label>
+                <label className="text-[10px] font-bold text-white/45 uppercase tracking-widest">Modelo Recibido *</label>
                 <input required value={form.model_received} onChange={(e) => setForm({ ...form, model_received: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30 focus:outline-none"
+                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-violet-500/30 focus:outline-none"
                   placeholder="iPhone 13 Pro" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] font-bold text-cool-grey uppercase tracking-widest">Condición</label>
+                  <label className="text-[10px] font-bold text-white/45 uppercase tracking-widest">Condición</label>
                   <select value={form.condition} onChange={(e) => setForm({ ...form, condition: e.target.value })}
-                    className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30 focus:outline-none">
+                    className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-violet-500/30 focus:outline-none">
                     <option value="A">A — Impecable</option>
                     <option value="B">B — Detalles</option>
                     <option value="C">C — Uso visible</option>
                   </select>
                 </div>
                 <div>
-                  <label className="text-[10px] font-bold text-cool-grey uppercase tracking-widest">Batería %</label>
+                  <label className="text-[10px] font-bold text-white/45 uppercase tracking-widest">Batería %</label>
                   <input type="number" min={0} max={100} value={form.battery_health}
                     onChange={(e) => setForm({ ...form, battery_health: parseInt(e.target.value) || 0 })}
-                    className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30 focus:outline-none" />
+                    className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-violet-500/30 focus:outline-none" />
                 </div>
               </div>
               <div>
-                <label className="text-[10px] font-bold text-cool-grey uppercase tracking-widest">Precio Ofrecido (USD)</label>
+                <label className="text-[10px] font-bold text-white/45 uppercase tracking-widest">Precio Ofrecido (USD)</label>
                 <input type="number" step="0.01" value={form.price_offered}
                   onChange={(e) => setForm({ ...form, price_offered: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30 focus:outline-none" />
+                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-violet-500/30 focus:outline-none" />
               </div>
               <div>
-                <label className="text-[10px] font-bold text-cool-grey uppercase tracking-widest">Notas</label>
+                <label className="text-[10px] font-bold text-white/45 uppercase tracking-widest">Notas</label>
                 <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30 focus:outline-none resize-none"
+                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-violet-500/30 focus:outline-none resize-none"
                   rows={2} />
               </div>
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => { setShowAddModal(false); setEditingId(null); }}
-                  className="flex-1 py-3 bg-slate-200 rounded-full text-sm font-bold hover:bg-slate-300 transition-colors">
+                  className="flex-1 py-3 bg-white/[0.08] rounded-full text-sm font-bold hover:bg-white/[0.10] transition-colors">
                   Cancelar
                 </button>
                 <button type="submit" disabled={saving}
-                  className="flex-1 py-3 bg-primary text-white rounded-full text-sm font-bold shadow-md shadow-primary/20 hover:brightness-95 transition-all disabled:opacity-50">
+                  className="flex-1 py-3 bg-violet-600/20 border border-violet-500/30 text-violet-300 rounded-full text-sm font-bold  hover:brightness-95 transition-all disabled:opacity-50">
                   {saving ? "Guardando..." : editingId ? "Guardar Cambios" : "Registrar"}
                 </button>
               </div>
@@ -703,18 +703,18 @@ export default function TradeInPage() {
 
       {/* ============ Delete Confirmation Modal ============ */}
       {deleteConfirmId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setDeleteConfirmId(null)}>
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setDeleteConfirmId(null)}>
+          <div className="bg-[#1a1a1d] border border-white/[0.10] rounded-2xl shadow-2xl w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
             <div className="p-6 text-center">
               <div className="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="material-symbols-outlined text-2xl text-red-500">delete_forever</span>
               </div>
               <h3 className="text-lg font-bold mb-2">¿Eliminar trade-in?</h3>
-              <p className="text-sm text-cool-grey mb-6">Esta acción no se puede deshacer.</p>
+              <p className="text-sm text-white/45 mb-6">Esta acción no se puede deshacer.</p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setDeleteConfirmId(null)}
-                  className="flex-1 py-3 bg-slate-200 rounded-full text-sm font-bold hover:bg-slate-300 transition-colors"
+                  className="flex-1 py-3 bg-white/[0.08] rounded-full text-sm font-bold hover:bg-white/[0.10] transition-colors"
                 >
                   Cancelar
                 </button>
