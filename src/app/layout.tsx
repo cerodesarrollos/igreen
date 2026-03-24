@@ -31,7 +31,7 @@ export default function RootLayout({
       </head>
       <body className="antialiased text-on-surface bg-slate-200/60">
         {/* App Window */}
-        <div className="m-3 rounded-2xl overflow-hidden bg-white border border-slate-200/80 shadow-xl min-h-[calc(100vh-1.5rem)] flex">
+        <div className="m-3 rounded-2xl overflow-hidden bg-white border border-slate-200/80 shadow-xl h-[calc(100vh-1.5rem)] flex">
           {/* Sidebar inside window */}
           <Sidebar />
           {/* Right side: Header + Content */}

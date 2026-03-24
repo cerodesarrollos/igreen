@@ -35,7 +35,7 @@ export default function Sidebar() {
   }, [isInVentas]);
 
   return (
-    <aside className="w-20 lg:w-60 shrink-0 border-r border-slate-200 bg-white/50 flex flex-col p-4 space-y-6 transition-all overflow-y-auto">
+    <aside className="w-20 lg:w-60 shrink-0 border-r border-slate-200 bg-white/50 flex flex-col p-4 space-y-6 transition-all overflow-y-auto h-full">
       {/* Logo */}
       <div className="flex flex-col items-center lg:items-start lg:px-2">
         <span className="text-xl font-black tracking-tighter text-primary">
