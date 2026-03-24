@@ -165,19 +165,19 @@ export default function InboxPage() {
         {/* Header */}
         <div className="p-4 border-b border-white/[0.06] space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/25">Instagram DMs</p>
-            <button onClick={fetchConversations} className="text-white/25 hover:text-white/50 transition-colors">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/50">Instagram DMs</p>
+            <button onClick={fetchConversations} className="text-white/50 hover:text-white/50 transition-colors">
               <span className="material-symbols-outlined text-[16px]">refresh</span>
             </button>
           </div>
           <div className="flex items-center gap-2 bg-white/[0.04] border border-white/[0.06] rounded-lg px-3 py-1.5">
-            <span className="material-symbols-outlined text-white/25 text-base">search</span>
-            <input type="text" placeholder="Buscar..." value={search} onChange={e => setSearch(e.target.value)} className="bg-transparent text-sm text-white/70 placeholder:text-white/20 outline-none w-full" />
+            <span className="material-symbols-outlined text-white/50 text-base">search</span>
+            <input type="text" placeholder="Buscar..." value={search} onChange={e => setSearch(e.target.value)} className="bg-transparent text-sm text-white/70 placeholder:text-white/45 outline-none w-full" />
           </div>
           <div className="flex gap-1 flex-wrap">
             {filters.map(f => (
               <button key={f.key} onClick={() => setFilterStatus(f.key)}
-                className={`px-2.5 py-1 rounded-md text-[10px] font-medium transition-colors ${filterStatus === f.key ? 'bg-white/[0.1] text-white/80' : 'text-white/30 hover:text-white/50'}`}>
+                className={`px-2.5 py-1 rounded-md text-[10px] font-medium transition-colors ${filterStatus === f.key ? 'bg-white/[0.1] text-white/80' : 'text-white/55 hover:text-white/50'}`}>
                 {f.label}
               </button>
             ))}
@@ -194,7 +194,7 @@ export default function InboxPage() {
           {!loading && conversations.length === 0 && (
             <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
               <span className="material-symbols-outlined text-white/10 text-4xl mb-2">chat_bubble</span>
-              <p className="text-sm text-white/25">Sin mensajes</p>
+              <p className="text-sm text-white/50">Sin mensajes</p>
             </div>
           )}
           {conversations.map(conv => (
@@ -209,10 +209,10 @@ export default function InboxPage() {
                     <span className="text-sm font-medium text-white/75 truncate">
                       {conv.sender_name || conv.sender_username || conv.sender_id.slice(0, 12) + '…'}
                     </span>
-                    <span className="text-[10px] text-white/20 shrink-0 ml-2">{formatTime(conv.last_message_time)}</span>
+                    <span className="text-[10px] text-white/45 shrink-0 ml-2">{formatTime(conv.last_message_time)}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <p className="text-[11px] text-white/30 truncate flex-1">{conv.last_message}</p>
+                    <p className="text-[11px] text-white/55 truncate flex-1">{conv.last_message}</p>
                     {conv.unread_count > 0 && (
                       <span className="ml-2 w-4 h-4 rounded-full bg-white/20 text-white/80 text-[9px] font-bold flex items-center justify-center shrink-0">
                         {conv.unread_count}
@@ -237,7 +237,7 @@ export default function InboxPage() {
               </div>
               <div>
                 <p className="text-sm font-semibold text-white/80">{selected.sender_name || selected.sender_username || 'Usuario'}</p>
-                {selected.sender_username && <p className="text-[10px] text-white/30">@{selected.sender_username}</p>}
+                {selected.sender_username && <p className="text-[10px] text-white/55">@{selected.sender_username}</p>}
               </div>
               <span className={`text-[10px] px-2 py-0.5 rounded-md font-medium ${selected.status === 'agent' ? 'bg-white/[0.06] text-white/40' : 'bg-white/[0.06] text-white/40'}`}>
                 {selected.status === 'agent' ? 'Agente IA' : 'Humano'}
@@ -266,12 +266,12 @@ export default function InboxPage() {
                     <img src={msg.media_url} alt="imagen" className="rounded-lg max-w-full max-h-60 object-cover mb-1" />
                   )}
                   {msg.message_type === 'share' && (
-                    <p className="text-[11px] text-white/30 italic">Contenido compartido</p>
+                    <p className="text-[11px] text-white/55 italic">Contenido compartido</p>
                   )}
                   {!['image','video','audio','share'].includes(msg.message_type) && msg.message_text && (
                     <p className="text-sm leading-relaxed">{msg.message_text}</p>
                   )}
-                  <p className="text-[10px] text-white/20 mt-1">{formatTime(msg.created_at)}</p>
+                  <p className="text-[10px] text-white/45 mt-1">{formatTime(msg.created_at)}</p>
                 </div>
               </div>
             ))}
@@ -287,7 +287,7 @@ export default function InboxPage() {
                 onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendReply(); } }}
                 placeholder="Escribí una respuesta…"
                 rows={2}
-                className="flex-1 resize-none px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-white/70 placeholder:text-white/20 outline-none focus:border-white/[0.15] transition-colors"
+                className="flex-1 resize-none px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-white/70 placeholder:text-white/45 outline-none focus:border-white/[0.15] transition-colors"
               />
               <button onClick={sendReply} disabled={!replyText.trim() || sending}
                 className="p-2.5 bg-white/[0.08] hover:bg-white/[0.12] border border-white/[0.1] text-white/60 rounded-xl disabled:opacity-30 transition-colors">
@@ -302,7 +302,7 @@ export default function InboxPage() {
       ) : (
         <div className="flex-1 flex flex-col items-center justify-center bg-[#0d0d0f]">
           <span className="material-symbols-outlined text-white/10 text-5xl mb-3">chat_bubble_outline</span>
-          <p className="text-sm text-white/25">Seleccioná una conversación</p>
+          <p className="text-sm text-white/50">Seleccioná una conversación</p>
         </div>
       )}
     </div>

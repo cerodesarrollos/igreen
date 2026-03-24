@@ -26,9 +26,9 @@ export default function Header() {
 
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2 bg-white/[0.04] border border-white/[0.06] rounded-lg px-3 py-1.5 w-48 lg:w-64 hover:border-white/[0.1] transition-colors">
-          <span className="material-symbols-outlined text-white/25 text-base">search</span>
+          <span className="material-symbols-outlined text-white/50 text-base">search</span>
           <input
-            className="bg-transparent text-sm text-white/70 placeholder:text-white/20 outline-none w-full"
+            className="bg-transparent text-sm text-white/70 placeholder:text-white/45 outline-none w-full"
             placeholder="Buscar..."
           />
         </div>

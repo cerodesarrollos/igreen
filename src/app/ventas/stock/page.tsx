@@ -117,14 +117,14 @@ function ProductFormModal({
         <div className="rounded-[19px] bg-[#161619] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
         <div className="p-5 border-b border-white/[0.06] flex items-center justify-between">
           <p className="text-sm font-semibold text-white/80">{title}</p>
-          <button onClick={onClose} className="text-white/30 hover:text-white/60">
+          <button onClick={onClose} className="text-white/55 hover:text-white/60">
             <span className="material-symbols-outlined text-[20px]">close</span>
           </button>
         </div>
         <form onSubmit={onSubmit} className="p-5 space-y-4">
           {/* Model */}
           <div>
-            <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/25">Modelo *</label>
+            <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50">Modelo *</label>
             <select required value={form.model} onChange={(e) => {
               const m = e.target.value;
               const spec = IPHONE_CATALOG[m];
@@ -137,7 +137,7 @@ function ProductFormModal({
           </div>
           {/* IMEI */}
           <div>
-            <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/25">IMEI *</label>
+            <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50">IMEI *</label>
             <input required value={form.imei} onChange={(e) => setForm({ ...form, imei: e.target.value })}
               className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors font-mono"
               placeholder="353912110891234" />
@@ -145,7 +145,7 @@ function ProductFormModal({
           {/* Capacity + Color */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/25">Capacidad</label>
+              <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50">Capacidad</label>
               {form.model && IPHONE_CATALOG[form.model] ? (
                 <select value={form.capacity} onChange={(e) => setForm({ ...form, capacity: e.target.value })}
                   className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors">
@@ -158,7 +158,7 @@ function ProductFormModal({
               )}
             </div>
             <div>
-              <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/25">Color</label>
+              <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50">Color</label>
               {form.model && IPHONE_CATALOG[form.model] ? (
                 <select value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })}
                   className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors">
@@ -174,7 +174,7 @@ function ProductFormModal({
           {/* Condition + Battery */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/25">Condición *</label>
+              <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50">Condición *</label>
               <select value={form.condition} onChange={(e) => setForm({ ...form, condition: e.target.value as "A" | "B" | "C" })}
                 className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors">
                 <option value="A">A — Impecable</option>
@@ -183,7 +183,7 @@ function ProductFormModal({
               </select>
             </div>
             <div>
-              <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/25">Batería % *</label>
+              <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50">Batería % *</label>
               <input type="number" min={0} max={100} required value={form.battery_health}
                 onChange={(e) => setForm({ ...form, battery_health: parseInt(e.target.value) || 0 })}
                 className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors" />
@@ -192,14 +192,14 @@ function ProductFormModal({
           {/* Prices */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/25">Precio Costo (USD)</label>
+              <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50">Precio Costo (USD)</label>
               <input type="number" step="0.01" value={form.cost_price}
                 onChange={(e) => setForm({ ...form, cost_price: e.target.value })}
                 className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors"
                 placeholder="400" />
             </div>
             <div>
-              <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/25">Precio Venta (USD)</label>
+              <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50">Precio Venta (USD)</label>
               <input type="number" step="0.01" value={form.sale_price}
                 onChange={(e) => setForm({ ...form, sale_price: e.target.value })}
                 className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors"
@@ -208,7 +208,7 @@ function ProductFormModal({
           </div>
           {/* New/Used toggle */}
           <div className="flex items-center gap-3">
-            <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/25">Tipo</label>
+            <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50">Tipo</label>
             <button type="button" onClick={() => setForm({ ...form, is_new: !form.is_new })}
               className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${form.is_new ? "bg-white/[0.08] text-white/60" : "bg-white/[0.04] text-white/40"}`}>
               {form.is_new ? "Nuevo" : "Usado"}
@@ -216,7 +216,7 @@ function ProductFormModal({
           </div>
           {/* Origin */}
           <div>
-            <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/25">Origen *</label>
+            <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50">Origen *</label>
             <select value={form.origin} onChange={(e) => setForm({ ...form, origin: e.target.value as "propio" | "consignacion" })}
               className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors">
               <option value="propio">Stock Propio</option>
@@ -225,7 +225,7 @@ function ProductFormModal({
           </div>
           {form.origin === "consignacion" && (
             <div>
-              <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/25">Dueño Consignación</label>
+              <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50">Dueño Consignación</label>
               <input value={form.consignment_owner} onChange={(e) => setForm({ ...form, consignment_owner: e.target.value })}
                 className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors"
                 placeholder="Nombre del dueño" />
@@ -233,14 +233,14 @@ function ProductFormModal({
           )}
           {/* Defects */}
           <div>
-            <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/25">Defectos</label>
+            <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50">Defectos</label>
             <textarea value={form.defects} onChange={(e) => setForm({ ...form, defects: e.target.value })}
               className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors resize-none"
               rows={2} placeholder="Describir defectos si los hay..." />
           </div>
           {/* Notes */}
           <div>
-            <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/25">Notas</label>
+            <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50">Notas</label>
             <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })}
               className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors resize-none"
               rows={2} placeholder="Notas adicionales..." />
@@ -550,9 +550,9 @@ export default function VentasStockPage() {
         ].map((k) => (
           <div key={k.label} className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d]">
             <div className="rounded-[19px] bg-[#161619] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-              <p className="text-[11px] font-normal text-white/25 uppercase tracking-[0.14em] mb-4">{k.label}</p>
+              <p className="text-[11px] font-normal text-white/50 uppercase tracking-[0.14em] mb-4">{k.label}</p>
               <p className="text-[28px] font-medium text-white/90 leading-none tracking-tight">{k.value}</p>
-              <p className="text-[11px] text-white/20 mt-1.5">{k.sub}</p>
+              <p className="text-[11px] text-white/45 mt-1.5">{k.sub}</p>
             </div>
           </div>
         ))}
@@ -561,8 +561,8 @@ export default function VentasStockPage() {
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-3 mb-5">
         <div className="flex items-center gap-2 bg-white/[0.04] border border-white/[0.06] rounded-lg px-3 py-2 flex-1 min-w-[200px] max-w-sm hover:border-white/[0.1] transition-colors">
-          <span className="material-symbols-outlined text-white/25 text-base">search</span>
-          <input className="bg-transparent text-sm text-white/70 placeholder:text-white/20 outline-none w-full" placeholder="Buscar por modelo o IMEI…" value={search} onChange={e => setSearch(e.target.value)} />
+          <span className="material-symbols-outlined text-white/50 text-base">search</span>
+          <input className="bg-transparent text-sm text-white/70 placeholder:text-white/45 outline-none w-full" placeholder="Buscar por modelo o IMEI…" value={search} onChange={e => setSearch(e.target.value)} />
         </div>
         <button onClick={() => { setAddForm(emptyProductForm); setShowAddModal(true); }}
           className="flex items-center gap-2 bg-white/[0.08] hover:bg-white/[0.12] border border-white/[0.1] text-white/80 text-sm font-medium px-4 py-2 rounded-xl transition-colors">
@@ -583,10 +583,10 @@ export default function VentasStockPage() {
           { label: "Origen", opts: [["todos","Todos"],["propio","Propio"],["consignacion","Consignación"]], val: originFilter, set: setOriginFilter },
         ].map(group => (
           <div key={group.label} className="flex items-center gap-1.5">
-            <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/20 mr-1">{group.label}</span>
+            <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/45 mr-1">{group.label}</span>
             {group.opts.map(([key, lbl]) => (
               <button key={key} onClick={() => group.set(key)}
-                className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors ${group.val === key ? 'bg-white/[0.1] text-white/80' : 'text-white/30 hover:text-white/50'}`}>
+                className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors ${group.val === key ? 'bg-white/[0.1] text-white/80' : 'text-white/55 hover:text-white/50'}`}>
                 {lbl}
               </button>
             ))}
@@ -603,7 +603,7 @@ export default function VentasStockPage() {
               {filtered.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20">
                   <span className="material-symbols-outlined text-white/10 text-4xl mb-3">inventory_2</span>
-                  <p className="text-sm text-white/25">No hay equipos para mostrar</p>
+                  <p className="text-sm text-white/50">No hay equipos para mostrar</p>
                 </div>
               ) : (
                 <>
@@ -612,7 +612,7 @@ export default function VentasStockPage() {
                       <thead>
                         <tr className="border-b border-white/[0.05]">
                           {["Equipo","IMEI","Cap.","Cond.","Bat.","Precio","Estado",""].map(h => (
-                            <th key={h} className="px-4 py-3.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/20">{h}</th>
+                            <th key={h} className="px-4 py-3.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/45">{h}</th>
                           ))}
                         </tr>
                       </thead>
@@ -623,10 +623,10 @@ export default function VentasStockPage() {
                             <td className="px-4 py-3.5">
                               <div>
                                 <p className="text-sm font-medium text-white/80">{p.model}</p>
-                                <p className="text-[10px] text-white/30">{p.color}{p.is_new ? ' · NUEVO' : ''}</p>
+                                <p className="text-[10px] text-white/55">{p.color}{p.is_new ? ' · NUEVO' : ''}</p>
                               </div>
                             </td>
-                            <td className="px-4 py-3.5 font-mono text-[11px] text-white/30">••••{p.imei.slice(-4)}</td>
+                            <td className="px-4 py-3.5 font-mono text-[11px] text-white/55">••••{p.imei.slice(-4)}</td>
                             <td className="px-4 py-3.5 text-sm text-white/60">{p.capacity}</td>
                             <td className="px-4 py-3.5">
                               <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-md ${
@@ -645,14 +645,14 @@ export default function VentasStockPage() {
                               <span className={`text-[11px] font-medium px-2 py-0.5 rounded-md ${
                                 p.status === 'disponible' ? 'bg-white/[0.07] text-white/50' :
                                 p.status === 'reservado'  ? 'bg-amber-500/10 text-amber-400' :
-                                'bg-white/[0.04] text-white/20'
+                                'bg-white/[0.04] text-white/45'
                               }`}>
                                 {p.status === 'disponible' ? 'Disponible' : p.status === 'reservado' ? 'Reservado' : 'Vendido'}
                               </span>
                             </td>
                             <td className="px-4 py-3.5 text-right">
                               <button onClick={ev => { ev.stopPropagation(); if (p.status === 'disponible') openSaleModal(p); }}
-                                className={`material-symbols-outlined text-[18px] transition-colors ${p.status === 'disponible' ? 'text-white/30 hover:text-white/60' : 'text-white/10'}`}>
+                                className={`material-symbols-outlined text-[18px] transition-colors ${p.status === 'disponible' ? 'text-white/55 hover:text-white/60' : 'text-white/10'}`}>
                                 {p.status === 'disponible' ? 'sell' : 'chevron_right'}
                               </button>
                             </td>
@@ -662,7 +662,7 @@ export default function VentasStockPage() {
                     </table>
                   </div>
                   <div className="px-4 py-3 border-t border-white/[0.04]">
-                    <p className="text-[11px] text-white/20">{filtered.length} de {allProducts.length} equipos</p>
+                    <p className="text-[11px] text-white/45">{filtered.length} de {allProducts.length} equipos</p>
                   </div>
                 </>
               )}
@@ -674,12 +674,12 @@ export default function VentasStockPage() {
         <div className="col-span-12 lg:col-span-4">
           <div className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] sticky top-4">
             <div className="rounded-[19px] bg-[#161619] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/20 mb-4">Detalle</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/45 mb-4">Detalle</p>
               {selectedProduct ? (
                 <>
                   <div className="mb-5">
-                    <p className="text-[11px] font-medium text-white/25 uppercase tracking-[0.14em] mb-1">{selectedProduct.model}</p>
-                    <p className="font-mono text-[11px] text-white/20">{selectedProduct.imei}</p>
+                    <p className="text-[11px] font-medium text-white/50 uppercase tracking-[0.14em] mb-1">{selectedProduct.model}</p>
+                    <p className="font-mono text-[11px] text-white/45">{selectedProduct.imei}</p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 mb-5">
@@ -690,20 +690,20 @@ export default function VentasStockPage() {
                       { l: "Batería",   v: `${selectedProduct.battery_health}%` },
                     ].map(i => (
                       <div key={i.l} className="bg-white/[0.03] border border-white/[0.05] rounded-lg p-3">
-                        <p className="text-[9px] font-semibold uppercase tracking-wider text-white/20 mb-1">{i.l}</p>
+                        <p className="text-[9px] font-semibold uppercase tracking-wider text-white/45 mb-1">{i.l}</p>
                         <p className="text-sm font-medium text-white/70">{i.v}</p>
                       </div>
                     ))}
                   </div>
 
                   <div className="bg-white/[0.03] border border-white/[0.05] rounded-lg p-3 mb-4">
-                    <p className="text-[9px] font-semibold uppercase tracking-wider text-white/20 mb-2">Precios</p>
+                    <p className="text-[9px] font-semibold uppercase tracking-wider text-white/45 mb-2">Precios</p>
                     <div className="space-y-1.5">
-                      <div className="flex justify-between"><span className="text-[11px] text-white/30">Costo</span><span className="text-[11px] text-white/60">{formatPrice(selectedProduct.cost_price)}</span></div>
-                      <div className="flex justify-between"><span className="text-[11px] text-white/30">Venta</span><span className="text-[11px] font-medium text-white/70">{formatPrice(selectedProduct.sale_price)}</span></div>
+                      <div className="flex justify-between"><span className="text-[11px] text-white/55">Costo</span><span className="text-[11px] text-white/60">{formatPrice(selectedProduct.cost_price)}</span></div>
+                      <div className="flex justify-between"><span className="text-[11px] text-white/55">Venta</span><span className="text-[11px] font-medium text-white/70">{formatPrice(selectedProduct.sale_price)}</span></div>
                       {selectedProduct.cost_price && selectedProduct.sale_price && (
                         <div className="flex justify-between pt-1.5 border-t border-white/[0.05]">
-                          <span className="text-[11px] font-semibold text-white/30">Ganancia</span>
+                          <span className="text-[11px] font-semibold text-white/55">Ganancia</span>
                           <span className="text-[11px] font-bold text-emerald-400">{formatPrice(selectedProduct.sale_price - selectedProduct.cost_price)}</span>
                         </div>
                       )}
@@ -712,7 +712,7 @@ export default function VentasStockPage() {
 
                   {selectedProduct.defects && (
                     <div className="mb-4">
-                      <p className="text-[9px] font-semibold uppercase tracking-wider text-white/20 mb-1">Defectos</p>
+                      <p className="text-[9px] font-semibold uppercase tracking-wider text-white/45 mb-1">Defectos</p>
                       <p className="text-xs text-white/40 leading-relaxed">{selectedProduct.defects}</p>
                     </div>
                   )}
@@ -765,7 +765,7 @@ export default function VentasStockPage() {
               ) : (
                 <div className="flex flex-col items-center justify-center py-16">
                   <span className="material-symbols-outlined text-white/10 text-4xl mb-2">touch_app</span>
-                  <p className="text-sm text-white/20">Seleccioná un equipo</p>
+                  <p className="text-sm text-white/45">Seleccioná un equipo</p>
                 </div>
               )}
             </div>
@@ -788,7 +788,7 @@ export default function VentasStockPage() {
                   </div>
                   <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4 text-left space-y-2">
                     {[["Equipo", `${saleConfirmation.product.model} ${saleConfirmation.product.capacity}`], ["Precio", formatPrice(saleConfirmation.sale_price)], ["Pago", saleConfirmation.payment_method]].map(([l, v]) => (
-                      <div key={l} className="flex justify-between"><span className="text-[11px] text-white/30">{l}</span><span className="text-[11px] font-medium text-white/60">{v}</span></div>
+                      <div key={l} className="flex justify-between"><span className="text-[11px] text-white/55">{l}</span><span className="text-[11px] font-medium text-white/60">{v}</span></div>
                     ))}
                   </div>
                   <div className="grid grid-cols-2 gap-2">
@@ -801,25 +801,25 @@ export default function VentasStockPage() {
                 <>
                   <div className="p-5 border-b border-white/[0.06] flex items-center justify-between">
                     <p className="text-sm font-semibold text-white/80">Registrar Venta</p>
-                    <button onClick={() => setShowSaleModal(false)} className="text-white/30 hover:text-white/60"><span className="material-symbols-outlined text-[20px]">close</span></button>
+                    <button onClick={() => setShowSaleModal(false)} className="text-white/55 hover:text-white/60"><span className="material-symbols-outlined text-[20px]">close</span></button>
                   </div>
                   <form onSubmit={handleRegisterSale} className="p-5 space-y-4">
                     <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3">
                       <p className="text-sm font-medium text-white/70">{saleProduct.model}</p>
-                      <p className="text-[11px] text-white/30 font-mono">{saleProduct.imei}</p>
-                      <p className="text-[11px] text-white/30 mt-0.5">{saleProduct.capacity} · {saleProduct.color} · Grado {saleProduct.condition}</p>
+                      <p className="text-[11px] text-white/55 font-mono">{saleProduct.imei}</p>
+                      <p className="text-[11px] text-white/55 mt-0.5">{saleProduct.capacity} · {saleProduct.color} · Grado {saleProduct.condition}</p>
                     </div>
                     {[
                       { label: "Precio (USD)", type: "number", val: saleForm.sale_price, set: (v: string) => setSaleForm({...saleForm, sale_price: v}), required: true, step: "0.01" },
                     ].map(f => (
                       <div key={f.label}>
-                        <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/25 block mb-1">{f.label}</label>
+                        <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50 block mb-1">{f.label}</label>
                         <input type={f.type} required={f.required} step={f.step} value={f.val} onChange={e => f.set(e.target.value)}
                           className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors" />
                       </div>
                     ))}
                     <div>
-                      <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/25 block mb-1">Método de Pago</label>
+                      <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50 block mb-1">Método de Pago</label>
                       <select value={saleForm.payment_method} onChange={e => setSaleForm({...saleForm, payment_method: e.target.value})}
                         className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none">
                         {["efectivo","transferencia","tarjeta_debito","tarjeta_credito","mixto"].map(o => <option key={o} value={o}>{o.replace("_"," ")}</option>)}
@@ -828,7 +828,7 @@ export default function VentasStockPage() {
                     <div className="grid grid-cols-2 gap-3">
                       {[["Nombre cliente", saleForm.client_name, (v: string) => setSaleForm({...saleForm, client_name: v})], ["Teléfono", saleForm.client_phone, (v: string) => setSaleForm({...saleForm, client_phone: v})]].map(([lbl, val, set]) => (
                         <div key={lbl as string}>
-                          <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/25 block mb-1">{lbl as string}</label>
+                          <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50 block mb-1">{lbl as string}</label>
                           <input type="text" value={val as string} onChange={e => (set as (v: string) => void)(e.target.value)} placeholder="Opcional"
                             className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors" />
                         </div>

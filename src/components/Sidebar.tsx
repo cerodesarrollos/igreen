@@ -59,7 +59,7 @@ export default function Sidebar() {
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto overflow-x-hidden p-2 space-y-px no-scrollbar">
         {!collapsed && (
-          <p className="px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/20">
+          <p className="px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/45">
             Ventas
           </p>
         )}
@@ -107,7 +107,7 @@ export default function Sidebar() {
         <NavItem href="/settings" icon="settings" label="Ajustes" active={pathname === "/settings"} collapsed={collapsed} />
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-white/25 hover:text-white/50 hover:bg-white/[0.04] transition-colors text-sm"
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-white/50 hover:text-white/50 hover:bg-white/[0.04] transition-colors text-sm"
         >
           <span
             className="material-symbols-outlined text-[16px] shrink-0 transition-transform"

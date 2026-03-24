@@ -115,7 +115,7 @@ export default function VentasResumenPage() {
       {/* Header */}
       <div className="flex items-end justify-between">
         <div>
-          <p className="text-[11px] text-white/25 uppercase tracking-[0.14em] mb-2">
+          <p className="text-[11px] text-white/50 uppercase tracking-[0.14em] mb-2">
             {new Date().toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" })}
           </p>
           <h1 className="text-[28px] font-medium text-white/90 leading-none tracking-tight">Resumen</h1>
@@ -135,9 +135,9 @@ export default function VentasResumenPage() {
           <Link key={k.label} href={k.link}>
             <GlassCard>
               <div className="p-5">
-                <p className="text-[11px] font-normal text-white/25 uppercase tracking-[0.14em] mb-4">{k.label}</p>
+                <p className="text-[11px] font-normal text-white/50 uppercase tracking-[0.14em] mb-4">{k.label}</p>
                 <p className="text-[28px] font-medium text-white/90 leading-none tracking-tight">{k.value}</p>
-                <p className="text-[11px] text-white/20 mt-1.5">{k.sub}</p>
+                <p className="text-[11px] text-white/45 mt-1.5">{k.sub}</p>
               </div>
             </GlassCard>
           </Link>
@@ -151,14 +151,14 @@ export default function VentasResumenPage() {
         <GlassCard>
           <div className="p-5">
             <div className="flex items-center justify-between mb-5">
-              <p className="text-[11px] font-normal text-white/25 uppercase tracking-[0.14em]">Turnos de hoy</p>
-              <Link href="/ventas/turnos" className="text-[11px] text-white/25 hover:text-white/50 transition-colors">
+              <p className="text-[11px] font-normal text-white/50 uppercase tracking-[0.14em]">Turnos de hoy</p>
+              <Link href="/ventas/turnos" className="text-[11px] text-white/50 hover:text-white/50 transition-colors">
                 Ver todos →
               </Link>
             </div>
             {turnosHoy.length === 0 ? (
               <div className="flex items-center justify-center py-10">
-                <p className="text-sm text-white/20">Sin turnos para hoy</p>
+                <p className="text-sm text-white/45">Sin turnos para hoy</p>
               </div>
             ) : (
               <div className="space-y-1">
@@ -182,7 +182,7 @@ export default function VentasResumenPage() {
         {/* Alertas */}
         <GlassCard>
           <div className="p-5">
-            <p className="text-[11px] font-normal text-white/25 uppercase tracking-[0.14em] mb-5">Estado del sistema</p>
+            <p className="text-[11px] font-normal text-white/50 uppercase tracking-[0.14em] mb-5">Estado del sistema</p>
             <div className="space-y-1">
               {alerts.map((alert, i) => {
                 const dot = { warning: "#f59e0b", danger: "#ef4444", ok: "#22c55e" }[alert.type];
@@ -208,10 +208,10 @@ export default function VentasResumenPage() {
       {/* Actividad */}
       <GlassCard>
         <div className="p-5">
-          <p className="text-[11px] font-normal text-white/25 uppercase tracking-[0.14em] mb-5">Actividad reciente</p>
+          <p className="text-[11px] font-normal text-white/50 uppercase tracking-[0.14em] mb-5">Actividad reciente</p>
           {activity.length === 0 ? (
             <div className="flex items-center justify-center py-10">
-              <p className="text-sm text-white/20">Sin actividad registrada</p>
+              <p className="text-sm text-white/45">Sin actividad registrada</p>
             </div>
           ) : (
             <div className="space-y-0">
@@ -220,9 +220,9 @@ export default function VentasResumenPage() {
                   <div className="w-1 h-1 rounded-full bg-white/20 mt-2 shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-white/55 truncate">{a.action}</p>
-                    {a.details && <p className="text-[11px] text-white/20 truncate mt-0.5">{a.details}</p>}
+                    {a.details && <p className="text-[11px] text-white/45 truncate mt-0.5">{a.details}</p>}
                   </div>
-                  <p className="text-[11px] text-white/20 shrink-0 tabular-nums whitespace-nowrap">
+                  <p className="text-[11px] text-white/45 shrink-0 tabular-nums whitespace-nowrap">
                     {new Date(a.created_at).toLocaleString("es-AR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
                   </p>
                 </div>
