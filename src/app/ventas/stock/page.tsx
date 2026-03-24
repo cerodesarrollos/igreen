@@ -541,49 +541,53 @@ export default function VentasStockPage() {
   return (
     <>
       {/* Top row: Filters left + KPIs right */}
-      <div className="flex gap-4 mb-6 items-start">
+      <div className="flex gap-4 mb-6 items-stretch">
 
-        {/* LEFT — Filters only */}
-        <div className="flex flex-col gap-3 w-[260px] shrink-0">
-          {/* Filter dropdowns */}
-          <div className="rounded-[18px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d]">
-            <div className="rounded-[17px] bg-[#161619] overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] divide-y divide-white/[0.04]">
-              {[
-                { label: "Estado", opts: [["todos","Todos"],["disponible","Disponible"],["reservado","Reservado"],["vendido","Vendido"]], val: statusFilter, set: setStatusFilter },
-                { label: "Tipo",   opts: [["todos","Todos"],["nuevo","Nuevo"],["usado","Usado"]], val: newFilter, set: setNewFilter },
-                { label: "Condición", opts: [["todos","Todos"],["A","A"],["B","B"],["C","C"]], val: conditionFilter, set: setConditionFilter },
-                { label: "Origen", opts: [["todos","Todos"],["propio","Propio"],["consignacion","Consignación"]], val: originFilter, set: setOriginFilter },
-              ].map(group => (
-                <div key={group.label} className="px-4 py-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/35 mb-2">{group.label}</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {group.opts.map(([key, lbl]) => (
-                      <button key={key} onClick={() => group.set(key)}
-                        className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-colors ${group.val === key ? 'bg-white/[0.12] text-white/85' : 'text-white/45 hover:text-white/60 hover:bg-white/[0.05]'}`}>
-                        {lbl}
-                      </button>
-                    ))}
-                  </div>
+        {/* LEFT — Filters */}
+        <div className="w-[220px] shrink-0 rounded-[18px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d]">
+          <div className="rounded-[17px] bg-[#161619] h-full shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] divide-y divide-white/[0.04] flex flex-col">
+            {[
+              { label: "Estado",    opts: [["todos","Todos"],["disponible","Disponible"],["reservado","Reservado"],["vendido","Vendido"]], val: statusFilter, set: setStatusFilter },
+              { label: "Tipo",      opts: [["todos","Todos"],["nuevo","Nuevo"],["usado","Usado"]], val: newFilter, set: setNewFilter },
+              { label: "Condición", opts: [["todos","Todos"],["A","A"],["B","B"],["C","C"]], val: conditionFilter, set: setConditionFilter },
+              { label: "Origen",    opts: [["todos","Todos"],["propio","Propio"],["consignacion","Consignación"]], val: originFilter, set: setOriginFilter },
+            ].map(group => (
+              <div key={group.label} className="px-4 py-3.5 flex-1">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/30 mb-2.5">{group.label}</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {group.opts.map(([key, lbl]) => (
+                    <button key={key} onClick={() => group.set(key)}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-colors ${
+                        group.val === key
+                          ? 'bg-[#3eff8e]/15 text-[#3eff8e] border border-[#3eff8e]/20'
+                          : 'text-white/40 hover:text-white/60 hover:bg-white/[0.05]'
+                      }`}>
+                      {lbl}
+                    </button>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         </div>
 
         {/* RIGHT — 4 KPI cards 2×2 */}
         <div className="grid grid-cols-2 gap-3 flex-1">
           {[
-            { label: "Disponibles", value: disponibles.toString(),  sub: "en stock"   },
-            { label: "Reservados",  value: reservados.toString(),   sub: "con seña"   },
-            { label: "Vendidos hoy",value: vendidosHoy.toString(),  sub: "hoy"        },
-            { label: "Valor stock", value: formatPrice(valorStock), sub: "disponible" },
+            { label: "Disponibles", value: disponibles.toString(),  sub: "en stock",   icon: "inventory_2"  },
+            { label: "Reservados",  value: reservados.toString(),   sub: "con seña",   icon: "bookmark"     },
+            { label: "Vendidos hoy",value: vendidosHoy.toString(),  sub: "hoy",        icon: "sell"         },
+            { label: "Valor stock", value: formatPrice(valorStock), sub: "disponible", icon: "payments"     },
           ].map((k) => (
-            <div key={k.label} className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d]">
-              <div className="rounded-[19px] bg-[#161619] p-5 h-full shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] flex flex-col justify-between">
-                <p className="text-[11px] font-normal text-white/45 uppercase tracking-[0.14em]">{k.label}</p>
-                <div>
-                  <p className="text-[32px] font-medium text-white/90 leading-none tracking-tight mt-3">{k.value}</p>
-                  <p className="text-[11px] text-white/40 mt-1.5">{k.sub}</p>
+            <div key={k.label} className="rounded-[18px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d]">
+              <div className="rounded-[17px] bg-[#161619] px-5 py-4 h-full shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] flex flex-col justify-between">
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/35">{k.label}</p>
+                  <span className="material-symbols-outlined text-[16px] text-white/15">{k.icon}</span>
+                </div>
+                <div className="mt-3">
+                  <p className="text-[30px] font-medium text-white/90 leading-none tracking-tight">{k.value}</p>
+                  <p className="text-[11px] text-white/35 mt-1">{k.sub}</p>
                 </div>
               </div>
             </div>
