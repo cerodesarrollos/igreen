@@ -669,76 +669,89 @@ export default function VentasStockPage() {
                           {isOpen && (
                             <tr key={`${p.id}-detail`} className="border-b border-white/[0.05] bg-white/[0.02]">
                               <td colSpan={9} className="px-6 py-5">
-                                <div className="flex gap-6 flex-wrap">
-                                  {/* Fotos */}
-                                  <div className="flex gap-2">
-                                    {(p.photos?.length ? p.photos : [null,null,null]).slice(0,3).map((photo, n) => (
-                                      <div key={n} className="w-16 h-16 rounded-xl bg-white/[0.04] border border-white/[0.07] flex items-center justify-center overflow-hidden flex-shrink-0">
+                                <div className="grid grid-cols-[auto_1fr_auto] gap-6">
+
+                                  {/* Col 1 — Fotos 2×2 */}
+                                  <div className="grid grid-cols-2 gap-1.5 w-[120px]">
+                                    {[...(p.photos || []), null, null, null, null].slice(0, 4).map((photo, n) => (
+                                      <div key={n} className="w-[55px] h-[55px] rounded-lg bg-white/[0.04] border border-white/[0.07] flex items-center justify-center overflow-hidden">
                                         {photo
                                           // eslint-disable-next-line @next/next/no-img-element
                                           ? <img src={photo} alt="" className="w-full h-full object-cover" />
-                                          : <span className="material-symbols-outlined text-white/10 text-xl">image</span>
+                                          : <span className="material-symbols-outlined text-white/10 text-base">image</span>
                                         }
                                       </div>
                                     ))}
                                   </div>
 
-                                  {/* Info chips */}
-                                  <div className="flex flex-wrap gap-3 flex-1">
+                                  {/* Col 2 — Datos del equipo */}
+                                  <div className="grid grid-cols-4 gap-x-6 gap-y-3 content-start">
                                     {[
-                                      { l: "IMEI",      v: p.imei },
+                                      { l: "IMEI",      v: p.imei, mono: true },
                                       { l: "Capacidad", v: p.capacity },
                                       { l: "Color",     v: p.color },
                                       { l: "Condición", v: `Grado ${p.condition}` },
                                       { l: "Batería",   v: `${p.battery_health}%` },
-                                      { l: "Origen",    v: p.origin === 'consignacion' ? `Consig. ${p.consignment_owner || ''}` : 'Stock propio' },
-                                      { l: "Costo",     v: formatPrice(p.cost_price) },
-                                      { l: "Venta",     v: formatPrice(p.sale_price) },
-                                      ...(p.cost_price && p.sale_price ? [{ l: "Ganancia", v: formatPrice(p.sale_price - p.cost_price) }] : []),
+                                      { l: "Tipo",      v: p.is_new ? 'Nuevo' : 'Usado' },
+                                      { l: "Origen",    v: p.origin === 'consignacion' ? `Consig. — ${p.consignment_owner || '?'}` : 'Stock propio' },
+                                      ...(p.defects ? [{ l: "Defectos", v: p.defects }] : []),
                                     ].map(i => (
-                                      <div key={i.l} className="flex flex-col gap-0.5">
-                                        <span className="text-[9px] uppercase tracking-[0.12em] font-semibold text-white/40">{i.l}</span>
-                                        <span className={`text-[12px] font-medium ${i.l === 'Ganancia' ? 'text-emerald-400' : 'text-white/65'}`}>{i.v}</span>
+                                      <div key={i.l} className="flex flex-col gap-1">
+                                        <span className="text-[9px] uppercase tracking-[0.12em] font-semibold text-white/35">{i.l}</span>
+                                        <span className={`text-[12px] font-medium text-white/65 leading-tight ${(i as {mono?: boolean}).mono ? 'font-mono' : ''}`}>{i.v}</span>
                                       </div>
                                     ))}
                                   </div>
 
-                                  {/* Defectos */}
-                                  {p.defects && (
-                                    <div className="w-full mt-1">
-                                      <span className="text-[9px] uppercase tracking-[0.12em] font-semibold text-white/40">Defectos</span>
-                                      <p className="text-xs text-white/40 mt-0.5">{p.defects}</p>
-                                    </div>
-                                  )}
-
-                                  {/* Acciones */}
-                                  <div className="flex items-center gap-2 ml-auto">
-                                    <button onClick={(e) => { e.stopPropagation(); openEditModal(p); }}
-                                      className="flex items-center gap-1.5 px-3 py-2 bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] text-white/60 text-xs font-medium rounded-xl transition-colors">
-                                      <span className="material-symbols-outlined text-[14px]">edit</span>Editar
-                                    </button>
-                                    {p.status === 'disponible' && (
-                                      <button onClick={(e) => { e.stopPropagation(); openSaleModal(p); }}
-                                        className="flex items-center gap-1.5 px-3 py-2 bg-white/[0.1] hover:bg-white/[0.15] border border-white/[0.12] text-white/80 text-xs font-semibold rounded-xl transition-colors">
-                                        <span className="material-symbols-outlined text-[14px]">sell</span>Vender
-                                      </button>
-                                    )}
-                                    {p.status !== 'vendido' && !showDeleteConfirm && (
-                                      <button onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(true); }}
-                                        className="px-3 py-2 text-xs text-red-400/50 hover:text-red-400 transition-colors">
-                                        Eliminar
-                                      </button>
-                                    )}
-                                    {p.status !== 'vendido' && showDeleteConfirm && (
-                                      <div className="flex items-center gap-2">
-                                        <span className="text-xs text-red-400/70">¿Seguro?</span>
-                                        <button onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(false); }} className="px-2 py-1.5 text-xs bg-white/[0.05] border border-white/[0.08] text-white/50 rounded-lg">No</button>
-                                        <button onClick={(e) => { e.stopPropagation(); handleDeleteProduct(); }} disabled={deletingProduct} className="px-2 py-1.5 text-xs bg-red-500/20 border border-red-500/30 text-red-400 rounded-lg disabled:opacity-50">
-                                          {deletingProduct ? "…" : "Sí"}
-                                        </button>
+                                  {/* Col 3 — Precios + Acciones */}
+                                  <div className="flex flex-col gap-3 min-w-[160px]">
+                                    {/* Precios */}
+                                    <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3 space-y-2">
+                                      <div className="flex justify-between items-baseline">
+                                        <span className="text-[9px] uppercase tracking-[0.12em] font-semibold text-white/35">Costo</span>
+                                        <span className="text-[12px] font-medium text-white/55">{formatPrice(p.cost_price)}</span>
                                       </div>
-                                    )}
+                                      <div className="flex justify-between items-baseline">
+                                        <span className="text-[9px] uppercase tracking-[0.12em] font-semibold text-white/35">Venta</span>
+                                        <span className="text-[13px] font-semibold text-white/80">{formatPrice(p.sale_price)}</span>
+                                      </div>
+                                      {p.cost_price && p.sale_price && (
+                                        <div className="flex justify-between items-baseline pt-2 border-t border-white/[0.05]">
+                                          <span className="text-[9px] uppercase tracking-[0.12em] font-semibold text-white/35">Ganancia</span>
+                                          <span className="text-[13px] font-bold text-emerald-400">{formatPrice(p.sale_price - p.cost_price)}</span>
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    {/* Botones */}
+                                    <div className="flex flex-col gap-1.5">
+                                      <button onClick={(e) => { e.stopPropagation(); openEditModal(p); }}
+                                        className="flex items-center justify-center gap-1.5 py-2 bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] text-white/55 text-xs font-medium rounded-xl transition-colors">
+                                        <span className="material-symbols-outlined text-[14px]">edit</span>Editar
+                                      </button>
+                                      {p.status === 'disponible' && (
+                                        <button onClick={(e) => { e.stopPropagation(); openSaleModal(p); }}
+                                          className="flex items-center justify-center gap-1.5 py-2 bg-white/[0.1] hover:bg-white/[0.15] border border-white/[0.12] text-white/80 text-xs font-semibold rounded-xl transition-colors">
+                                          <span className="material-symbols-outlined text-[14px]">sell</span>Vender
+                                        </button>
+                                      )}
+                                      {p.status !== 'vendido' && !showDeleteConfirm && (
+                                        <button onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(true); }}
+                                          className="py-1.5 text-[11px] text-red-400/40 hover:text-red-400/70 transition-colors text-center">
+                                          Eliminar
+                                        </button>
+                                      )}
+                                      {p.status !== 'vendido' && showDeleteConfirm && (
+                                        <div className="flex gap-1.5">
+                                          <button onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(false); }} className="flex-1 py-1.5 bg-white/[0.05] border border-white/[0.08] text-white/45 text-xs rounded-lg">No</button>
+                                          <button onClick={(e) => { e.stopPropagation(); handleDeleteProduct(); }} disabled={deletingProduct} className="flex-1 py-1.5 bg-red-500/20 border border-red-500/30 text-red-400 text-xs rounded-lg disabled:opacity-50">
+                                            {deletingProduct ? "…" : "Sí"}
+                                          </button>
+                                        </div>
+                                      )}
+                                    </div>
                                   </div>
+
                                 </div>
                               </td>
                             </tr>
