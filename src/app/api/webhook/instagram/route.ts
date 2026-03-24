@@ -5,6 +5,20 @@ import crypto from 'crypto';
 
 const VERIFY_TOKEN = 'igreen_webhook_2026';
 const APP_SECRET = process.env.META_APP_SECRET || '37fdb89f28f0dbcdc7522ace4215e2af';
+const PAGE_ACCESS_TOKEN = process.env.META_PAGE_ACCESS_TOKEN || '';
+
+async function getIgUserProfile(senderId: string): Promise<{ name: string | null; username: string | null }> {
+  try {
+    const res = await fetch(
+      `https://graph.facebook.com/v17.0/${senderId}?fields=name,username&access_token=${PAGE_ACCESS_TOKEN}`
+    );
+    if (!res.ok) return { name: null, username: null };
+    const data = await res.json();
+    return { name: data.name || null, username: data.username || null };
+  } catch {
+    return { name: null, username: null };
+  }
+}
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -65,9 +79,14 @@ export async function POST(request: NextRequest) {
           if (!messageText) messageText = `[${att.type}]`;
         }
 
+        // Fetch sender profile for display name/username
+        const { name: senderName, username: senderUsername } = await getIgUserProfile(senderId);
+
         await supabase.from('ig_messages').upsert({
           ig_message_id: msg.mid,
           ig_sender_id: senderId,
+          sender_name: senderName,
+          sender_username: senderUsername,
           message_text: messageText,
           message_type: messageType,
           media_url: mediaUrl,
