@@ -93,6 +93,43 @@ function formatPrice(n: number | null) {
   return `$${n.toLocaleString("es-AR")} USD`;
 }
 
+/* ───── Dark Select ───── */
+function DarkSelect({ value, onChange, options, placeholder, required }: {
+  value: string;
+  onChange: (v: string) => void;
+  options: { value: string; label: string }[];
+  placeholder?: string;
+  required?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const selected = options.find(o => o.value === value);
+  return (
+    <div className="relative">
+      <button type="button" onClick={() => setOpen(o => !o)}
+        className={`w-full mt-1 px-4 py-2.5 bg-white/[0.04] border ${open ? 'border-white/[0.2]' : 'border-white/[0.08]'} rounded-lg text-sm text-left outline-none flex items-center justify-between transition-colors`}>
+        <span className={selected ? 'text-white/70' : 'text-white/30'}>{selected ? selected.label : (placeholder || 'Seleccionar...')}</span>
+        <span className={`material-symbols-outlined text-[16px] text-white/40 transition-transform ${open ? 'rotate-180' : ''}`}>expand_more</span>
+      </button>
+      {open && (
+        <div className="absolute z-50 mt-1 w-full rounded-xl bg-[#1e1e22] border border-white/[0.1] shadow-xl overflow-hidden max-h-56 overflow-y-auto">
+          {required ? null : placeholder && (
+            <button type="button" onClick={() => { onChange(''); setOpen(false); }}
+              className="w-full px-4 py-2.5 text-left text-sm text-white/30 hover:bg-white/[0.04] transition-colors">
+              {placeholder}
+            </button>
+          )}
+          {options.map(o => (
+            <button key={o.value} type="button" onClick={() => { onChange(o.value); setOpen(false); }}
+              className={`w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-white/[0.06] ${o.value === value ? 'text-[#3eff8e] bg-[#3eff8e]/[0.06]' : 'text-white/70'}`}>
+              {o.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ───── Product Form Modal ───── */
 function ProductFormModal({
   title,
@@ -125,15 +162,9 @@ function ProductFormModal({
           {/* Model */}
           <div>
             <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50">Modelo *</label>
-            <select required value={form.model} onChange={(e) => {
-              const m = e.target.value;
-              const spec = IPHONE_CATALOG[m];
-              setForm({ ...form, model: m, capacity: spec ? spec.capacities[0] : "", color: spec ? spec.colors[0] : "" });
-            }}
-              className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors" style={{ colorScheme: 'dark' }}>
-              <option value="">Seleccionar modelo...</option>
-              {MODEL_NAMES.map((m) => <option key={m} value={m}>{m}</option>)}
-            </select>
+            <DarkSelect required value={form.model} placeholder="Seleccionar modelo..."
+              onChange={(m) => { const spec = IPHONE_CATALOG[m]; setForm({ ...form, model: m, capacity: spec ? spec.capacities[0] : "", color: spec ? spec.colors[0] : "" }); }}
+              options={MODEL_NAMES.map(m => ({ value: m, label: m }))} />
           </div>
           {/* IMEI */}
           <div>
@@ -147,10 +178,8 @@ function ProductFormModal({
             <div>
               <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50">Capacidad</label>
               {form.model && IPHONE_CATALOG[form.model] ? (
-                <select value={form.capacity} onChange={(e) => setForm({ ...form, capacity: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors" style={{ colorScheme: 'dark' }}>
-                  {IPHONE_CATALOG[form.model].capacities.map((c) => <option key={c} value={c}>{c}</option>)}
-                </select>
+                <DarkSelect value={form.capacity} onChange={(v) => setForm({ ...form, capacity: v })}
+                  options={IPHONE_CATALOG[form.model].capacities.map(c => ({ value: c, label: c }))} />
               ) : (
                 <input value={form.capacity} onChange={(e) => setForm({ ...form, capacity: e.target.value })}
                   className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors"
@@ -160,10 +189,8 @@ function ProductFormModal({
             <div>
               <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50">Color</label>
               {form.model && IPHONE_CATALOG[form.model] ? (
-                <select value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors" style={{ colorScheme: 'dark' }}>
-                  {IPHONE_CATALOG[form.model].colors.map((c) => <option key={c} value={c}>{c}</option>)}
-                </select>
+                <DarkSelect value={form.color} onChange={(v) => setForm({ ...form, color: v })}
+                  options={IPHONE_CATALOG[form.model].colors.map(c => ({ value: c, label: c }))} />
               ) : (
                 <input value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })}
                   className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors"
@@ -175,12 +202,8 @@ function ProductFormModal({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50">Condición *</label>
-              <select value={form.condition} onChange={(e) => setForm({ ...form, condition: e.target.value as "A" | "B" | "C" })}
-                className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors" style={{ colorScheme: 'dark' }}>
-                <option value="A">A — Impecable</option>
-                <option value="B">B — Detalles menores</option>
-                <option value="C">C — Uso visible</option>
-              </select>
+              <DarkSelect value={form.condition} onChange={(v) => setForm({ ...form, condition: v as "A" | "B" | "C" })}
+                options={[{ value: 'A', label: 'A — Impecable' }, { value: 'B', label: 'B — Detalles menores' }, { value: 'C', label: 'C — Uso visible' }]} />
             </div>
             <div>
               <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50">Batería % *</label>
@@ -217,11 +240,8 @@ function ProductFormModal({
           {/* Origin */}
           <div>
             <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50">Origen *</label>
-            <select value={form.origin} onChange={(e) => setForm({ ...form, origin: e.target.value as "propio" | "consignacion" })}
-              className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors" style={{ colorScheme: 'dark' }}>
-              <option value="propio">Stock Propio</option>
-              <option value="consignacion">Consignación</option>
-            </select>
+            <DarkSelect value={form.origin} onChange={(v) => setForm({ ...form, origin: v as "propio" | "consignacion" })}
+              options={[{ value: 'propio', label: 'Stock Propio' }, { value: 'consignacion', label: 'Consignación' }]} />
           </div>
           {form.origin === "consignacion" && (
             <div>
