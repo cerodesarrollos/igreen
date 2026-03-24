@@ -56,16 +56,74 @@ export default function InboxPage() {
   useEffect(() => {
     fetchConversations();
 
-    // Realtime subscription
+    // Realtime subscription — escucha INSERT y UPDATE sin refetch completo
     const channel = supabase
-      .channel('ig_messages_changes')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'ig_messages'
-      }, () => {
-        fetchConversations();
-      })
+      .channel('ig_messages_realtime')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'ig_messages' },
+        (payload) => {
+          const newMsg = payload.new as Message;
+          setConversations(prev => {
+            const cid = newMsg.conversation_id || newMsg.ig_sender_id;
+            const existing = prev.find(c => c.conversation_id === cid);
+
+            if (existing) {
+              // Agregar mensaje a conversación existente
+              return prev.map(c => {
+                if (c.conversation_id !== cid) return c;
+                const msgs = [...c.messages, newMsg].sort(
+                  (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+                );
+                return {
+                  ...c,
+                  sender_name: newMsg.sender_name || c.sender_name,
+                  sender_username: newMsg.sender_username || c.sender_username,
+                  last_message: newMsg.message_text || c.last_message,
+                  last_message_time: newMsg.created_at,
+                  unread_count: newMsg.status === 'unread' && newMsg.direction === 'inbound'
+                    ? c.unread_count + 1
+                    : c.unread_count,
+                  messages: msgs,
+                };
+              });
+            } else {
+              // Nueva conversación
+              const newConv: Conversation = {
+                conversation_id: cid,
+                sender_id: newMsg.ig_sender_id,
+                sender_name: newMsg.sender_name,
+                sender_username: newMsg.sender_username,
+                last_message: newMsg.message_text || '',
+                last_message_time: newMsg.created_at,
+                unread_count: newMsg.status === 'unread' && newMsg.direction === 'inbound' ? 1 : 0,
+                status: newMsg.assigned_to || 'agent',
+                messages: [newMsg],
+              };
+              return [newConv, ...prev];
+            }
+          });
+
+          // Si la conversación está seleccionada, actualizar también selected
+          setSelected(prev => {
+            if (!prev) return prev;
+            const cid = newMsg.conversation_id || newMsg.ig_sender_id;
+            if (prev.conversation_id !== cid) return prev;
+            const msgs = [...prev.messages, newMsg].sort(
+              (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+            );
+            return { ...prev, messages: msgs };
+          });
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'ig_messages' },
+        () => {
+          // Para updates (ej: marcar como leído) hacemos refetch liviano
+          fetchConversations();
+        }
+      )
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
