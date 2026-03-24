@@ -2,10 +2,6 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
-import { 
-  AtSign, Search, RefreshCw, UserCheck, Image as ImageIcon,
-  Send, AlertCircle
-} from 'lucide-react';
 
 interface Message {
   id: string;
@@ -55,78 +51,36 @@ export default function InboxPage() {
 
   useEffect(() => {
     fetchConversations();
-
-    // Realtime subscription — escucha INSERT y UPDATE sin refetch completo
     const channel = supabase
       .channel('ig_messages_realtime')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'ig_messages' },
-        (payload) => {
-          const newMsg = payload.new as Message;
-          setConversations(prev => {
-            const cid = newMsg.conversation_id || newMsg.ig_sender_id;
-            const existing = prev.find(c => c.conversation_id === cid);
-
-            if (existing) {
-              // Agregar mensaje a conversación existente
-              return prev.map(c => {
-                if (c.conversation_id !== cid) return c;
-                const msgs = [...c.messages, newMsg].sort(
-                  (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-                );
-                return {
-                  ...c,
-                  sender_name: newMsg.sender_name || c.sender_name,
-                  sender_username: newMsg.sender_username || c.sender_username,
-                  last_message: newMsg.message_text || c.last_message,
-                  last_message_time: newMsg.created_at,
-                  unread_count: newMsg.status === 'unread' && newMsg.direction === 'inbound'
-                    ? c.unread_count + 1
-                    : c.unread_count,
-                  messages: msgs,
-                };
-              });
-            } else {
-              // Nueva conversación
-              const newConv: Conversation = {
-                conversation_id: cid,
-                sender_id: cid, // siempre usar conversation_id como recipient
-                sender_name: newMsg.sender_name,
-                sender_username: newMsg.sender_username,
-                last_message: newMsg.message_text || '',
-                last_message_time: newMsg.created_at,
-                unread_count: newMsg.status === 'unread' && newMsg.direction === 'inbound' ? 1 : 0,
-                status: newMsg.assigned_to || 'agent',
-                messages: [newMsg],
-              };
-              return [newConv, ...prev];
-            }
-          });
-
-          // Si la conversación está seleccionada, actualizar también selected
-          setSelected(prev => {
-            if (!prev) return prev;
-            const cid = newMsg.conversation_id || newMsg.ig_sender_id;
-            if (prev.conversation_id !== cid) return prev;
-            const msgs = [...prev.messages, newMsg].sort(
-              (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-            );
-            return { ...prev, messages: msgs };
-          });
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'ig_messages' },
-        () => {
-          // Para updates (ej: marcar como leído) hacemos refetch liviano
-          fetchConversations();
-        }
-      )
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'ig_messages' }, (payload) => {
+        const newMsg = payload.new as Message;
+        setConversations(prev => {
+          const cid = newMsg.conversation_id || newMsg.ig_sender_id;
+          const existing = prev.find(c => c.conversation_id === cid);
+          if (existing) {
+            return prev.map(c => {
+              if (c.conversation_id !== cid) return c;
+              const msgs = [...c.messages, newMsg].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+              return { ...c, sender_name: newMsg.sender_name || c.sender_name, sender_username: newMsg.sender_username || c.sender_username, last_message: newMsg.message_text || c.last_message, last_message_time: newMsg.created_at, unread_count: newMsg.status === 'unread' && newMsg.direction === 'inbound' ? c.unread_count + 1 : c.unread_count, messages: msgs };
+            });
+          } else {
+            const newConv: Conversation = { conversation_id: cid, sender_id: cid, sender_name: newMsg.sender_name, sender_username: newMsg.sender_username, last_message: newMsg.message_text || '', last_message_time: newMsg.created_at, unread_count: newMsg.status === 'unread' && newMsg.direction === 'inbound' ? 1 : 0, status: newMsg.assigned_to || 'agent', messages: [newMsg] };
+            return [newConv, ...prev];
+          }
+        });
+        setSelected(prev => {
+          if (!prev) return prev;
+          const cid = newMsg.conversation_id || newMsg.ig_sender_id;
+          if (prev.conversation_id !== cid) return prev;
+          const msgs = [...prev.messages, newMsg].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+          return { ...prev, messages: msgs };
+        });
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'ig_messages' }, () => { fetchConversations(); })
       .subscribe();
-
     return () => { supabase.removeChannel(channel); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterStatus]);
 
   useEffect(() => {
@@ -135,150 +89,64 @@ export default function InboxPage() {
 
   async function fetchConversations() {
     setLoading(true);
-    const query = supabase
-      .from('ig_messages')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    const { data, error } = await query;
-
-    if (error) {
-      console.error(error);
-      setLoading(false);
-      return;
-    }
-
-    // Agrupar por conversation_id
+    const { data, error } = await supabase.from('ig_messages').select('*').order('created_at', { ascending: false });
+    if (error) { setLoading(false); return; }
     const convMap = new Map<string, Conversation>();
-
     for (const msg of (data || [])) {
       const cid = msg.conversation_id || msg.ig_sender_id;
-
       if (!convMap.has(cid)) {
-        convMap.set(cid, {
-          conversation_id: cid,
-          sender_id: cid, // siempre usar conversation_id como recipient (no el ig_sender_id que puede ser la página en outbound)
-          sender_name: msg.sender_name,
-          sender_username: msg.sender_username,
-          last_message: msg.message_text || '',
-          last_message_time: msg.created_at,
-          unread_count: 0,
-          status: msg.assigned_to || 'agent',
-          messages: [],
-        });
+        convMap.set(cid, { conversation_id: cid, sender_id: cid, sender_name: msg.sender_name, sender_username: msg.sender_username, last_message: msg.message_text || '', last_message_time: msg.created_at, unread_count: 0, status: msg.assigned_to || 'agent', messages: [] });
       }
-
       const conv = convMap.get(cid)!;
       conv.messages.push(msg);
-
-      // Actualizar nombre/username si aún no tenemos y este mensaje los tiene
       if (!conv.sender_name && msg.sender_name) conv.sender_name = msg.sender_name;
       if (!conv.sender_username && msg.sender_username) conv.sender_username = msg.sender_username;
-
-      if (msg.status === 'unread' && msg.direction === 'inbound') {
-        conv.unread_count++;
-      }
+      if (msg.status === 'unread' && msg.direction === 'inbound') conv.unread_count++;
     }
-
-    // Ordenar mensajes dentro de cada conversación
-    const convList = Array.from(convMap.values()).map(c => ({
-      ...c,
-      messages: c.messages.sort((a, b) => 
-        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-      )
-    }));
-
-    // Filtrar
+    const convList = Array.from(convMap.values()).map(c => ({ ...c, messages: c.messages.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()) }));
     let filtered = convList;
-    if (filterStatus === 'unread') {
-      filtered = convList.filter(c => c.unread_count > 0);
-    } else if (filterStatus === 'agent') {
-      filtered = convList.filter(c => c.status === 'agent');
-    } else if (filterStatus === 'human') {
-      filtered = convList.filter(c => c.status === 'human');
-    } else if (filterStatus === 'archived') {
-      filtered = convList.filter(c => c.messages.some(m => m.status === 'archived'));
-    }
-
-    if (search) {
-      filtered = filtered.filter(c =>
-        c.sender_name?.toLowerCase().includes(search.toLowerCase()) ||
-        c.sender_username?.toLowerCase().includes(search.toLowerCase()) ||
-        c.last_message.toLowerCase().includes(search.toLowerCase())
-      );
-    }
-
+    if (filterStatus === 'unread') filtered = convList.filter(c => c.unread_count > 0);
+    else if (filterStatus === 'agent') filtered = convList.filter(c => c.status === 'agent');
+    else if (filterStatus === 'human') filtered = convList.filter(c => c.status === 'human');
+    else if (filterStatus === 'archived') filtered = convList.filter(c => c.messages.some(m => m.status === 'archived'));
+    if (search) filtered = filtered.filter(c => c.sender_name?.toLowerCase().includes(search.toLowerCase()) || c.sender_username?.toLowerCase().includes(search.toLowerCase()) || c.last_message.toLowerCase().includes(search.toLowerCase()));
     setConversations(filtered);
-
-    // Actualizar conversación seleccionada si hay
     if (selected) {
       const updated = convList.find(c => c.conversation_id === selected.conversation_id);
       if (updated) setSelected(updated);
     }
-
     setLoading(false);
   }
 
   async function selectConversation(conv: Conversation) {
     setSelected(conv);
-
-    // Marcar como leídos
-    const unreadIds = conv.messages
-      .filter(m => m.status === 'unread' && m.direction === 'inbound')
-      .map(m => m.id);
-
+    const unreadIds = conv.messages.filter(m => m.status === 'unread' && m.direction === 'inbound').map(m => m.id);
     if (unreadIds.length > 0) {
-      await supabase
-        .from('ig_messages')
-        .update({ status: 'read' })
-        .in('id', unreadIds);
-
+      await supabase.from('ig_messages').update({ status: 'read' }).in('id', unreadIds);
       fetchConversations();
     }
   }
 
   async function assignToHuman(conv: Conversation) {
-    await supabase
-      .from('ig_messages')
-      .update({ assigned_to: 'human' })
-      .eq('conversation_id', conv.conversation_id);
+    await supabase.from('ig_messages').update({ assigned_to: 'human' }).eq('conversation_id', conv.conversation_id);
     fetchConversations();
   }
 
   async function sendReply() {
     if (!selected || !replyText.trim() || sending) return;
     setSending(true);
-
     try {
-      const res = await fetch('/api/instagram/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          recipientId: selected.sender_id,
-          text: replyText,
-          conversationId: selected.conversation_id,
-        }),
-      });
-
+      const res = await fetch('/api/instagram/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ recipientId: selected.sender_id, text: replyText, conversationId: selected.conversation_id }) });
       const data = await res.json();
-
-      if (data.ok) {
-        setReplyText('');
-      } else {
-        alert('Error enviando: ' + (data.error || 'desconocido'));
-      }
-    } catch (e: unknown) {
-      const err = e as Error;
-      alert('Error: ' + err.message);
-    } finally {
-      setSending(false);
-    }
+      if (data.ok) setReplyText('');
+      else alert('Error enviando: ' + (data.error || 'desconocido'));
+    } catch (e: unknown) { alert('Error: ' + (e as Error).message); }
+    finally { setSending(false); }
   }
 
   function formatTime(iso: string) {
     const d = new Date(iso);
-    const now = new Date();
-    const diff = now.getTime() - d.getTime();
+    const diff = Date.now() - d.getTime();
     if (diff < 60000) return 'ahora';
     if (diff < 3600000) return `${Math.floor(diff / 60000)}m`;
     if (diff < 86400000) return d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
@@ -286,103 +154,70 @@ export default function InboxPage() {
   }
 
   function getInitials(name: string | null, username: string | null) {
-    const n = name || username || '?';
-    return n.slice(0, 2).toUpperCase();
+    return (name || username || '?').slice(0, 2).toUpperCase();
   }
 
-  const noMessages = !loading && conversations.length === 0;
-
   return (
-    <div className="flex h-[calc(100vh-64px)]">
-      {/* Lista de conversaciones */}
-      <div className="w-80 flex-shrink-0 border-r border-slate-200 bg-white flex flex-col">
+    <div className="flex h-[calc(100vh-48px)] -mx-8 -my-8 overflow-hidden">
+
+      {/* Conversation list */}
+      <div className="w-72 shrink-0 flex flex-col border-r border-white/[0.06] bg-[#0e0e10]">
         {/* Header */}
-        <div className="p-4 border-b border-slate-200">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <AtSign className="w-5 h-5 text-pink-500" />
-              <span className="font-semibold text-slate-800">Instagram DMs</span>
-            </div>
-            <button onClick={fetchConversations} className="p-1.5 rounded-lg hover:bg-slate-100">
-              <RefreshCw className="w-4 h-4 text-slate-500" />
+        <div className="p-4 border-b border-white/[0.06] space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/25">Instagram DMs</p>
+            <button onClick={fetchConversations} className="text-white/25 hover:text-white/50 transition-colors">
+              <span className="material-symbols-outlined text-[16px]">refresh</span>
             </button>
           </div>
-          <div className="relative mb-3">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Buscar..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
+          <div className="flex items-center gap-2 bg-white/[0.04] border border-white/[0.06] rounded-lg px-3 py-1.5">
+            <span className="material-symbols-outlined text-white/25 text-base">search</span>
+            <input type="text" placeholder="Buscar..." value={search} onChange={e => setSearch(e.target.value)} className="bg-transparent text-sm text-white/70 placeholder:text-white/20 outline-none w-full" />
           </div>
-          <div className="flex gap-1.5 flex-wrap">
+          <div className="flex gap-1 flex-wrap">
             {filters.map(f => (
-              <button
-                key={f.key}
-                onClick={() => setFilterStatus(f.key)}
-                className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
-                  filterStatus === f.key
-                    ? 'bg-green-500 text-white'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
-              >
+              <button key={f.key} onClick={() => setFilterStatus(f.key)}
+                className={`px-2.5 py-1 rounded-md text-[10px] font-medium transition-colors ${filterStatus === f.key ? 'bg-white/[0.1] text-white/80' : 'text-white/30 hover:text-white/50'}`}>
                 {f.label}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Lista */}
-        <div className="flex-1 overflow-y-auto">
+        {/* List */}
+        <div className="flex-1 overflow-y-auto no-scrollbar">
           {loading && (
-            <div className="flex items-center justify-center h-24">
-              <div className="w-6 h-6 border-2 border-green-500 border-t-transparent rounded-full animate-spin" />
+            <div className="flex items-center justify-center py-12">
+              <div className="w-4 h-4 border border-white/20 border-t-white/60 rounded-full animate-spin" />
             </div>
           )}
-
-          {noMessages && (
-            <div className="flex flex-col items-center justify-center h-48 text-slate-400 px-4 text-center">
-              <AtSign className="w-10 h-10 mb-3 opacity-30" />
-              <p className="text-sm font-medium">Sin mensajes todavía</p>
-              <p className="text-xs mt-1">Los DMs de @igreen.recoleta aparecerán acá</p>
+          {!loading && conversations.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+              <span className="material-symbols-outlined text-white/10 text-4xl mb-2">chat_bubble</span>
+              <p className="text-sm text-white/25">Sin mensajes</p>
             </div>
           )}
-
           {conversations.map(conv => (
-            <button
-              key={conv.conversation_id}
-              onClick={() => selectConversation(conv)}
-              className={`w-full text-left p-4 border-b border-slate-100 hover:bg-slate-50 transition-colors ${
-                selected?.conversation_id === conv.conversation_id ? 'bg-green-50 border-l-2 border-l-green-500' : ''
-              }`}
-            >
+            <button key={conv.conversation_id} onClick={() => selectConversation(conv)}
+              className={`w-full text-left px-4 py-3.5 border-b border-white/[0.04] hover:bg-white/[0.03] transition-colors ${selected?.conversation_id === conv.conversation_id ? 'bg-white/[0.05]' : ''}`}>
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
+                <div className="w-8 h-8 rounded-full bg-white/[0.07] border border-white/[0.08] flex items-center justify-center text-[11px] font-semibold text-white/50 shrink-0">
                   {getInitials(conv.sender_name, conv.sender_username)}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-0.5">
-                    <span className="font-medium text-sm text-slate-800 truncate">
-                      {conv.sender_name || conv.sender_username || conv.sender_id.slice(0, 10) + '...'}
+                    <span className="text-sm font-medium text-white/75 truncate">
+                      {conv.sender_name || conv.sender_username || conv.sender_id.slice(0, 12) + '…'}
                     </span>
-                    <span className="text-xs text-slate-400 flex-shrink-0 ml-1">
-                      {formatTime(conv.last_message_time)}
-                    </span>
+                    <span className="text-[10px] text-white/20 shrink-0 ml-2">{formatTime(conv.last_message_time)}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <p className="text-xs text-slate-500 truncate">{conv.last_message}</p>
-                    <div className="flex items-center gap-1 flex-shrink-0 ml-1">
-                      {conv.unread_count > 0 && (
-                        <span className="w-5 h-5 rounded-full bg-green-500 text-white text-xs flex items-center justify-center">
-                          {conv.unread_count}
-                        </span>
-                      )}
-                      {conv.status === 'human' && (
-                        <span className="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full">H</span>
-                      )}
-                    </div>
+                    <p className="text-[11px] text-white/30 truncate flex-1">{conv.last_message}</p>
+                    {conv.unread_count > 0 && (
+                      <span className="ml-2 w-4 h-4 rounded-full bg-white/20 text-white/80 text-[9px] font-bold flex items-center justify-center shrink-0">
+                        {conv.unread_count}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -391,132 +226,83 @@ export default function InboxPage() {
         </div>
       </div>
 
-      {/* Panel de chat */}
+      {/* Chat panel */}
       {selected ? (
-        <div className="flex-1 flex flex-col bg-white">
-          {/* Header del chat */}
-          <div className="p-4 border-b border-slate-200 flex items-center justify-between">
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Chat header */}
+          <div className="h-14 shrink-0 border-b border-white/[0.06] flex items-center justify-between px-6 bg-[#111114]">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center text-white font-semibold">
+              <div className="w-8 h-8 rounded-full bg-white/[0.07] border border-white/[0.08] flex items-center justify-center text-[11px] font-semibold text-white/50">
                 {getInitials(selected.sender_name, selected.sender_username)}
               </div>
               <div>
-                <p className="font-semibold text-slate-800">
-                  {selected.sender_name || selected.sender_username || 'Usuario'}
-                </p>
-                {selected.sender_username && (
-                  <p className="text-xs text-slate-500">@{selected.sender_username}</p>
-                )}
+                <p className="text-sm font-semibold text-white/80">{selected.sender_name || selected.sender_username || 'Usuario'}</p>
+                {selected.sender_username && <p className="text-[10px] text-white/30">@{selected.sender_username}</p>}
               </div>
-              <span className={`text-xs px-2 py-0.5 rounded-full ${
-                selected.status === 'agent'
-                  ? 'bg-purple-100 text-purple-600'
-                  : 'bg-blue-100 text-blue-600'
-              }`}>
-                {selected.status === 'agent' ? '🤖 Agente IA' : '👤 Humano'}
+              <span className={`text-[10px] px-2 py-0.5 rounded-md font-medium ${selected.status === 'agent' ? 'bg-white/[0.06] text-white/40' : 'bg-white/[0.06] text-white/40'}`}>
+                {selected.status === 'agent' ? 'Agente IA' : 'Humano'}
               </span>
             </div>
-            <div className="flex items-center gap-2">
-              {selected.status === 'agent' && (
-                <button
-                  onClick={() => assignToHuman(selected)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-sm hover:bg-blue-100 transition-colors"
-                >
-                  <UserCheck className="w-4 h-4" />
-                  Tomar conversación
-                </button>
-              )}
-            </div>
+            {selected.status === 'agent' && (
+              <button onClick={() => assignToHuman(selected)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] text-white/60 text-xs font-medium rounded-lg transition-colors">
+                <span className="material-symbols-outlined text-[14px]">person_check</span>
+                Tomar conversación
+              </button>
+            )}
           </div>
 
-          {/* Mensajes */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50">
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-6 space-y-3 bg-[#0d0d0f]">
             {selected.messages.map(msg => (
-              <div
-                key={msg.id}
-                className={`flex ${msg.direction === 'outbound' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div className={`max-w-xs lg:max-w-md xl:max-w-lg ${
+              <div key={msg.id} className={`flex ${msg.direction === 'outbound' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`max-w-sm lg:max-w-md px-4 py-2.5 rounded-2xl ${
                   msg.direction === 'outbound'
-                    ? 'bg-green-500 text-white rounded-2xl rounded-br-sm'
-                    : 'bg-white text-slate-800 rounded-2xl rounded-bl-sm shadow-sm border border-slate-100'
-                } px-4 py-2.5`}>
+                    ? 'bg-white/[0.12] text-white/80 rounded-br-sm'
+                    : 'bg-white/[0.05] border border-white/[0.06] text-white/70 rounded-bl-sm'
+                }`}>
                   {msg.message_type === 'image' && msg.media_url && (
-                    <div className="mb-1">
-                      <img src={msg.media_url} alt="imagen" className="rounded-lg max-w-full max-h-60 object-cover" />
-                    </div>
-                  )}
-                  {msg.message_type === 'video' && msg.media_url && (
-                    <div className="mb-1">
-                      <video src={msg.media_url} controls className="rounded-lg max-w-full max-h-60" />
-                    </div>
-                  )}
-                  {msg.message_type === 'audio' && msg.media_url && (
-                    <div className="mb-1">
-                      <audio src={msg.media_url} controls className="w-full" />
-                    </div>
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={msg.media_url} alt="imagen" className="rounded-lg max-w-full max-h-60 object-cover mb-1" />
                   )}
                   {msg.message_type === 'share' && (
-                    <div className="flex items-center gap-1 opacity-70">
-                      <ImageIcon className="w-4 h-4" />
-                      <span className="text-xs italic">Contenido compartido</span>
-                    </div>
+                    <p className="text-[11px] text-white/30 italic">Contenido compartido</p>
                   )}
                   {!['image','video','audio','share'].includes(msg.message_type) && msg.message_text && (
-                    <p className="text-sm">{msg.message_text}</p>
+                    <p className="text-sm leading-relaxed">{msg.message_text}</p>
                   )}
-                  {['image','video','audio'].includes(msg.message_type) && msg.message_text && msg.message_text !== `[${msg.message_type}]` && (
-                    <p className="text-sm mt-1">{msg.message_text}</p>
-                  )}
-                  <p className={`text-xs mt-1 ${msg.direction === 'outbound' ? 'text-green-100' : 'text-slate-400'}`}>
-                    {formatTime(msg.created_at)}
-                  </p>
+                  <p className="text-[10px] text-white/20 mt-1">{formatTime(msg.created_at)}</p>
                 </div>
               </div>
             ))}
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input de respuesta */}
-          <div className="p-4 border-t border-slate-200 bg-white">
-            {selected.status === 'agent' && (
-              <div className="flex items-center gap-2 mb-2 text-xs text-slate-500">
-                <AlertCircle className="w-3.5 h-3.5" />
-                Respondiendo como humano. La IA está asignada a esta conversación.
-              </div>
-            )}
-            <div className="flex items-end gap-2">
+          {/* Reply input */}
+          <div className="shrink-0 p-4 border-t border-white/[0.06] bg-[#111114]">
+            <div className="flex items-end gap-3">
               <textarea
                 value={replyText}
                 onChange={e => setReplyText(e.target.value)}
-                onKeyDown={e => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    sendReply();
-                  }
-                }}
-                placeholder="Escribí una respuesta... (Enter para enviar)"
+                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendReply(); } }}
+                placeholder="Escribí una respuesta…"
                 rows={2}
-                className="flex-1 resize-none px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="flex-1 resize-none px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-white/70 placeholder:text-white/20 outline-none focus:border-white/[0.15] transition-colors"
               />
-              <button
-                onClick={sendReply}
-                disabled={!replyText.trim() || sending}
-                className="p-2.5 bg-green-500 text-white rounded-xl hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
+              <button onClick={sendReply} disabled={!replyText.trim() || sending}
+                className="p-2.5 bg-white/[0.08] hover:bg-white/[0.12] border border-white/[0.1] text-white/60 rounded-xl disabled:opacity-30 transition-colors">
                 {sending
-                  ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  : <Send className="w-5 h-5" />
+                  ? <div className="w-5 h-5 border border-white/30 border-t-white/70 rounded-full animate-spin" />
+                  : <span className="material-symbols-outlined text-[20px]">send</span>
                 }
               </button>
             </div>
           </div>
         </div>
       ) : (
-        <div className="flex-1 flex flex-col items-center justify-center bg-slate-50 text-slate-400">
-          <AtSign className="w-16 h-16 mb-4 opacity-20" />
-          <p className="text-lg font-medium">Seleccioná una conversación</p>
-          <p className="text-sm mt-1">Los mensajes de @igreen.recoleta aparecen acá en tiempo real</p>
+        <div className="flex-1 flex flex-col items-center justify-center bg-[#0d0d0f]">
+          <span className="material-symbols-outlined text-white/10 text-5xl mb-3">chat_bubble_outline</span>
+          <p className="text-sm text-white/25">Seleccioná una conversación</p>
         </div>
       )}
     </div>

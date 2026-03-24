@@ -122,7 +122,7 @@ function statusBadge(s: string) {
   };
   const labels: Record<string, string> = { disponible: "Disponible", reservado: "Reservado", vendido: "Vendido" };
   return (
-    <span className={`px-2.5 py-0.5 ${map[s] || "bg-slate-100 text-slate-600"} text-[10px] font-bold rounded-full`}>
+    <span className={`px-2.5 py-0.5 ${map[s] || "bg-white/[0.04] text-white/40"} text-[10px] font-bold rounded-full`}>
       {labels[s] || s}
     </span>
   );
@@ -131,7 +131,7 @@ function statusBadge(s: string) {
 function originBadge(o: string) {
   return o === "propio"
     ? <span className="px-3 py-1 bg-green-100 text-green-700 text-[10px] font-black uppercase tracking-widest rounded-full">Stock Propio</span>
-    : <span className="px-3 py-1 bg-purple-100 text-purple-700 text-[10px] font-black uppercase tracking-widest rounded-full">Consignación</span>;
+    : <span className="px-3 py-1 bg-white/[0.06] text-white/50 text-[10px] font-black uppercase tracking-widest rounded-full">Consignación</span>;
 }
 
 function formatPrice(n: number | null) {
@@ -158,60 +158,61 @@ function ProductFormModal({
   submitLabel: string;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-          <h3 className="text-lg font-bold">{title}</h3>
-          <button onClick={onClose} className="text-cool-grey hover:text-on-surface">
-            <span className="material-symbols-outlined">close</span>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
+      <div className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="rounded-[19px] bg-[#161619] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+        <div className="p-5 border-b border-white/[0.06] flex items-center justify-between">
+          <p className="text-sm font-semibold text-white/80">{title}</p>
+          <button onClick={onClose} className="text-white/30 hover:text-white/60">
+            <span className="material-symbols-outlined text-[20px]">close</span>
           </button>
         </div>
-        <form onSubmit={onSubmit} className="p-6 space-y-4">
+        <form onSubmit={onSubmit} className="p-5 space-y-4">
           {/* Model */}
           <div>
-            <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Modelo *</label>
+            <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/25">Modelo *</label>
             <select required value={form.model} onChange={(e) => {
               const m = e.target.value;
               const spec = IPHONE_CATALOG[m];
               setForm({ ...form, model: m, capacity: spec ? spec.capacities[0] : "", color: spec ? spec.colors[0] : "" });
             }}
-              className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30">
+              className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors">
               <option value="">Seleccionar modelo...</option>
               {MODEL_NAMES.map((m) => <option key={m} value={m}>{m}</option>)}
             </select>
           </div>
           {/* IMEI */}
           <div>
-            <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">IMEI *</label>
+            <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/25">IMEI *</label>
             <input required value={form.imei} onChange={(e) => setForm({ ...form, imei: e.target.value })}
-              className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30 font-mono"
+              className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors font-mono"
               placeholder="353912110891234" />
           </div>
           {/* Capacity + Color */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Capacidad</label>
+              <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/25">Capacidad</label>
               {form.model && IPHONE_CATALOG[form.model] ? (
                 <select value={form.capacity} onChange={(e) => setForm({ ...form, capacity: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30">
+                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors">
                   {IPHONE_CATALOG[form.model].capacities.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               ) : (
                 <input value={form.capacity} onChange={(e) => setForm({ ...form, capacity: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30"
+                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors"
                   placeholder="128GB" />
               )}
             </div>
             <div>
-              <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Color</label>
+              <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/25">Color</label>
               {form.model && IPHONE_CATALOG[form.model] ? (
                 <select value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30">
+                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors">
                   {IPHONE_CATALOG[form.model].colors.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               ) : (
                 <input value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30"
+                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors"
                   placeholder="Negro" />
               )}
             </div>
@@ -219,89 +220,90 @@ function ProductFormModal({
           {/* Condition + Battery */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Condición *</label>
+              <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/25">Condición *</label>
               <select value={form.condition} onChange={(e) => setForm({ ...form, condition: e.target.value as "A" | "B" | "C" })}
-                className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30">
+                className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors">
                 <option value="A">A — Impecable</option>
                 <option value="B">B — Detalles menores</option>
                 <option value="C">C — Uso visible</option>
               </select>
             </div>
             <div>
-              <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Batería % *</label>
+              <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/25">Batería % *</label>
               <input type="number" min={0} max={100} required value={form.battery_health}
                 onChange={(e) => setForm({ ...form, battery_health: parseInt(e.target.value) || 0 })}
-                className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30" />
+                className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors" />
             </div>
           </div>
           {/* Prices */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Precio Costo (USD)</label>
+              <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/25">Precio Costo (USD)</label>
               <input type="number" step="0.01" value={form.cost_price}
                 onChange={(e) => setForm({ ...form, cost_price: e.target.value })}
-                className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30"
+                className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors"
                 placeholder="400" />
             </div>
             <div>
-              <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Precio Venta (USD)</label>
+              <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/25">Precio Venta (USD)</label>
               <input type="number" step="0.01" value={form.sale_price}
                 onChange={(e) => setForm({ ...form, sale_price: e.target.value })}
-                className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30"
+                className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors"
                 placeholder="450" />
             </div>
           </div>
           {/* New/Used toggle */}
           <div className="flex items-center gap-3">
-            <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Tipo</label>
+            <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/25">Tipo</label>
             <button type="button" onClick={() => setForm({ ...form, is_new: !form.is_new })}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${form.is_new ? "bg-blue-100 text-blue-700" : "bg-slate-100 text-slate-600"}`}>
+              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${form.is_new ? "bg-white/[0.08] text-white/60" : "bg-white/[0.04] text-white/40"}`}>
               {form.is_new ? "Nuevo" : "Usado"}
             </button>
           </div>
           {/* Origin */}
           <div>
-            <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Origen *</label>
+            <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/25">Origen *</label>
             <select value={form.origin} onChange={(e) => setForm({ ...form, origin: e.target.value as "propio" | "consignacion" })}
-              className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30">
+              className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors">
               <option value="propio">Stock Propio</option>
               <option value="consignacion">Consignación</option>
             </select>
           </div>
           {form.origin === "consignacion" && (
             <div>
-              <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Dueño Consignación</label>
+              <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/25">Dueño Consignación</label>
               <input value={form.consignment_owner} onChange={(e) => setForm({ ...form, consignment_owner: e.target.value })}
-                className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30"
+                className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors"
                 placeholder="Nombre del dueño" />
             </div>
           )}
           {/* Defects */}
           <div>
-            <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Defectos</label>
+            <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/25">Defectos</label>
             <textarea value={form.defects} onChange={(e) => setForm({ ...form, defects: e.target.value })}
-              className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30 resize-none"
+              className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors resize-none"
               rows={2} placeholder="Describir defectos si los hay..." />
           </div>
           {/* Notes */}
           <div>
-            <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Notas</label>
+            <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/25">Notas</label>
             <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })}
-              className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30 resize-none"
+              className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors resize-none"
               rows={2} placeholder="Notas adicionales..." />
           </div>
           {/* Submit */}
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose}
-              className="flex-1 py-3 bg-slate-200 rounded-full text-sm font-bold hover:bg-slate-300 transition-colors">
+              className="flex-1 py-2.5 bg-white/[0.05] border border-white/[0.08] text-white/50 text-sm rounded-xl">
               Cancelar
             </button>
             <button type="submit" disabled={saving}
-              className="flex-1 py-3 bg-primary text-white rounded-full text-sm font-bold shadow-md shadow-primary/20 hover:brightness-95 transition-all disabled:opacity-50">
+              className="flex-1 py-2.5 bg-white/[0.1] border border-white/[0.12] text-white/80 text-sm font-semibold rounded-xl disabled:opacity-50">
               {saving ? "Guardando..." : submitLabel}
             </button>
           </div>
         </form>
+        </div>
       </div>
     </div>
   );
@@ -576,534 +578,329 @@ export default function VentasStockPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-32">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        <span className="ml-3 text-sm text-cool-grey">Cargando stock de equipos...</span>
+      <div className="flex items-center justify-center py-40">
+        <div className="w-4 h-4 border border-white/20 border-t-white/60 rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
     <>
-      {/* ── KPI Cards (compactas) ── */}
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      {/* KPIs */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
         {[
-          { label: "Total Disponible", value: disponibles.toString(), icon: "phone_iphone", bg: "bg-green-50", color: "text-green-600" },
-          { label: "Reservados", value: reservados.toString(), icon: "schedule", bg: "bg-amber-50", color: "text-amber-600" },
-          { label: "Vendidos Hoy", value: vendidosHoy.toString(), icon: "sell", bg: "bg-blue-50", color: "text-blue-600" },
-          { label: "Valor Stock", value: formatPrice(valorStock), icon: "trending_up", bg: "bg-green-50", color: "text-green-600" },
-        ].map((kpi) => (
-          <div key={kpi.label} className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3">
-              <div className={`p-1.5 ${kpi.bg} rounded-lg`}>
-                <span className={`material-symbols-outlined ${kpi.color} text-lg`}>{kpi.icon}</span>
-              </div>
-              <div>
-                <p className="text-[10px] text-cool-grey font-bold uppercase tracking-wider">{kpi.label}</p>
-                <h3 className="text-lg font-bold tracking-tight">{kpi.value}</h3>
-              </div>
+          { label: "Disponibles", value: disponibles.toString(),       sub: "en stock"  },
+          { label: "Reservados",  value: reservados.toString(),        sub: "con seña"  },
+          { label: "Vendidos hoy",value: vendidosHoy.toString(),       sub: "hoy"       },
+          { label: "Valor stock", value: formatPrice(valorStock),      sub: "disponible"},
+        ].map((k) => (
+          <div key={k.label} className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d]">
+            <div className="rounded-[19px] bg-[#161619] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+              <p className="text-[11px] font-normal text-white/25 uppercase tracking-[0.14em] mb-4">{k.label}</p>
+              <p className="text-[28px] font-medium text-white/90 leading-none tracking-tight">{k.value}</p>
+              <p className="text-[11px] text-white/20 mt-1.5">{k.sub}</p>
             </div>
           </div>
         ))}
-      </section>
+      </div>
 
-      {/* ── Buscador + Botones ── */}
-      <div className="flex flex-wrap items-center gap-3 mb-4">
-        <div className="relative flex-1 min-w-[200px] max-w-xl">
-          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-cool-grey">search</span>
-          <input
-            className="w-full pl-12 pr-6 py-3 bg-white rounded-xl border border-slate-200 focus:ring-1 focus:ring-primary/30 transition-all text-sm"
-            placeholder="Buscar por modelo o IMEI..."
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+      {/* Toolbar */}
+      <div className="flex flex-wrap items-center gap-3 mb-5">
+        <div className="flex items-center gap-2 bg-white/[0.04] border border-white/[0.06] rounded-lg px-3 py-2 flex-1 min-w-[200px] max-w-sm hover:border-white/[0.1] transition-colors">
+          <span className="material-symbols-outlined text-white/25 text-base">search</span>
+          <input className="bg-transparent text-sm text-white/70 placeholder:text-white/20 outline-none w-full" placeholder="Buscar por modelo o IMEI…" value={search} onChange={e => setSearch(e.target.value)} />
         </div>
-        <button
-          onClick={() => { setAddForm(emptyProductForm); setShowAddModal(true); }}
-          className="flex items-center gap-2 px-5 py-3 bg-primary text-white rounded-full font-bold text-sm shadow-md shadow-primary/20"
-        >
-          <span className="material-symbols-outlined text-lg">add</span> Cargar
+        <button onClick={() => { setAddForm(emptyProductForm); setShowAddModal(true); }}
+          className="flex items-center gap-2 bg-white/[0.08] hover:bg-white/[0.12] border border-white/[0.1] text-white/80 text-sm font-medium px-4 py-2 rounded-xl transition-colors">
+          <span className="material-symbols-outlined text-[16px]">add</span>Cargar
         </button>
-        <button
-          onClick={() => {
-            const disponible = allProducts.find((p) => p.status === "disponible");
-            if (disponible) openSaleModal(disponible);
-            else alert("No hay equipos disponibles para vender");
-          }}
-          className="flex items-center gap-2 px-5 py-3 border-2 border-primary text-primary rounded-full font-bold text-sm hover:bg-primary/5 transition-all"
-        >
-          <span className="material-symbols-outlined text-lg">point_of_sale</span> Nueva Venta
+        <button onClick={() => { const d = allProducts.find(p => p.status === "disponible"); if (d) openSaleModal(d); else alert("No hay equipos disponibles"); }}
+          className="flex items-center gap-2 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-white/60 text-sm font-medium px-4 py-2 rounded-xl transition-colors">
+          <span className="material-symbols-outlined text-[16px]">point_of_sale</span>Nueva Venta
         </button>
       </div>
 
-      {/* ── Filtros Horizontales (chips) ── */}
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-3 mb-6">
-        {/* Estado */}
-        <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-bold text-cool-grey uppercase tracking-wider mr-1">Estado:</span>
-          {(["todos", "disponible", "reservado", "vendido"] as const).map((key) => {
-            const labels: Record<string, string> = { todos: "Todos", disponible: "Disponible", reservado: "Reservado", vendido: "Vendido" };
-            return (
-              <button key={key} onClick={() => setStatusFilter(key)}
-                className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${statusFilter === key ? "bg-primary text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>
-                {labels[key]}
+      {/* Filters */}
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mb-5">
+        {[
+          { label: "Estado", opts: [["todos","Todos"],["disponible","Disponible"],["reservado","Reservado"],["vendido","Vendido"]], val: statusFilter, set: setStatusFilter },
+          { label: "Tipo",   opts: [["todos","Todos"],["nuevo","Nuevo"],["usado","Usado"]], val: newFilter, set: setNewFilter },
+          { label: "Cond.",  opts: [["todos","Todos"],["A","A"],["B","B"],["C","C"]], val: conditionFilter, set: setConditionFilter },
+          { label: "Origen", opts: [["todos","Todos"],["propio","Propio"],["consignacion","Consignación"]], val: originFilter, set: setOriginFilter },
+        ].map(group => (
+          <div key={group.label} className="flex items-center gap-1.5">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/20 mr-1">{group.label}</span>
+            {group.opts.map(([key, lbl]) => (
+              <button key={key} onClick={() => group.set(key)}
+                className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors ${group.val === key ? 'bg-white/[0.1] text-white/80' : 'text-white/30 hover:text-white/50'}`}>
+                {lbl}
               </button>
-            );
-          })}
-        </div>
-        {/* Tipo */}
-        <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-bold text-cool-grey uppercase tracking-wider mr-1">Tipo:</span>
-          {(["todos", "nuevo", "usado"] as const).map((key) => {
-            const labels: Record<string, string> = { todos: "Todos", nuevo: "Nuevo", usado: "Usado" };
-            return (
-              <button key={key} onClick={() => setNewFilter(key)}
-                className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${newFilter === key ? "bg-primary text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>
-                {labels[key]}
-              </button>
-            );
-          })}
-        </div>
-        {/* Condición */}
-        <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-bold text-cool-grey uppercase tracking-wider mr-1">Condición:</span>
-          {(["todos", "A", "B", "C"] as const).map((key) => (
-            <button key={key} onClick={() => setConditionFilter(key)}
-              className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${conditionFilter === key ? "bg-primary text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>
-              {key === "todos" ? "Todos" : key}
-            </button>
-          ))}
-        </div>
-        {/* Origen */}
-        <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-bold text-cool-grey uppercase tracking-wider mr-1">Origen:</span>
-          {(["todos", "propio", "consignacion"] as const).map((key) => {
-            const labels: Record<string, string> = { todos: "Todos", propio: "Propio", consignacion: "Consignación" };
-            return (
-              <button key={key} onClick={() => setOriginFilter(key)}
-                className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${originFilter === key ? "bg-primary text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>
-                {labels[key]}
-              </button>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        ))}
       </div>
 
-      {/* ── Main Grid: Tabla + Panel Detalle ── */}
-      <div className="grid grid-cols-12 gap-6">
-        {/* Main Table */}
+      {/* Table + Detail */}
+      <div className="grid grid-cols-12 gap-5">
+        {/* Table */}
         <div className="col-span-12 lg:col-span-8">
-          <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200">
-            {filtered.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 text-cool-grey">
-                <span className="material-symbols-outlined text-4xl mb-3">inventory_2</span>
-                <p className="text-sm font-medium">No hay equipos para mostrar</p>
-                <p className="text-xs mt-1">Probá cambiar los filtros o cargá un equipo nuevo</p>
-              </div>
-            ) : (
-              <>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="bg-slate-50">
-                        <th className="px-5 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Equipo</th>
-                        <th className="px-3 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">IMEI</th>
-                        <th className="px-3 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Capacidad</th>
-                        <th className="px-3 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Condición</th>
-                        <th className="px-3 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Batería</th>
-                        <th className="px-3 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Precio</th>
-                        <th className="px-3 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Defectos</th>
-                        <th className="px-3 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Origen</th>
-                        <th className="px-3 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Ingreso</th>
-                        <th className="px-3 py-4 text-[10px] uppercase tracking-widest font-bold text-cool-grey">Estado</th>
-                        <th className="px-3 py-4"></th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-50">
-                      {filtered.map((p) => (
-                        <tr
-                          key={p.id}
-                          onClick={() => setSelectedProduct(p)}
-                          className={`hover:bg-slate-50 transition-colors cursor-pointer group ${selectedProduct?.id === p.id ? "bg-primary/5" : ""}`}
-                        >
-                          <td className="px-5 py-4">
-                            <div className="flex items-center gap-3">
-                              <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
-                                <span className="material-symbols-outlined text-lg text-cool-grey">smartphone</span>
-                              </div>
-                              <div>
-                                <p className="text-sm font-bold">{p.model}</p>
-                                <div className="flex items-center gap-1.5">
-                                  <p className="text-[10px] text-on-surface-variant">{p.color}</p>
-                                  {p.is_new && <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-[8px] font-bold rounded-full">NUEVO</span>}
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-3 py-4 font-mono text-xs text-cool-grey">{maskImei(p.imei)}</td>
-                          <td className="px-3 py-4 text-sm font-medium">{p.capacity}</td>
-                          <td className="px-3 py-4">{conditionBadge(p.condition)}</td>
-                          <td className="px-3 py-4">
-                            <span className={`text-sm font-bold ${batteryColor(p.battery_health)}`}>{p.battery_health}%</span>
-                          </td>
-                          <td className="px-3 py-4 text-sm font-bold">{formatPrice(p.sale_price)}</td>
-                          <td className="px-3 py-4 text-xs text-on-surface-variant max-w-[150px] truncate" title={p.defects || ""}>{p.defects || <span className="text-cool-grey/40">—</span>}</td>
-                          <td className="px-3 py-4">{originBadge(p.origin)}</td>
-                          <td className="px-3 py-4 text-xs text-cool-grey font-medium">
-                            {new Date(p.created_at).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit" })}
-                          </td>
-                          <td className="px-3 py-4">{statusBadge(p.status)}</td>
-                          <td className="px-3 py-4 text-right">
-                            <button
-                              onClick={(ev) => { ev.stopPropagation(); if (p.status === "disponible") openSaleModal(p); }}
-                              className={`material-symbols-outlined transition-colors ${p.status === "disponible" ? "text-primary hover:text-primary-dark" : "text-slate-300"}`}
-                              title={p.status === "disponible" ? "Registrar venta" : ""}
-                            >
-                              {p.status === "disponible" ? "sell" : "chevron_right"}
-                            </button>
-                          </td>
+          <div className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d]">
+            <div className="rounded-[19px] bg-[#161619] overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+              {filtered.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20">
+                  <span className="material-symbols-outlined text-white/10 text-4xl mb-3">inventory_2</span>
+                  <p className="text-sm text-white/25">No hay equipos para mostrar</p>
+                </div>
+              ) : (
+                <>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                      <thead>
+                        <tr className="border-b border-white/[0.05]">
+                          {["Equipo","IMEI","Cap.","Cond.","Bat.","Precio","Estado",""].map(h => (
+                            <th key={h} className="px-4 py-3.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/20">{h}</th>
+                          ))}
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <div className="p-4 bg-slate-50 flex justify-between items-center text-xs font-medium text-cool-grey border-t border-slate-100">
-                  <span>Mostrando {filtered.length} de {allProducts.length} equipos</span>
-                </div>
-              </>
-            )}
+                      </thead>
+                      <tbody>
+                        {filtered.map((p) => (
+                          <tr key={p.id} onClick={() => setSelectedProduct(p)}
+                            className={`border-b border-white/[0.04] hover:bg-white/[0.03] transition-colors cursor-pointer last:border-0 ${selectedProduct?.id === p.id ? 'bg-white/[0.04]' : ''}`}>
+                            <td className="px-4 py-3.5">
+                              <div>
+                                <p className="text-sm font-medium text-white/80">{p.model}</p>
+                                <p className="text-[10px] text-white/30">{p.color}{p.is_new ? ' · NUEVO' : ''}</p>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3.5 font-mono text-[11px] text-white/30">••••{p.imei.slice(-4)}</td>
+                            <td className="px-4 py-3.5 text-sm text-white/60">{p.capacity}</td>
+                            <td className="px-4 py-3.5">
+                              <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-md ${
+                                p.condition === 'A' ? 'bg-emerald-500/10 text-emerald-400' :
+                                p.condition === 'B' ? 'bg-amber-500/10 text-amber-400' :
+                                'bg-red-500/10 text-red-400'
+                              }`}>{p.condition}</span>
+                            </td>
+                            <td className="px-4 py-3.5">
+                              <span className={`text-sm font-medium ${p.battery_health > 85 ? 'text-emerald-400' : p.battery_health >= 70 ? 'text-amber-400' : 'text-red-400'}`}>
+                                {p.battery_health}%
+                              </span>
+                            </td>
+                            <td className="px-4 py-3.5 text-sm font-medium text-white/70">{formatPrice(p.sale_price)}</td>
+                            <td className="px-4 py-3.5">
+                              <span className={`text-[11px] font-medium px-2 py-0.5 rounded-md ${
+                                p.status === 'disponible' ? 'bg-white/[0.07] text-white/50' :
+                                p.status === 'reservado'  ? 'bg-amber-500/10 text-amber-400' :
+                                'bg-white/[0.04] text-white/20'
+                              }`}>
+                                {p.status === 'disponible' ? 'Disponible' : p.status === 'reservado' ? 'Reservado' : 'Vendido'}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3.5 text-right">
+                              <button onClick={ev => { ev.stopPropagation(); if (p.status === 'disponible') openSaleModal(p); }}
+                                className={`material-symbols-outlined text-[18px] transition-colors ${p.status === 'disponible' ? 'text-white/30 hover:text-white/60' : 'text-white/10'}`}>
+                                {p.status === 'disponible' ? 'sell' : 'chevron_right'}
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="px-4 py-3 border-t border-white/[0.04]">
+                    <p className="text-[11px] text-white/20">{filtered.length} de {allProducts.length} equipos</p>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Right Detail Panel */}
-        <div className="col-span-12 lg:col-span-4 space-y-6">
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 sticky top-24">
-            <h3 className="text-[10px] uppercase tracking-[0.15em] font-bold text-cool-grey mb-4">Detalle de Equipo</h3>
-            {selectedProduct ? (
-              <>
-                <div className="flex items-center gap-4 mb-5">
-                  <div className="w-16 h-16 rounded-xl bg-slate-100 flex items-center justify-center">
-                    <span className="material-symbols-outlined text-3xl text-cool-grey">smartphone</span>
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-primary uppercase tracking-wider">{selectedProduct.model}</p>
-                    <p className="text-[10px] text-on-surface-variant font-mono mt-0.5">{selectedProduct.imei}</p>
-                    {selectedProduct.is_new && <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-[9px] font-bold rounded-full">NUEVO</span>}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 mb-5">
-                  {[
-                    { label: "Capacidad", value: selectedProduct.capacity || "—" },
-                    { label: "Color", value: selectedProduct.color || "—" },
-                    { label: "Estado Equipo", value: `${selectedProduct.condition} — ${conditionLabel(selectedProduct.condition)}` },
-                    { label: "Batería", value: `${selectedProduct.battery_health}%` },
-                  ].map((item) => (
-                    <div key={item.label} className="bg-slate-50 p-3 rounded-xl">
-                      <p className="text-[10px] text-cool-grey uppercase font-bold mb-0.5">{item.label}</p>
-                      <p className="text-sm font-bold">{item.value}</p>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Precios */}
-                <div className="mb-5">
-                  <h4 className="text-xs font-bold uppercase tracking-widest text-cool-grey mb-3">Precios</h4>
-                  <div className="bg-slate-50 rounded-xl p-4 space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs text-on-surface-variant">Costo</span>
-                      <span className="text-xs font-bold">{formatPrice(selectedProduct.cost_price)}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs text-on-surface-variant">Venta</span>
-                      <span className="text-xs font-bold">{formatPrice(selectedProduct.sale_price)}</span>
-                    </div>
-                    {selectedProduct.cost_price && selectedProduct.sale_price && (
-                      <div className="flex justify-between items-center pt-2 border-t border-slate-200">
-                        <span className="text-xs font-bold text-on-surface-variant">Ganancia</span>
-                        <span className="text-sm font-black text-green-600">{formatPrice(selectedProduct.sale_price - selectedProduct.cost_price)}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Propiedad */}
-                <div className="mb-5">
-                  <h4 className="text-xs font-bold uppercase tracking-widest text-cool-grey mb-3">Propiedad</h4>
-                  {originBadge(selectedProduct.origin)}
-                  {selectedProduct.consignment_owner && (
-                    <p className="text-xs text-on-surface-variant mt-2">Dueño: {selectedProduct.consignment_owner}</p>
-                  )}
-                </div>
-
-                {/* Estado */}
-                <div className="mb-5">
-                  <h4 className="text-xs font-bold uppercase tracking-widest text-cool-grey mb-3">Estado de Venta</h4>
-                  {statusBadge(selectedProduct.status)}
-                </div>
-
-                {/* Defectos */}
-                {selectedProduct.defects && (
+        {/* Detail Panel */}
+        <div className="col-span-12 lg:col-span-4">
+          <div className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] sticky top-4">
+            <div className="rounded-[19px] bg-[#161619] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/20 mb-4">Detalle</p>
+              {selectedProduct ? (
+                <>
                   <div className="mb-5">
-                    <h4 className="text-xs font-bold uppercase tracking-widest text-cool-grey mb-3">Defectos</h4>
-                    <p className="text-xs text-on-surface-variant leading-relaxed">{selectedProduct.defects}</p>
+                    <p className="text-[11px] font-medium text-white/25 uppercase tracking-[0.14em] mb-1">{selectedProduct.model}</p>
+                    <p className="font-mono text-[11px] text-white/20">{selectedProduct.imei}</p>
                   </div>
-                )}
 
-                {/* Notas */}
-                {selectedProduct.notes && (
-                  <div className="mb-5">
-                    <h4 className="text-xs font-bold uppercase tracking-widest text-cool-grey mb-3">Notas</h4>
-                    <p className="text-xs text-on-surface-variant leading-relaxed">{selectedProduct.notes}</p>
-                  </div>
-                )}
-
-                {/* Fotos */}
-                <div className="mb-5">
-                  <h4 className="text-xs font-bold uppercase tracking-widest text-cool-grey mb-3">Fotos</h4>
-                  <div className="grid grid-cols-4 gap-2">
-                    {(selectedProduct.photos && selectedProduct.photos.length > 0
-                      ? selectedProduct.photos
-                      : [null, null, null, null]
-                    ).map((photo, n) => (
-                      <div key={n} className="aspect-square rounded-lg bg-slate-100 border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden">
-                        {photo ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={photo} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          <span className="material-symbols-outlined text-lg text-slate-300">image</span>
-                        )}
+                  <div className="grid grid-cols-2 gap-2 mb-5">
+                    {[
+                      { l: "Capacidad", v: selectedProduct.capacity || "—" },
+                      { l: "Color",     v: selectedProduct.color || "—"     },
+                      { l: "Condición", v: `Grado ${selectedProduct.condition}` },
+                      { l: "Batería",   v: `${selectedProduct.battery_health}%` },
+                    ].map(i => (
+                      <div key={i.l} className="bg-white/[0.03] border border-white/[0.05] rounded-lg p-3">
+                        <p className="text-[9px] font-semibold uppercase tracking-wider text-white/20 mb-1">{i.l}</p>
+                        <p className="text-sm font-medium text-white/70">{i.v}</p>
                       </div>
                     ))}
                   </div>
-                </div>
 
-                {/* Garantía */}
-                <div className="mb-5 flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
-                  <span className="material-symbols-outlined text-blue-600 text-lg">verified_user</span>
-                  <p className="text-xs font-medium text-blue-800">Garantía: 90 días desde la venta</p>
-                </div>
+                  <div className="bg-white/[0.03] border border-white/[0.05] rounded-lg p-3 mb-4">
+                    <p className="text-[9px] font-semibold uppercase tracking-wider text-white/20 mb-2">Precios</p>
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between"><span className="text-[11px] text-white/30">Costo</span><span className="text-[11px] text-white/60">{formatPrice(selectedProduct.cost_price)}</span></div>
+                      <div className="flex justify-between"><span className="text-[11px] text-white/30">Venta</span><span className="text-[11px] font-medium text-white/70">{formatPrice(selectedProduct.sale_price)}</span></div>
+                      {selectedProduct.cost_price && selectedProduct.sale_price && (
+                        <div className="flex justify-between pt-1.5 border-t border-white/[0.05]">
+                          <span className="text-[11px] font-semibold text-white/30">Ganancia</span>
+                          <span className="text-[11px] font-bold text-emerald-400">{formatPrice(selectedProduct.sale_price - selectedProduct.cost_price)}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
-                {/* Buttons */}
-                <div className="flex gap-3 pt-2">
-                  <button
-                    onClick={() => openEditModal(selectedProduct)}
-                    className="flex-1 py-3 bg-slate-200 rounded-full text-xs font-bold hover:bg-slate-300 transition-colors flex items-center justify-center gap-1"
-                  >
-                    <span className="material-symbols-outlined text-sm">edit</span> Editar
-                  </button>
-                  {selectedProduct.status === "disponible" && (
-                    <button
-                      onClick={() => openSaleModal(selectedProduct)}
-                      className="flex-1 py-3 bg-primary text-white rounded-full text-xs font-bold shadow-md shadow-primary/20 hover:brightness-95 transition-all flex items-center justify-center gap-1"
-                    >
-                      <span className="material-symbols-outlined text-sm">sell</span> Vender
-                    </button>
-                  )}
-                </div>
-
-                {/* Delete Button — only if NOT vendido */}
-                {selectedProduct.status !== "vendido" && (
-                <div className="pt-4 border-t border-slate-100 mt-4">
-                  {!showDeleteConfirm ? (
-                    <button
-                      onClick={() => setShowDeleteConfirm(true)}
-                      className="w-full py-2.5 text-red-500 hover:bg-red-50 rounded-full text-xs font-bold transition-colors flex items-center justify-center gap-1"
-                    >
-                      <span className="material-symbols-outlined text-sm">delete</span> Eliminar Equipo
-                    </button>
-                  ) : (
-                    <div className="space-y-2">
-                      <p className="text-xs text-red-600 font-bold text-center">¿Confirmar eliminación?</p>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => setShowDeleteConfirm(false)}
-                          className="flex-1 py-2.5 bg-slate-200 rounded-full text-xs font-bold hover:bg-slate-300 transition-colors"
-                        >
-                          Cancelar
-                        </button>
-                        <button
-                          onClick={handleDeleteProduct}
-                          disabled={deletingProduct}
-                          className="flex-1 py-2.5 bg-red-500 text-white rounded-full text-xs font-bold hover:bg-red-600 transition-colors disabled:opacity-50"
-                        >
-                          {deletingProduct ? "Eliminando..." : "Sí, eliminar"}
-                        </button>
-                      </div>
+                  {selectedProduct.defects && (
+                    <div className="mb-4">
+                      <p className="text-[9px] font-semibold uppercase tracking-wider text-white/20 mb-1">Defectos</p>
+                      <p className="text-xs text-white/40 leading-relaxed">{selectedProduct.defects}</p>
                     </div>
                   )}
+
+                  <div className="grid grid-cols-4 gap-1.5 mb-5">
+                    {(selectedProduct.photos?.length ? selectedProduct.photos : [null, null, null, null]).map((photo, n) => (
+                      <div key={n} className="aspect-square rounded-lg bg-white/[0.03] border border-white/[0.06] flex items-center justify-center overflow-hidden">
+                        {photo
+                          // eslint-disable-next-line @next/next/no-img-element
+                          ? <img src={photo} alt="" className="w-full h-full object-cover" />
+                          : <span className="material-symbols-outlined text-white/10 text-lg">image</span>
+                        }
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button onClick={() => openEditModal(selectedProduct)}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] text-white/60 text-xs font-medium rounded-xl transition-colors">
+                      <span className="material-symbols-outlined text-[14px]">edit</span>Editar
+                    </button>
+                    {selectedProduct.status === "disponible" && (
+                      <button onClick={() => openSaleModal(selectedProduct)}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-white/[0.1] hover:bg-white/[0.15] border border-white/[0.12] text-white/80 text-xs font-semibold rounded-xl transition-colors">
+                        <span className="material-symbols-outlined text-[14px]">sell</span>Vender
+                      </button>
+                    )}
+                  </div>
+
+                  {selectedProduct.status !== "vendido" && (
+                    <div className="pt-3 mt-3 border-t border-white/[0.05]">
+                      {!showDeleteConfirm ? (
+                        <button onClick={() => setShowDeleteConfirm(true)} className="w-full py-2 text-xs text-red-400/60 hover:text-red-400 transition-colors">
+                          Eliminar equipo
+                        </button>
+                      ) : (
+                        <div className="space-y-2">
+                          <p className="text-xs text-red-400/70 text-center">¿Confirmar eliminación?</p>
+                          <div className="flex gap-2">
+                            <button onClick={() => setShowDeleteConfirm(false)} className="flex-1 py-2 bg-white/[0.05] border border-white/[0.08] text-white/50 text-xs rounded-lg">Cancelar</button>
+                            <button onClick={handleDeleteProduct} disabled={deletingProduct} className="flex-1 py-2 bg-red-500/20 border border-red-500/30 text-red-400 text-xs rounded-lg disabled:opacity-50">
+                              {deletingProduct ? "…" : "Sí, eliminar"}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-16">
+                  <span className="material-symbols-outlined text-white/10 text-4xl mb-2">touch_app</span>
+                  <p className="text-sm text-white/20">Seleccioná un equipo</p>
                 </div>
-                )}
-              </>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-12 text-cool-grey">
-                <span className="material-symbols-outlined text-4xl mb-3">touch_app</span>
-                <p className="text-sm font-medium">Seleccioná un equipo</p>
-                <p className="text-xs mt-1">Hacé click en un equipo de la tabla para ver sus detalles</p>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* ── Sale Modal ── */}
+      {/* Sale Modal */}
       {showSaleModal && saleProduct && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => { if (!saleConfirmation) { setShowSaleModal(false); } }}>
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md" onClick={(e) => e.stopPropagation()}>
-            {saleConfirmation ? (
-              /* ── Confirmation State ── */
-              <div className="p-6 space-y-5">
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <span className="material-symbols-outlined text-3xl text-green-600">check_circle</span>
-                  </div>
-                  <h3 className="text-lg font-bold">Venta Registrada ✅</h3>
-                </div>
-
-                <div className="bg-slate-50 p-4 rounded-xl space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-on-surface-variant">Equipo</span>
-                    <span className="text-xs font-bold">{saleConfirmation.product.model} {saleConfirmation.product.capacity}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-on-surface-variant">Precio</span>
-                    <span className="text-xs font-bold">{formatPrice(saleConfirmation.sale_price)}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-on-surface-variant">Método de Pago</span>
-                    <span className="text-xs font-bold capitalize">{saleConfirmation.payment_method.replace("_", " ")}</span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <a
-                    href={`/ventas/print/garantia?product_id=${saleConfirmation.product.id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="py-3 bg-blue-50 text-blue-700 rounded-full text-xs font-bold hover:bg-blue-100 transition-colors flex items-center justify-center gap-1"
-                  >
-                    🖨️ Imprimir Garantía
-                  </a>
-                  <a
-                    href={`/ventas/print/ticket?product_id=${saleConfirmation.product.id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="py-3 bg-blue-50 text-blue-700 rounded-full text-xs font-bold hover:bg-blue-100 transition-colors flex items-center justify-center gap-1"
-                  >
-                    🧾 Imprimir Ticket
-                  </a>
-                </div>
-
-                <button
-                  onClick={() => { setShowSaleModal(false); setSaleProduct(null); setSaleConfirmation(null); }}
-                  className="w-full py-3 bg-slate-200 rounded-full text-sm font-bold hover:bg-slate-300 transition-colors"
-                >
-                  Cerrar
-                </button>
-              </div>
-            ) : (
-              /* ── Sale Form ── */
-              <>
-                <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-                  <h3 className="text-lg font-bold">Registrar Venta</h3>
-                  <button onClick={() => setShowSaleModal(false)} className="text-cool-grey hover:text-on-surface">
-                    <span className="material-symbols-outlined">close</span>
-                  </button>
-                </div>
-                <form onSubmit={handleRegisterSale} className="p-6 space-y-4">
-                  <div className="bg-slate-50 p-4 rounded-xl">
-                    <p className="text-xs font-bold text-primary">{saleProduct.model}</p>
-                    <p className="text-[10px] text-on-surface-variant font-mono">{saleProduct.imei}</p>
-                    <p className="text-xs mt-1">{saleProduct.capacity} · {saleProduct.color} · {saleProduct.condition}</p>
-                  </div>
-
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => { if (!saleConfirmation) setShowSaleModal(false); }}>
+          <div className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] w-full max-w-md" onClick={e => e.stopPropagation()}>
+            <div className="rounded-[19px] bg-[#161619] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+              {saleConfirmation ? (
+                <div className="p-6 space-y-5 text-center">
                   <div>
-                    <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Precio de Venta (USD) *</label>
-                    <input type="number" step="0.01" required value={saleForm.sale_price}
-                      onChange={(e) => setSaleForm({ ...saleForm, sale_price: e.target.value })}
-                      className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30" />
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Método de Pago *</label>
-                    <select value={saleForm.payment_method} onChange={(e) => setSaleForm({ ...saleForm, payment_method: e.target.value })}
-                      className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30">
-                      <option value="efectivo">Efectivo</option>
-                      <option value="transferencia">Transferencia</option>
-                      <option value="tarjeta_debito">Tarjeta Débito</option>
-                      <option value="tarjeta_credito">Tarjeta Crédito</option>
-                      <option value="mixto">Mixto</option>
-                    </select>
-                  </div>
-
-                  {/* Client fields */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Nombre Cliente</label>
-                      <input type="text" value={saleForm.client_name}
-                        onChange={(e) => setSaleForm({ ...saleForm, client_name: e.target.value })}
-                        className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30"
-                        placeholder="Opcional" />
+                    <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-3">
+                      <span className="material-symbols-outlined text-emerald-400 text-2xl">check_circle</span>
                     </div>
-                    <div>
-                      <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Teléfono Cliente</label>
-                      <input type="text" value={saleForm.client_phone}
-                        onChange={(e) => setSaleForm({ ...saleForm, client_phone: e.target.value })}
-                        className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30"
-                        placeholder="Opcional" />
+                    <p className="text-base font-semibold text-white/80">Venta registrada</p>
+                  </div>
+                  <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4 text-left space-y-2">
+                    {[["Equipo", `${saleConfirmation.product.model} ${saleConfirmation.product.capacity}`], ["Precio", formatPrice(saleConfirmation.sale_price)], ["Pago", saleConfirmation.payment_method]].map(([l, v]) => (
+                      <div key={l} className="flex justify-between"><span className="text-[11px] text-white/30">{l}</span><span className="text-[11px] font-medium text-white/60">{v}</span></div>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <a href={`/ventas/print/garantia?product_id=${saleConfirmation.product.id}`} target="_blank" className="py-2.5 bg-white/[0.05] border border-white/[0.08] text-white/60 text-xs font-medium rounded-xl text-center hover:bg-white/[0.08] transition-colors">Garantía</a>
+                    <a href={`/ventas/print/ticket?product_id=${saleConfirmation.product.id}`} target="_blank" className="py-2.5 bg-white/[0.05] border border-white/[0.08] text-white/60 text-xs font-medium rounded-xl text-center hover:bg-white/[0.08] transition-colors">Ticket</a>
+                  </div>
+                  <button onClick={() => { setShowSaleModal(false); setSaleProduct(null); setSaleConfirmation(null); }} className="w-full py-2.5 bg-white/[0.08] border border-white/[0.1] text-white/70 text-sm font-medium rounded-xl hover:bg-white/[0.12] transition-colors">Cerrar</button>
+                </div>
+              ) : (
+                <>
+                  <div className="p-5 border-b border-white/[0.06] flex items-center justify-between">
+                    <p className="text-sm font-semibold text-white/80">Registrar Venta</p>
+                    <button onClick={() => setShowSaleModal(false)} className="text-white/30 hover:text-white/60"><span className="material-symbols-outlined text-[20px]">close</span></button>
+                  </div>
+                  <form onSubmit={handleRegisterSale} className="p-5 space-y-4">
+                    <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3">
+                      <p className="text-sm font-medium text-white/70">{saleProduct.model}</p>
+                      <p className="text-[11px] text-white/30 font-mono">{saleProduct.imei}</p>
+                      <p className="text-[11px] text-white/30 mt-0.5">{saleProduct.capacity} · {saleProduct.color} · Grado {saleProduct.condition}</p>
                     </div>
-                  </div>
-                  <input type="hidden" value={saleForm.client_id} />
-
-                  <div>
-                    <label className="text-xs font-bold text-cool-grey uppercase tracking-widest">Notas</label>
-                    <textarea value={saleForm.notes} onChange={(e) => setSaleForm({ ...saleForm, notes: e.target.value })}
-                      className="w-full mt-1 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-1 focus:ring-primary/30 resize-none" rows={2}
-                      placeholder="Notas sobre la venta..." />
-                  </div>
-
-                  <div className="flex gap-3 pt-2">
-                    <button type="button" onClick={() => setShowSaleModal(false)}
-                      className="flex-1 py-3 bg-slate-200 rounded-full text-sm font-bold hover:bg-slate-300 transition-colors">
-                      Cancelar
-                    </button>
-                    <button type="submit" disabled={savingSale}
-                      className="flex-1 py-3 bg-primary text-white rounded-full text-sm font-bold shadow-md shadow-primary/20 hover:brightness-95 transition-all disabled:opacity-50">
-                      {savingSale ? "Registrando..." : "Confirmar Venta"}
-                    </button>
-                  </div>
-                </form>
-              </>
-            )}
+                    {[
+                      { label: "Precio (USD)", type: "number", val: saleForm.sale_price, set: (v: string) => setSaleForm({...saleForm, sale_price: v}), required: true, step: "0.01" },
+                    ].map(f => (
+                      <div key={f.label}>
+                        <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/25 block mb-1">{f.label}</label>
+                        <input type={f.type} required={f.required} step={f.step} value={f.val} onChange={e => f.set(e.target.value)}
+                          className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors" />
+                      </div>
+                    ))}
+                    <div>
+                      <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/25 block mb-1">Método de Pago</label>
+                      <select value={saleForm.payment_method} onChange={e => setSaleForm({...saleForm, payment_method: e.target.value})}
+                        className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none">
+                        {["efectivo","transferencia","tarjeta_debito","tarjeta_credito","mixto"].map(o => <option key={o} value={o}>{o.replace("_"," ")}</option>)}
+                      </select>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      {[["Nombre cliente", saleForm.client_name, (v: string) => setSaleForm({...saleForm, client_name: v})], ["Teléfono", saleForm.client_phone, (v: string) => setSaleForm({...saleForm, client_phone: v})]].map(([lbl, val, set]) => (
+                        <div key={lbl as string}>
+                          <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/25 block mb-1">{lbl as string}</label>
+                          <input type="text" value={val as string} onChange={e => (set as (v: string) => void)(e.target.value)} placeholder="Opcional"
+                            className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors" />
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex gap-3 pt-1">
+                      <button type="button" onClick={() => setShowSaleModal(false)} className="flex-1 py-2.5 bg-white/[0.04] border border-white/[0.08] text-white/50 text-sm rounded-xl">Cancelar</button>
+                      <button type="submit" disabled={savingSale} className="flex-1 py-2.5 bg-white/[0.1] border border-white/[0.12] text-white/80 text-sm font-semibold rounded-xl disabled:opacity-50">
+                        {savingSale ? "Registrando…" : "Confirmar"}
+                      </button>
+                    </div>
+                  </form>
+                </>
+              )}
+            </div>
           </div>
         </div>
       )}
 
-      {/* ── Add Product Modal ── */}
+      {/* Add Modal */}
       {showAddModal && (
-        <ProductFormModal
-          title="Cargar Equipo"
-          form={addForm}
-          setForm={setAddForm}
-          onSubmit={handleAddProduct}
-          onClose={() => setShowAddModal(false)}
-          saving={savingAdd}
-          submitLabel="Guardar Equipo"
-        />
+        <ProductFormModal title="Cargar Equipo" form={addForm} setForm={setAddForm} onSubmit={handleAddProduct} onClose={() => setShowAddModal(false)} saving={savingAdd} submitLabel="Guardar Equipo" />
       )}
-
-      {/* ── Edit Product Modal ── */}
+      {/* Edit Modal */}
       {showEditModal && editingProduct && (
-        <ProductFormModal
-          title="Editar Equipo"
-          form={editForm}
-          setForm={setEditForm}
-          onSubmit={handleEditProduct}
-          onClose={() => setShowEditModal(false)}
-          saving={savingEdit}
-          submitLabel="Guardar Cambios"
-        />
+        <ProductFormModal title="Editar Equipo" form={editForm} setForm={setEditForm} onSubmit={handleEditProduct} onClose={() => setShowEditModal(false)} saving={savingEdit} submitLabel="Guardar Cambios" />
       )}
     </>
   );
