@@ -746,10 +746,10 @@ export default function VentasStockPage() {
                               <td colSpan={11} className="px-4 py-5">
                                 <div className="flex gap-6 items-start">
 
-                                  {/* Col 1 — Fotos 2×2 */}
-                                  <div className="grid grid-cols-2 gap-2 self-start pr-5 border-r border-white/[0.05]">
-                                    {[...(p.photos || []), null, null, null, null].slice(0, 4).map((photo, n) => (
-                                      <div key={n} className="w-[56px] h-[56px] rounded-lg bg-white/[0.04] border border-white/[0.07] flex items-center justify-center overflow-hidden">
+                                  {/* Col 1 — Fotos 2×3 */}
+                                  <div className="grid grid-cols-3 gap-2 self-start pr-5 border-r border-white/[0.05]">
+                                    {[...(p.photos || []), null, null, null, null, null, null].slice(0, 6).map((photo, n) => (
+                                      <div key={n} className="w-[52px] h-[52px] rounded-lg bg-white/[0.04] border border-white/[0.07] flex items-center justify-center overflow-hidden">
                                         {photo
                                           // eslint-disable-next-line @next/next/no-img-element
                                           ? <img src={photo} alt="" className="w-full h-full object-cover" />
@@ -781,7 +781,7 @@ export default function VentasStockPage() {
                                   {/* Col 3 — Precios + Acciones side by side */}
                                   <div className="flex gap-3 self-start pl-5 border-l border-white/[0.05] flex-1">
                                     {/* Precios */}
-                                    <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4 space-y-2.5 flex-1">
+                                    <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4 space-y-2.5 w-[140px] shrink-0">
                                       <div className="flex justify-between items-baseline gap-4">
                                         <span className="text-[9px] uppercase tracking-[0.12em] font-semibold text-white/35">Costo</span>
                                         <span className="text-[12px] font-medium text-white/55">{formatPrice(p.cost_price)}</span>
