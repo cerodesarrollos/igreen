@@ -594,32 +594,37 @@ export default function VentasStockPage() {
         ))}
       </div>
 
-      {/* Table + Detail */}
-      <div className="grid grid-cols-12 gap-5">
-        {/* Table */}
-        <div className="col-span-12 lg:col-span-8">
-          <div className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d]">
-            <div className="rounded-[19px] bg-[#161619] overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-              {filtered.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20">
-                  <span className="material-symbols-outlined text-white/10 text-4xl mb-3">inventory_2</span>
-                  <p className="text-sm text-white/50">No hay equipos para mostrar</p>
-                </div>
-              ) : (
-                <>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                      <thead>
-                        <tr className="border-b border-white/[0.05]">
-                          {["Equipo","IMEI","Cap.","Cond.","Bat.","Precio","Estado",""].map(h => (
-                            <th key={h} className="px-4 py-3.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/45">{h}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filtered.map((p) => (
-                          <tr key={p.id} onClick={() => setSelectedProduct(p)}
-                            className={`border-b border-white/[0.04] hover:bg-white/[0.03] transition-colors cursor-pointer last:border-0 ${selectedProduct?.id === p.id ? 'bg-white/[0.04]' : ''}`}>
+      {/* Table full width + inline expandable detail */}
+      <div className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d]">
+        <div className="rounded-[19px] bg-[#161619] overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+          {filtered.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20">
+              <span className="material-symbols-outlined text-white/10 text-4xl mb-3">inventory_2</span>
+              <p className="text-sm text-white/50">No hay equipos para mostrar</p>
+            </div>
+          ) : (
+            <>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="border-b border-white/[0.05]">
+                      {["","Equipo","IMEI","Cap.","Cond.","Bat.","Precio","Estado",""].map((h,i) => (
+                        <th key={i} className="px-4 py-3.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/45">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.map((p) => {
+                      const isOpen = selectedProduct?.id === p.id;
+                      return (
+                        <>
+                          {/* Main row */}
+                          <tr key={p.id} onClick={() => setSelectedProduct(isOpen ? null : p)}
+                            className={`border-b border-white/[0.04] hover:bg-white/[0.03] transition-colors cursor-pointer ${isOpen ? 'bg-white/[0.04]' : ''} ${isOpen ? '' : 'last:border-0'}`}>
+                            {/* chevron */}
+                            <td className="pl-4 pr-1 py-3.5 w-6">
+                              <span className={`material-symbols-outlined text-[16px] text-white/30 transition-transform duration-200 ${isOpen ? 'rotate-90' : ''}`}>chevron_right</span>
+                            </td>
                             <td className="px-4 py-3.5">
                               <div>
                                 <p className="text-sm font-medium text-white/80">{p.model}</p>
@@ -651,125 +656,104 @@ export default function VentasStockPage() {
                               </span>
                             </td>
                             <td className="px-4 py-3.5 text-right">
-                              <button onClick={ev => { ev.stopPropagation(); if (p.status === 'disponible') openSaleModal(p); }}
-                                className={`material-symbols-outlined text-[18px] transition-colors ${p.status === 'disponible' ? 'text-white/55 hover:text-white/60' : 'text-white/10'}`}>
-                                {p.status === 'disponible' ? 'sell' : 'chevron_right'}
-                              </button>
+                              {p.status === 'disponible' && (
+                                <button onClick={ev => { ev.stopPropagation(); openSaleModal(p); }}
+                                  className="text-white/40 hover:text-white/70 transition-colors">
+                                  <span className="material-symbols-outlined text-[18px]">sell</span>
+                                </button>
+                              )}
                             </td>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  <div className="px-4 py-3 border-t border-white/[0.04]">
-                    <p className="text-[11px] text-white/45">{filtered.length} de {allProducts.length} equipos</p>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
 
-        {/* Detail Panel */}
-        <div className="col-span-12 lg:col-span-4">
-          <div className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] sticky top-4">
-            <div className="rounded-[19px] bg-[#161619] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/45 mb-4">Detalle</p>
-              {selectedProduct ? (
-                <>
-                  <div className="mb-5">
-                    <p className="text-[11px] font-medium text-white/50 uppercase tracking-[0.14em] mb-1">{selectedProduct.model}</p>
-                    <p className="font-mono text-[11px] text-white/45">{selectedProduct.imei}</p>
-                  </div>
+                          {/* Inline detail row */}
+                          {isOpen && (
+                            <tr key={`${p.id}-detail`} className="border-b border-white/[0.05] bg-white/[0.02]">
+                              <td colSpan={9} className="px-6 py-5">
+                                <div className="flex gap-6 flex-wrap">
+                                  {/* Fotos */}
+                                  <div className="flex gap-2">
+                                    {(p.photos?.length ? p.photos : [null,null,null]).slice(0,3).map((photo, n) => (
+                                      <div key={n} className="w-16 h-16 rounded-xl bg-white/[0.04] border border-white/[0.07] flex items-center justify-center overflow-hidden flex-shrink-0">
+                                        {photo
+                                          // eslint-disable-next-line @next/next/no-img-element
+                                          ? <img src={photo} alt="" className="w-full h-full object-cover" />
+                                          : <span className="material-symbols-outlined text-white/10 text-xl">image</span>
+                                        }
+                                      </div>
+                                    ))}
+                                  </div>
 
-                  <div className="grid grid-cols-2 gap-2 mb-5">
-                    {[
-                      { l: "Capacidad", v: selectedProduct.capacity || "—" },
-                      { l: "Color",     v: selectedProduct.color || "—"     },
-                      { l: "Condición", v: `Grado ${selectedProduct.condition}` },
-                      { l: "Batería",   v: `${selectedProduct.battery_health}%` },
-                    ].map(i => (
-                      <div key={i.l} className="bg-white/[0.03] border border-white/[0.05] rounded-lg p-3">
-                        <p className="text-[9px] font-semibold uppercase tracking-wider text-white/45 mb-1">{i.l}</p>
-                        <p className="text-sm font-medium text-white/70">{i.v}</p>
-                      </div>
-                    ))}
-                  </div>
+                                  {/* Info chips */}
+                                  <div className="flex flex-wrap gap-3 flex-1">
+                                    {[
+                                      { l: "IMEI",      v: p.imei },
+                                      { l: "Capacidad", v: p.capacity },
+                                      { l: "Color",     v: p.color },
+                                      { l: "Condición", v: `Grado ${p.condition}` },
+                                      { l: "Batería",   v: `${p.battery_health}%` },
+                                      { l: "Origen",    v: p.origin === 'consignacion' ? `Consig. ${p.consignment_owner || ''}` : 'Stock propio' },
+                                      { l: "Costo",     v: formatPrice(p.cost_price) },
+                                      { l: "Venta",     v: formatPrice(p.sale_price) },
+                                      ...(p.cost_price && p.sale_price ? [{ l: "Ganancia", v: formatPrice(p.sale_price - p.cost_price) }] : []),
+                                    ].map(i => (
+                                      <div key={i.l} className="flex flex-col gap-0.5">
+                                        <span className="text-[9px] uppercase tracking-[0.12em] font-semibold text-white/40">{i.l}</span>
+                                        <span className={`text-[12px] font-medium ${i.l === 'Ganancia' ? 'text-emerald-400' : 'text-white/65'}`}>{i.v}</span>
+                                      </div>
+                                    ))}
+                                  </div>
 
-                  <div className="bg-white/[0.03] border border-white/[0.05] rounded-lg p-3 mb-4">
-                    <p className="text-[9px] font-semibold uppercase tracking-wider text-white/45 mb-2">Precios</p>
-                    <div className="space-y-1.5">
-                      <div className="flex justify-between"><span className="text-[11px] text-white/55">Costo</span><span className="text-[11px] text-white/60">{formatPrice(selectedProduct.cost_price)}</span></div>
-                      <div className="flex justify-between"><span className="text-[11px] text-white/55">Venta</span><span className="text-[11px] font-medium text-white/70">{formatPrice(selectedProduct.sale_price)}</span></div>
-                      {selectedProduct.cost_price && selectedProduct.sale_price && (
-                        <div className="flex justify-between pt-1.5 border-t border-white/[0.05]">
-                          <span className="text-[11px] font-semibold text-white/55">Ganancia</span>
-                          <span className="text-[11px] font-bold text-emerald-400">{formatPrice(selectedProduct.sale_price - selectedProduct.cost_price)}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                                  {/* Defectos */}
+                                  {p.defects && (
+                                    <div className="w-full mt-1">
+                                      <span className="text-[9px] uppercase tracking-[0.12em] font-semibold text-white/40">Defectos</span>
+                                      <p className="text-xs text-white/40 mt-0.5">{p.defects}</p>
+                                    </div>
+                                  )}
 
-                  {selectedProduct.defects && (
-                    <div className="mb-4">
-                      <p className="text-[9px] font-semibold uppercase tracking-wider text-white/45 mb-1">Defectos</p>
-                      <p className="text-xs text-white/40 leading-relaxed">{selectedProduct.defects}</p>
-                    </div>
-                  )}
-
-                  <div className="grid grid-cols-4 gap-1.5 mb-5">
-                    {(selectedProduct.photos?.length ? selectedProduct.photos : [null, null, null, null]).map((photo, n) => (
-                      <div key={n} className="aspect-square rounded-lg bg-white/[0.03] border border-white/[0.06] flex items-center justify-center overflow-hidden">
-                        {photo
-                          // eslint-disable-next-line @next/next/no-img-element
-                          ? <img src={photo} alt="" className="w-full h-full object-cover" />
-                          : <span className="material-symbols-outlined text-white/10 text-lg">image</span>
-                        }
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="flex gap-2">
-                    <button onClick={() => openEditModal(selectedProduct)}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] text-white/60 text-xs font-medium rounded-xl transition-colors">
-                      <span className="material-symbols-outlined text-[14px]">edit</span>Editar
-                    </button>
-                    {selectedProduct.status === "disponible" && (
-                      <button onClick={() => openSaleModal(selectedProduct)}
-                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-white/[0.1] hover:bg-white/[0.15] border border-white/[0.12] text-white/80 text-xs font-semibold rounded-xl transition-colors">
-                        <span className="material-symbols-outlined text-[14px]">sell</span>Vender
-                      </button>
-                    )}
-                  </div>
-
-                  {selectedProduct.status !== "vendido" && (
-                    <div className="pt-3 mt-3 border-t border-white/[0.05]">
-                      {!showDeleteConfirm ? (
-                        <button onClick={() => setShowDeleteConfirm(true)} className="w-full py-2 text-xs text-red-400/60 hover:text-red-400 transition-colors">
-                          Eliminar equipo
-                        </button>
-                      ) : (
-                        <div className="space-y-2">
-                          <p className="text-xs text-red-400/70 text-center">¿Confirmar eliminación?</p>
-                          <div className="flex gap-2">
-                            <button onClick={() => setShowDeleteConfirm(false)} className="flex-1 py-2 bg-white/[0.05] border border-white/[0.08] text-white/50 text-xs rounded-lg">Cancelar</button>
-                            <button onClick={handleDeleteProduct} disabled={deletingProduct} className="flex-1 py-2 bg-red-500/20 border border-red-500/30 text-red-400 text-xs rounded-lg disabled:opacity-50">
-                              {deletingProduct ? "…" : "Sí, eliminar"}
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-16">
-                  <span className="material-symbols-outlined text-white/10 text-4xl mb-2">touch_app</span>
-                  <p className="text-sm text-white/45">Seleccioná un equipo</p>
-                </div>
-              )}
-            </div>
-          </div>
+                                  {/* Acciones */}
+                                  <div className="flex items-center gap-2 ml-auto">
+                                    <button onClick={(e) => { e.stopPropagation(); openEditModal(p); }}
+                                      className="flex items-center gap-1.5 px-3 py-2 bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] text-white/60 text-xs font-medium rounded-xl transition-colors">
+                                      <span className="material-symbols-outlined text-[14px]">edit</span>Editar
+                                    </button>
+                                    {p.status === 'disponible' && (
+                                      <button onClick={(e) => { e.stopPropagation(); openSaleModal(p); }}
+                                        className="flex items-center gap-1.5 px-3 py-2 bg-white/[0.1] hover:bg-white/[0.15] border border-white/[0.12] text-white/80 text-xs font-semibold rounded-xl transition-colors">
+                                        <span className="material-symbols-outlined text-[14px]">sell</span>Vender
+                                      </button>
+                                    )}
+                                    {p.status !== 'vendido' && !showDeleteConfirm && (
+                                      <button onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(true); }}
+                                        className="px-3 py-2 text-xs text-red-400/50 hover:text-red-400 transition-colors">
+                                        Eliminar
+                                      </button>
+                                    )}
+                                    {p.status !== 'vendido' && showDeleteConfirm && (
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-xs text-red-400/70">¿Seguro?</span>
+                                        <button onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(false); }} className="px-2 py-1.5 text-xs bg-white/[0.05] border border-white/[0.08] text-white/50 rounded-lg">No</button>
+                                        <button onClick={(e) => { e.stopPropagation(); handleDeleteProduct(); }} disabled={deletingProduct} className="px-2 py-1.5 text-xs bg-red-500/20 border border-red-500/30 text-red-400 rounded-lg disabled:opacity-50">
+                                          {deletingProduct ? "…" : "Sí"}
+                                        </button>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              <div className="px-4 py-3 border-t border-white/[0.04]">
+                <p className="text-[11px] text-white/45">{filtered.length} de {allProducts.length} equipos</p>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
