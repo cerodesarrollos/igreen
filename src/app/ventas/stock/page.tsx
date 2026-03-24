@@ -130,7 +130,7 @@ function ProductFormModal({
               const spec = IPHONE_CATALOG[m];
               setForm({ ...form, model: m, capacity: spec ? spec.capacities[0] : "", color: spec ? spec.colors[0] : "" });
             }}
-              className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors">
+              className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors" style={{ colorScheme: 'dark' }}>
               <option value="">Seleccionar modelo...</option>
               {MODEL_NAMES.map((m) => <option key={m} value={m}>{m}</option>)}
             </select>
@@ -148,7 +148,7 @@ function ProductFormModal({
               <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50">Capacidad</label>
               {form.model && IPHONE_CATALOG[form.model] ? (
                 <select value={form.capacity} onChange={(e) => setForm({ ...form, capacity: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors">
+                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors" style={{ colorScheme: 'dark' }}>
                   {IPHONE_CATALOG[form.model].capacities.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               ) : (
@@ -161,7 +161,7 @@ function ProductFormModal({
               <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50">Color</label>
               {form.model && IPHONE_CATALOG[form.model] ? (
                 <select value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors">
+                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors" style={{ colorScheme: 'dark' }}>
                   {IPHONE_CATALOG[form.model].colors.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               ) : (
@@ -176,7 +176,7 @@ function ProductFormModal({
             <div>
               <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50">Condición *</label>
               <select value={form.condition} onChange={(e) => setForm({ ...form, condition: e.target.value as "A" | "B" | "C" })}
-                className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors">
+                className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors" style={{ colorScheme: 'dark' }}>
                 <option value="A">A — Impecable</option>
                 <option value="B">B — Detalles menores</option>
                 <option value="C">C — Uso visible</option>
@@ -218,7 +218,7 @@ function ProductFormModal({
           <div>
             <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50">Origen *</label>
             <select value={form.origin} onChange={(e) => setForm({ ...form, origin: e.target.value as "propio" | "consignacion" })}
-              className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors">
+              className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors" style={{ colorScheme: 'dark' }}>
               <option value="propio">Stock Propio</option>
               <option value="consignacion">Consignación</option>
             </select>
