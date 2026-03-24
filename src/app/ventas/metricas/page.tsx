@@ -108,12 +108,27 @@ const emptyExpenseForm = {
 };
 
 /* ───── Component ───── */
+/* ───── Instagram Insights Types ───── */
+interface IgInsights {
+  profile: { followers_count: number; media_count: number };
+  metrics: {
+    impressions: number;
+    reach: number;
+    profile_views: number;
+    website_clicks: number;
+  };
+  media: { id: string; caption?: string; media_type: string; media_url?: string; thumbnail_url?: string; timestamp: string; like_count: number; comments_count: number }[];
+  error?: { message: string } | null;
+}
+
 export default function MetricasPage() {
   const [sales, setSales] = useState<Sale[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [warranties, setWarranties] = useState<Warranty[]>([]);
   const [loading, setLoading] = useState(true);
+  const [igInsights, setIgInsights] = useState<IgInsights | null>(null);
+  const [igLoading, setIgLoading] = useState(false);
 
   const [period, setPeriod] = useState<PeriodKey>("30d");
 
@@ -138,6 +153,22 @@ export default function MetricasPage() {
   }, []);
 
   useEffect(() => { loadData(); }, [loadData]);
+
+  useEffect(() => {
+    async function loadIgInsights() {
+      setIgLoading(true);
+      try {
+        const res = await fetch("/api/instagram/insights");
+        const data = await res.json();
+        setIgInsights(data);
+      } catch (e) {
+        console.error("Error cargando insights:", e);
+      } finally {
+        setIgLoading(false);
+      }
+    }
+    loadIgInsights();
+  }, []);
 
   /* ── Filtered data ── */
   const { from, to } = getRange(period);
@@ -616,6 +647,79 @@ export default function MetricasPage() {
             </div>
           </>
         )}
+      </section>
+
+      {/* ── Instagram Insights ── */}
+      <section className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+        <div className="flex items-center gap-2 mb-5">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 flex items-center justify-center">
+            <span className="text-white text-xs font-bold">IG</span>
+          </div>
+          <h2 className="text-[10px] uppercase tracking-widest font-bold text-slate-400">Instagram Insights — Últimos 30 días</h2>
+        </div>
+
+        {igLoading ? (
+          <div className="flex items-center gap-3 py-8 justify-center text-slate-400">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-pink-400" />
+            <span className="text-sm">Cargando datos de Instagram...</span>
+          </div>
+        ) : igInsights?.error ? (
+          <div className="flex items-center gap-3 p-4 bg-red-50 rounded-xl text-red-600 text-sm">
+            <span className="material-symbols-outlined text-lg">error</span>
+            Error al cargar insights: {igInsights.error.message}
+          </div>
+        ) : igInsights ? (
+          <>
+            {/* KPI row */}
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+              {[
+                { label: "Seguidores", value: igInsights.profile.followers_count.toLocaleString("es-AR"), icon: "group", color: "text-purple-600", bg: "bg-purple-100" },
+                { label: "Impresiones", value: igInsights.metrics.impressions.toLocaleString("es-AR"), icon: "visibility", color: "text-blue-600", bg: "bg-blue-100" },
+                { label: "Alcance", value: igInsights.metrics.reach.toLocaleString("es-AR"), icon: "radar", color: "text-green-600", bg: "bg-green-100" },
+                { label: "Visitas al perfil", value: igInsights.metrics.profile_views.toLocaleString("es-AR"), icon: "person_search", color: "text-pink-600", bg: "bg-pink-100" },
+                { label: "Clicks al sitio", value: igInsights.metrics.website_clicks.toLocaleString("es-AR"), icon: "link", color: "text-orange-600", bg: "bg-orange-100" },
+              ].map((kpi) => (
+                <div key={kpi.label} className="bg-slate-50 rounded-xl p-4">
+                  <div className={`w-8 h-8 rounded-lg ${kpi.bg} flex items-center justify-center mb-2`}>
+                    <span className={`material-symbols-outlined text-sm ${kpi.color}`}>{kpi.icon}</span>
+                  </div>
+                  <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400">{kpi.label}</p>
+                  <p className="text-xl font-bold mt-0.5">{kpi.value}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Últimos posts */}
+            {igInsights.media.length > 0 && (
+              <>
+                <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-3">Últimas Publicaciones</p>
+                <div className="grid grid-cols-3 lg:grid-cols-9 gap-2">
+                  {igInsights.media.slice(0, 9).map((post) => (
+                    <div key={post.id} className="relative group aspect-square rounded-xl overflow-hidden bg-slate-100">
+                      {post.media_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={post.thumbnail_url || post.media_url}
+                          alt={post.caption?.slice(0, 30) || "post"}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <span className="material-symbols-outlined text-slate-300">image</span>
+                        </div>
+                      )}
+                      {/* Hover overlay */}
+                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1 p-1">
+                        <span className="text-white text-xs font-bold">❤️ {post.like_count}</span>
+                        <span className="text-white text-xs">💬 {post.comments_count}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </>
+        ) : null}
       </section>
     </>
   );
