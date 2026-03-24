@@ -4,174 +4,185 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const navItems = [
-  { href: "/ventas", icon: "phone_iphone", label: "Venta de iPhone", isVentas: true },
-  { href: "/dashboard", icon: "dashboard", label: "Dashboard", locked: true },
-  { href: "/servicio-tecnico", icon: "build", label: "Servicio Técnico", locked: true },
-  { href: "/stock", icon: "inventory_2", label: "Stock", locked: true },
-  { href: "/finanzas", icon: "payments", label: "Finanzas", locked: true },
-  { href: "/inbox", icon: "inbox", label: "Inbox", locked: true },
-  { href: "/facturacion", icon: "receipt_long", label: "Facturación", locked: true },
+const ventasSubItems = [
+  { href: "/ventas",           icon: "space_dashboard",  label: "Resumen"    },
+  { href: "/ventas/stock",     icon: "inventory_2",      label: "Stock"      },
+  { href: "/ventas/turnos",    icon: "calendar_month",   label: "Turnos"     },
+  { href: "/ventas/inbox",     icon: "chat_bubble",      label: "Inbox"      },
+  { href: "/ventas/trade-in",  icon: "swap_horiz",       label: "Trade-in"   },
+  { href: "/ventas/clientes",  icon: "group",            label: "Clientes"   },
+  { href: "/ventas/rendicion", icon: "receipt_long",     label: "Rendición"  },
+  { href: "/ventas/metricas",  icon: "bar_chart",        label: "Métricas"   },
+  { href: "/ventas/publicidad",icon: "campaign",         label: "Publicidad" },
 ];
 
-const ventasSubItems = [
-  { href: "/ventas", icon: "bar_chart", label: "Resumen" },
-  { href: "/ventas/stock", icon: "inventory_2", label: "Stock" },
-  { href: "/ventas/turnos", icon: "calendar_month", label: "Turnos" },
-  { href: "/ventas/inbox", icon: "chat", label: "Inbox" },
-  { href: "/ventas/trade-in", icon: "swap_horiz", label: "Trade-in" },
-  { href: "/ventas/clientes", icon: "people", label: "Clientes" },
-  { href: "/ventas/rendicion", icon: "receipt", label: "Rendición" },
-  { href: "/ventas/metricas", icon: "bar_chart", label: "Métricas" },
+const bottomItems = [
+  { href: "/settings", icon: "settings", label: "Configuración" },
 ];
+
+interface NavItemProps {
+  href: string;
+  icon: string;
+  label: string;
+  active: boolean;
+  collapsed: boolean;
+  badge?: number;
+}
+
+function NavItem({ href, icon, label, active, collapsed, badge }: NavItemProps) {
+  return (
+    <Link
+      href={href}
+      title={collapsed ? label : undefined}
+      className={`
+        relative flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-sm select-none
+        ${active
+          ? "bg-indigo-50 text-indigo-600 font-semibold"
+          : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
+        }
+      `}
+    >
+      {/* Left accent bar */}
+      {active && (
+        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-indigo-500 rounded-r-full" />
+      )}
+
+      {/* Icon */}
+      <span
+        className="material-symbols-outlined shrink-0 text-[20px]"
+        style={{ fontVariationSettings: active ? "'FILL' 1" : "'FILL' 0" }}
+      >
+        {icon}
+      </span>
+
+      {/* Label */}
+      {!collapsed && (
+        <span className="flex-1 truncate">{label}</span>
+      )}
+
+      {/* Badge */}
+      {badge && badge > 0 ? (
+        <span className="ml-auto text-[10px] font-bold bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center shrink-0">
+          {badge > 9 ? "9+" : badge}
+        </span>
+      ) : null}
+    </Link>
+  );
+}
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const [collapsed, setCollapsed] = useState(false);
+  const [ventasOpen, setVentasOpen] = useState(true);
+
   const isInVentas = pathname.startsWith("/ventas");
-  const [ventasOpen, setVentasOpen] = useState(isInVentas);
 
   useEffect(() => {
     if (isInVentas) setVentasOpen(true);
   }, [isInVentas]);
 
+  const w = collapsed ? "w-[60px]" : "w-[220px]";
+
   return (
-    <aside className="w-20 lg:w-60 shrink-0 border-r border-slate-200 bg-white/50 flex flex-col p-4 space-y-6 transition-all overflow-y-auto h-full">
+    <aside
+      className={`${w} shrink-0 border-r border-slate-100 bg-white flex flex-col transition-all duration-200 ease-in-out h-full overflow-hidden`}
+    >
       {/* Logo */}
-      <div className="flex flex-col items-center lg:items-start lg:px-2">
-        <span className="text-xl font-black tracking-tighter text-primary">
-          igreen
-        </span>
-        <span className="hidden lg:block text-[9px] uppercase tracking-[0.2em] font-bold text-cool-grey mt-0.5">
-          Servicio Técnico
-        </span>
+      <div className="flex items-center gap-2.5 px-4 py-5 mb-1">
+        <div className="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center shrink-0">
+          <span className="text-white font-black text-sm tracking-tight">iG</span>
+        </div>
+        {!collapsed && (
+          <div className="min-w-0">
+            <p className="font-black text-slate-900 text-sm tracking-tight leading-tight">iGreen</p>
+            <p className="text-[9px] uppercase tracking-widest text-slate-400 font-semibold">Gestión</p>
+          </div>
+        )}
       </div>
 
-      {/* New Repair Button */}
-      <button className="w-full bg-primary text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:brightness-95 transition-all shadow-sm">
-        <span className="material-symbols-outlined">add</span>
-        <span className="hidden lg:block">Nueva Reparación</span>
-      </button>
+      {/* Nav principal */}
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden px-2 space-y-0.5 no-scrollbar">
 
-      {/* Navigation */}
-      <nav className="flex-1 space-y-1 overflow-y-auto no-scrollbar">
-        {navItems.map((item) => {
-          // Ventas de iPhone — collapsible with sub-items
-          if (item.isVentas) {
-            return (
-              <div key="ventas-section">
-                <button
-                  onClick={() => setVentasOpen(!ventasOpen)}
-                  className={`w-full flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-lg transition-all ${
-                    isInVentas
-                      ? "text-primary font-bold bg-slate-50"
-                      : "text-cool-grey hover:bg-slate-50"
-                  }`}
-                >
-                  <span className="material-symbols-outlined">{item.icon}</span>
-                  <span className="hidden lg:block flex-1 text-left">{item.label}</span>
-                  <span className={`material-symbols-outlined text-sm hidden lg:block transition-transform ${ventasOpen ? "rotate-180" : ""}`}>
-                    expand_more
-                  </span>
-                </button>
-
-                {ventasOpen && (
-                  <div className="ml-0 lg:ml-4 mt-1 space-y-0.5">
-                    {ventasSubItems.map((sub) => {
-                      const isSubActive = pathname === sub.href;
-                      return (
-                        <Link
-                          key={sub.href}
-                          href={sub.href}
-                          className={`flex items-center justify-center lg:justify-start gap-3 px-3 py-2 rounded-lg transition-all text-sm ${
-                            isSubActive
-                              ? "text-primary font-bold bg-primary/5"
-                              : "text-cool-grey hover:bg-slate-50"
-                          }`}
-                        >
-                          <span className="material-symbols-outlined text-[20px]">{sub.icon}</span>
-                          <span className="hidden lg:block">{sub.label}</span>
-                        </Link>
-                      );
-                    })}
-
-                    {/* Publicidad */}
-                    <Link
-                      href="/ventas/publicidad"
-                      className={`flex items-center justify-center lg:justify-start gap-3 px-3 py-2 rounded-lg transition-all text-sm ${
-                        pathname === "/ventas/publicidad"
-                          ? "text-primary font-bold bg-primary/5"
-                          : "text-cool-grey hover:bg-slate-50"
-                      }`}
-                    >
-                      <span className="material-symbols-outlined text-[20px]">campaign</span>
-                      <span className="hidden lg:block">Publicidad</span>
-                    </Link>
-                  </div>
-                )}
-              </div>
-            );
-          }
-
-          // Locked items
-          if (item.locked) {
-            return (
-              <div
-                key={item.href}
-                className="flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-lg text-slate-300 cursor-not-allowed"
-                title="Próximamente"
-              >
-                <span className="material-symbols-outlined">{item.icon}</span>
-                <span className="hidden lg:block flex-1">{item.label}</span>
-                <span className="material-symbols-outlined text-[16px] hidden lg:block">lock</span>
-              </div>
-            );
-          }
-
-          const isActive = pathname === item.href;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-lg transition-all ${
-                isActive
-                  ? "text-primary font-bold bg-slate-50"
-                  : "text-cool-grey hover:bg-slate-50"
-              }`}
+        {/* Sección Ventas */}
+        <div>
+          {/* Header sección */}
+          {!collapsed && (
+            <button
+              onClick={() => setVentasOpen(!ventasOpen)}
+              className="w-full flex items-center gap-2 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors"
             >
-              <span className="material-symbols-outlined">{item.icon}</span>
-              <span className="hidden lg:block">{item.label}</span>
-            </Link>
-          );
-        })}
+              <span className="flex-1 text-left">Ventas iPhone</span>
+              <span className={`material-symbols-outlined text-[14px] transition-transform ${ventasOpen ? "" : "-rotate-90"}`}>
+                expand_more
+              </span>
+            </button>
+          )}
+
+          {(ventasOpen || collapsed) && (
+            <div className="space-y-0.5">
+              {ventasSubItems.map((item) => (
+                <NavItem
+                  key={item.href}
+                  href={item.href}
+                  icon={item.icon}
+                  label={item.label}
+                  active={pathname === item.href}
+                  collapsed={collapsed}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Divider */}
+        <div className="my-3 border-t border-slate-100" />
+
+        {/* Módulos futuros (locked) */}
+        {!collapsed && (
+          <p className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-300">
+            Próximamente
+          </p>
+        )}
+        {[
+          { icon: "build",         label: "Servicio Técnico" },
+          { icon: "payments",      label: "Finanzas"         },
+          { icon: "receipt_long",  label: "Facturación"      },
+        ].map((item) => (
+          <div
+            key={item.label}
+            title={collapsed ? item.label : undefined}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 cursor-not-allowed select-none"
+          >
+            <span className="material-symbols-outlined text-[20px] shrink-0">{item.icon}</span>
+            {!collapsed && <span className="text-sm flex-1 truncate">{item.label}</span>}
+            {!collapsed && <span className="material-symbols-outlined text-[14px]">lock</span>}
+          </div>
+        ))}
       </nav>
 
-      {/* Mobile View Button - visible on small screens */}
-      <div className="pt-4 border-t border-slate-100 md:hidden">
-        <Link
-          href="/ventas/mobile"
-          className="flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-lg bg-[#34C759]/10 text-[#34C759] font-bold transition-all hover:bg-[#34C759]/20 w-full"
-        >
-          <span className="material-symbols-outlined">smartphone</span>
-          <span className="hidden lg:block">Vista Móvil</span>
-        </Link>
-      </div>
-
       {/* Bottom */}
-      <div className="pt-4 border-t border-slate-100 space-y-1">
-        <Link
-          href="/settings"
-          className={`flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-lg transition-all ${
-            pathname === "/settings"
-              ? "text-primary font-bold bg-slate-50"
-              : "text-cool-grey hover:bg-slate-50"
-          }`}
+      <div className="px-2 pb-3 space-y-0.5 border-t border-slate-100 pt-3">
+        {bottomItems.map((item) => (
+          <NavItem
+            key={item.href}
+            href={item.href}
+            icon={item.icon}
+            label={item.label}
+            active={pathname === item.href}
+            collapsed={collapsed}
+          />
+        ))}
+
+        {/* Toggle collapse */}
+        <button
+          onClick={() => setCollapsed(!collapsed)}
+          title={collapsed ? "Expandir" : "Colapsar"}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-50 hover:text-slate-700 transition-all"
         >
-          <span className="material-symbols-outlined">settings</span>
-          <span className="hidden lg:block">Configuración</span>
-        </Link>
-        <button className="flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 text-cool-grey hover:bg-slate-50 rounded-lg transition-all w-full">
-          <span className="material-symbols-outlined">logout</span>
-          <span className="hidden lg:block">Cerrar sesión</span>
+          <span className="material-symbols-outlined text-[20px] shrink-0 transition-transform" style={{ transform: collapsed ? "scaleX(-1)" : "scaleX(1)" }}>
+            left_panel_close
+          </span>
+          {!collapsed && <span className="text-sm">Colapsar</span>}
         </button>
       </div>
     </aside>
