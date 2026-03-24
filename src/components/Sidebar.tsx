@@ -43,7 +43,7 @@ function NavItem({ href, icon, label, active, collapsed }: {
 export default function Sidebar() {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
-  const w = collapsed ? "w-[48px]" : "w-[200px]";
+  const w = collapsed ? "w-[48px]" : "w-[224px]";
 
   return (
     <aside className={`${w} shrink-0 bg-[#111114] border-r border-white/[0.06] flex flex-col transition-all duration-150 h-full overflow-hidden`}>
