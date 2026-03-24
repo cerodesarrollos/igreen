@@ -543,26 +543,8 @@ export default function VentasStockPage() {
       {/* Top row: Filters left + KPIs right */}
       <div className="flex gap-4 mb-6 items-start">
 
-        {/* LEFT — Search + Toolbar + Filters */}
+        {/* LEFT — Filters only */}
         <div className="flex flex-col gap-3 w-[260px] shrink-0">
-          {/* Search */}
-          <div className="flex items-center gap-2 bg-white/[0.04] border border-white/[0.06] rounded-xl px-3 py-2.5 hover:border-white/[0.1] transition-colors">
-            <span className="material-symbols-outlined text-white/40 text-base">search</span>
-            <input className="bg-transparent text-sm text-white/70 placeholder:text-white/35 outline-none w-full" placeholder="Modelo o IMEI…" value={search} onChange={e => setSearch(e.target.value)} />
-          </div>
-
-          {/* Buttons */}
-          <div className="flex gap-2">
-            <button onClick={() => { setAddForm(emptyProductForm); setShowAddModal(true); }}
-              className="flex items-center justify-center gap-1.5 bg-white/[0.08] hover:bg-white/[0.12] border border-white/[0.1] text-white/80 text-xs font-medium px-3 py-2 rounded-xl transition-colors flex-1">
-              <span className="material-symbols-outlined text-[14px]">add</span>Cargar
-            </button>
-            <button onClick={() => { const d = allProducts.find(p => p.status === "disponible"); if (d) openSaleModal(d); else alert("No hay equipos disponibles"); }}
-              className="flex items-center justify-center gap-1.5 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-white/55 text-xs font-medium px-3 py-2 rounded-xl transition-colors flex-1">
-              <span className="material-symbols-outlined text-[14px]">point_of_sale</span>Venta
-            </button>
-          </div>
-
           {/* Filter dropdowns */}
           <div className="rounded-[18px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d]">
             <div className="rounded-[17px] bg-[#161619] overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] divide-y divide-white/[0.04]">
@@ -607,6 +589,22 @@ export default function VentasStockPage() {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Toolbar above table */}
+      <div className="flex items-center gap-3 mb-4">
+        <div className="flex items-center gap-2 bg-white/[0.04] border border-white/[0.06] rounded-xl px-3 py-2.5 flex-1 hover:border-white/[0.1] transition-colors">
+          <span className="material-symbols-outlined text-white/40 text-base">search</span>
+          <input className="bg-transparent text-sm text-white/70 placeholder:text-white/35 outline-none w-full" placeholder="Buscar por modelo o IMEI…" value={search} onChange={e => setSearch(e.target.value)} />
+        </div>
+        <button onClick={() => { setAddForm(emptyProductForm); setShowAddModal(true); }}
+          className="flex items-center gap-2 bg-white/[0.08] hover:bg-white/[0.12] border border-white/[0.1] text-white/80 text-sm font-medium px-4 py-2.5 rounded-xl transition-colors whitespace-nowrap">
+          <span className="material-symbols-outlined text-[16px]">add</span>Cargar equipo
+        </button>
+        <button onClick={() => { const d = allProducts.find(p => p.status === "disponible"); if (d) openSaleModal(d); else alert("No hay equipos disponibles"); }}
+          className="flex items-center gap-2 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-white/55 text-sm font-medium px-4 py-2.5 rounded-xl transition-colors whitespace-nowrap">
+          <span className="material-symbols-outlined text-[16px]">point_of_sale</span>Nueva venta
+        </button>
       </div>
 
       {/* Table full width + inline expandable detail */}
