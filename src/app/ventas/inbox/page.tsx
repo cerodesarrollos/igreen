@@ -91,7 +91,7 @@ export default function InboxPage() {
               // Nueva conversación
               const newConv: Conversation = {
                 conversation_id: cid,
-                sender_id: newMsg.ig_sender_id,
+                sender_id: cid, // siempre usar conversation_id como recipient
                 sender_name: newMsg.sender_name,
                 sender_username: newMsg.sender_username,
                 last_message: newMsg.message_text || '',
@@ -157,7 +157,7 @@ export default function InboxPage() {
       if (!convMap.has(cid)) {
         convMap.set(cid, {
           conversation_id: cid,
-          sender_id: msg.ig_sender_id,
+          sender_id: cid, // siempre usar conversation_id como recipient (no el ig_sender_id que puede ser la página en outbound)
           sender_name: msg.sender_name,
           sender_username: msg.sender_username,
           last_message: msg.message_text || '',
