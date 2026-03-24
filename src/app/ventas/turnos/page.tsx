@@ -298,11 +298,11 @@ function CalendarView({
                 className={`min-h-[72px] m-0.5 p-2 rounded-xl transition-all ${
                   cell.inMonth ? "cursor-pointer hover:bg-white/[0.03]" : ""
                 } ${cell.isWeekend && cell.inMonth ? "bg-white/[0.02]" : ""
-                } ${isSelected && !isToday ? "ring-2 ring-violet-500/40 bg-violet-500/10" : ""}`}
+                } ${isSelected && !isToday ? "ring-2 ring-[#3eff8e]/40 bg-[#3eff8e]/10" : ""}`}
               >
                 <div className="flex items-center gap-1">
                   {isToday ? (
-                    <span className={`w-7 h-7 flex items-center justify-center rounded-full bg-violet-600/20 border border-violet-500/30 text-violet-300 text-xs font-bold ${isSelected ? "ring-2 ring-violet-500/30 ring-offset-1" : ""}`}>
+                    <span className={`w-7 h-7 flex items-center justify-center rounded-full bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e] text-xs font-bold ${isSelected ? "ring-2 ring-[#3eff8e]/30 ring-offset-1" : ""}`}>
                       {cell.day}
                     </span>
                   ) : (
@@ -361,8 +361,8 @@ function CalendarView({
                     {/* Cliente */}
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-violet-500/15 flex items-center justify-center flex-shrink-0">
-                          <span className="text-xs font-bold text-violet-400">
+                        <div className="w-8 h-8 rounded-full bg-[#3eff8e]/15 flex items-center justify-center flex-shrink-0">
+                          <span className="text-xs font-bold text-[#3eff8e]">
                             {a.client_name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
                           </span>
                         </div>
@@ -574,7 +574,7 @@ export default function TurnosPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-32">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-400"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#3eff8e]"></div>
         <span className="ml-3 text-sm text-white/45">Cargando turnos...</span>
       </div>
     );
@@ -598,7 +598,7 @@ export default function TurnosPage() {
                 onClick={() => setView(opt.value)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
                   view === opt.value
-                    ? "bg-violet-600/20 border border-violet-500/30 text-violet-300"
+                    ? "bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e]"
                     : "bg-white/[0.06] text-white/55 hover:bg-white/[0.08]"
                 }`}
               >
@@ -610,7 +610,7 @@ export default function TurnosPage() {
         </div>
         <button
           onClick={openAddModal}
-          className="flex items-center gap-2 px-6 py-3 bg-violet-600/20 border border-violet-500/30 text-violet-300 rounded-full font-bold text-sm "
+          className="flex items-center gap-2 px-6 py-3 bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e] rounded-full font-bold text-sm "
         >
           <span className="material-symbols-outlined text-lg">add</span> Nuevo Turno
         </button>
@@ -635,7 +635,7 @@ export default function TurnosPage() {
                 onClick={() => setStatusFilter(opt.value)}
                 className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
                   statusFilter === opt.value
-                    ? "bg-violet-600/20 border border-violet-500/30 text-violet-300"
+                    ? "bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e]"
                     : "bg-white/[0.06] text-white/55 hover:bg-white/[0.08]"
                 }`}
               >
@@ -655,7 +655,7 @@ export default function TurnosPage() {
               onClick={() => setDateFilter(opt.value)}
               className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
                 dateFilter === opt.value
-                  ? "bg-violet-600/20 border border-violet-500/30 text-violet-300"
+                  ? "bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e]"
                   : "bg-white/[0.06] text-white/55 hover:bg-white/[0.08]"
               }`}
             >
@@ -664,7 +664,7 @@ export default function TurnosPage() {
           ))}
           <div className="flex items-center gap-1 ml-1">
             <input type="date" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)}
-              className="px-2.5 py-1 bg-[#1a1a1d] rounded-full border border-white/[0.08] text-xs focus:ring-1 focus:ring-violet-500/30" />
+              className="px-2.5 py-1 bg-[#1a1a1d] rounded-full border border-white/[0.08] text-xs focus:ring-1 focus:ring-[#3eff8e]/30" />
           </div>
         </div>
       </div>
@@ -752,23 +752,23 @@ export default function TurnosPage() {
               <div>
                 <label className="text-xs font-bold text-white/45 uppercase tracking-widest">Nombre del Cliente *</label>
                 <input required value={form.client_name} onChange={(e) => setForm({ ...form, client_name: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-violet-500/30" />
+                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-[#3eff8e]/30" />
               </div>
               <div>
                 <label className="text-xs font-bold text-white/45 uppercase tracking-widest">Teléfono *</label>
                 <input required value={form.client_phone} onChange={(e) => setForm({ ...form, client_phone: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-violet-500/30"
+                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-[#3eff8e]/30"
                   placeholder="+54 11 ..." />
               </div>
               <div>
                 <label className="text-xs font-bold text-white/45 uppercase tracking-widest">Fecha y Hora *</label>
                 <input type="datetime-local" required value={form.scheduled_at} onChange={(e) => setForm({ ...form, scheduled_at: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-violet-500/30" />
+                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-[#3eff8e]/30" />
               </div>
               <div>
                 <label className="text-xs font-bold text-white/45 uppercase tracking-widest">Estado</label>
                 <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-violet-500/30">
+                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-[#3eff8e]/30">
                   <option value="pendiente">Pendiente</option>
                   <option value="confirmado">Confirmado</option>
                   {editingId && <option value="completado">Completado</option>}
@@ -779,7 +779,7 @@ export default function TurnosPage() {
               <div>
                 <label className="text-xs font-bold text-white/45 uppercase tracking-widest">Notas</label>
                 <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-violet-500/30 resize-none"
+                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-[#3eff8e]/30 resize-none"
                   rows={2} placeholder="Detalles del turno..." />
               </div>
               <div className="flex gap-3 pt-2">
@@ -788,7 +788,7 @@ export default function TurnosPage() {
                   Cancelar
                 </button>
                 <button type="submit" disabled={saving}
-                  className="flex-1 py-3 bg-violet-600/20 border border-violet-500/30 text-violet-300 rounded-full text-sm font-bold  hover:brightness-95 transition-all disabled:opacity-50">
+                  className="flex-1 py-3 bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e] rounded-full text-sm font-bold  hover:brightness-95 transition-all disabled:opacity-50">
                   {saving ? "Guardando..." : editingId ? "Guardar Cambios" : "Crear Turno"}
                 </button>
               </div>

@@ -210,7 +210,7 @@ export default function TradeInPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-32">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-400"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#3eff8e]"></div>
         <span className="ml-3 text-sm text-white/45">Cargando trade-in...</span>
       </div>
     );
@@ -242,7 +242,7 @@ export default function TradeInPage() {
       <div className="flex justify-end mb-6">
         <button
           onClick={() => { setEditingId(null); setForm(emptyForm); setShowAddModal(true); }}
-          className="flex items-center gap-2 px-6 py-3 bg-violet-600/20 border border-violet-500/30 text-violet-300 rounded-full font-bold text-sm  hover:brightness-95 transition-all"
+          className="flex items-center gap-2 px-6 py-3 bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e] rounded-full font-bold text-sm  hover:brightness-95 transition-all"
         >
           <span className="material-symbols-outlined text-lg">add</span> Registrar Trade-in
         </button>
@@ -251,7 +251,7 @@ export default function TradeInPage() {
       {/* ============ 1. KPI Cards Row ============ */}
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[
-          { label: "Trade-ins del Mes", value: String(kpiCount), icon: "swap_horiz", iconBg: "bg-violet-500/15", iconColor: "text-violet-400" },
+          { label: "Trade-ins del Mes", value: String(kpiCount), icon: "swap_horiz", iconBg: "bg-[#3eff8e]/15", iconColor: "text-[#3eff8e]" },
           { label: "Pendientes", value: String(kpiPending), icon: "pending_actions", iconBg: "bg-amber-50", iconColor: "text-amber-400" },
           { label: "Modelo Top", value: kpiTopModel, icon: "phone_iphone", iconBg: "bg-blue-50", iconColor: "text-blue-400", small: true },
           { label: "Valor Promedio", value: kpiAvgPrice > 0 ? `$${kpiAvgPrice} USD` : "—", icon: "attach_money", iconBg: "bg-green-50", iconColor: "text-emerald-400" },
@@ -272,8 +272,8 @@ export default function TradeInPage() {
       <section className="mb-6">
         <div className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 p-6">
           <div className="flex items-center gap-3 mb-5">
-            <div className="w-10 h-10 bg-violet-500/15 rounded-xl flex items-center justify-center">
-              <span className="material-symbols-outlined text-xl text-violet-400">calculate</span>
+            <div className="w-10 h-10 bg-[#3eff8e]/15 rounded-xl flex items-center justify-center">
+              <span className="material-symbols-outlined text-xl text-[#3eff8e]">calculate</span>
             </div>
             <div>
               <h3 className="text-lg font-bold">Cotizador Rápido</h3>
@@ -290,7 +290,7 @@ export default function TradeInPage() {
                 <select
                   value={quoterModel}
                   onChange={(e) => setQuoterModel(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm font-medium focus:ring-1 focus:ring-violet-500/30 focus:outline-none"
+                  className="w-full px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm font-medium focus:ring-1 focus:ring-[#3eff8e]/30 focus:outline-none"
                 >
                   {tradeInModels.map((m) => (
                     <option key={m} value={m}>{m}</option>
@@ -356,7 +356,7 @@ export default function TradeInPage() {
             <div className="flex flex-col items-center justify-center text-center py-4">
               <p className="text-[10px] uppercase tracking-widest font-bold text-white/45 mb-2">Valor Trade-in</p>
               {quoterPrice !== null ? (
-                <p className="text-5xl font-black text-violet-400 tabular-nums">${quoterPrice}<span className="text-lg font-bold text-white/45 ml-2">USD</span></p>
+                <p className="text-5xl font-black text-[#3eff8e] tabular-nums">${quoterPrice}<span className="text-lg font-bold text-white/45 ml-2">USD</span></p>
               ) : (
                 <p className="text-2xl font-bold text-white/35">Sin precio</p>
               )}
@@ -366,7 +366,7 @@ export default function TradeInPage() {
 
               <button
                 onClick={openModalFromQuoter}
-                className="mt-5 flex items-center gap-2 px-6 py-3 bg-violet-600/20 border border-violet-500/30 text-violet-300 rounded-full font-bold text-sm  hover:brightness-95 transition-all"
+                className="mt-5 flex items-center gap-2 px-6 py-3 bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e] rounded-full font-bold text-sm  hover:brightness-95 transition-all"
               >
                 <span className="material-symbols-outlined text-lg">add_circle</span>
                 Registrar Trade-in
@@ -447,8 +447,8 @@ export default function TradeInPage() {
           <div className="p-6 border-b border-white/[0.06]">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-violet-500/15 rounded-xl flex items-center justify-center">
-                  <span className="material-symbols-outlined text-xl text-violet-400">history</span>
+                <div className="w-10 h-10 bg-[#3eff8e]/15 rounded-xl flex items-center justify-center">
+                  <span className="material-symbols-outlined text-xl text-[#3eff8e]">history</span>
                 </div>
                 <h3 className="text-lg font-bold">Historial de Trade-ins</h3>
               </div>
@@ -467,7 +467,7 @@ export default function TradeInPage() {
                     onClick={() => setHistoryFilter(f.key)}
                     className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
                       historyFilter === f.key
-                        ? "bg-violet-600/20 border border-violet-500/30 text-violet-300"
+                        ? "bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e]"
                         : "bg-white/[0.06] text-white/55 hover:bg-white/[0.08]"
                     }`}
                   >
@@ -547,7 +547,7 @@ export default function TradeInPage() {
                             {/* Edit button */}
                             <button
                               onClick={() => openEditModal(t)}
-                              className="p-1.5 rounded-lg hover:bg-white/[0.06] text-white/45 hover:text-violet-400 transition-colors"
+                              className="p-1.5 rounded-lg hover:bg-white/[0.06] text-white/45 hover:text-[#3eff8e] transition-colors"
                               title="Editar"
                             >
                               <span className="material-symbols-outlined text-base">edit</span>
@@ -611,7 +611,7 @@ export default function TradeInPage() {
                               {t.status === "completado" && (
                                 <div className="md:col-span-3">
                                   <p className="text-[10px] uppercase tracking-widest font-bold text-white/45 mb-1">Producto vinculado</p>
-                                  <button className="flex items-center gap-2 text-xs text-violet-400 font-bold hover:underline">
+                                  <button className="flex items-center gap-2 text-xs text-[#3eff8e] font-bold hover:underline">
                                     <span className="material-symbols-outlined text-sm">link</span>
                                     Vincular a producto
                                   </button>
@@ -644,24 +644,24 @@ export default function TradeInPage() {
               <div>
                 <label className="text-[10px] font-bold text-white/45 uppercase tracking-widest">Cliente *</label>
                 <input required value={form.client_name} onChange={(e) => setForm({ ...form, client_name: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-violet-500/30 focus:outline-none" />
+                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-[#3eff8e]/30 focus:outline-none" />
               </div>
               <div>
                 <label className="text-[10px] font-bold text-white/45 uppercase tracking-widest">Teléfono</label>
                 <input value={form.client_phone} onChange={(e) => setForm({ ...form, client_phone: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-violet-500/30 focus:outline-none" />
+                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-[#3eff8e]/30 focus:outline-none" />
               </div>
               <div>
                 <label className="text-[10px] font-bold text-white/45 uppercase tracking-widest">Modelo Recibido *</label>
                 <input required value={form.model_received} onChange={(e) => setForm({ ...form, model_received: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-violet-500/30 focus:outline-none"
+                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-[#3eff8e]/30 focus:outline-none"
                   placeholder="iPhone 13 Pro" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-[10px] font-bold text-white/45 uppercase tracking-widest">Condición</label>
                   <select value={form.condition} onChange={(e) => setForm({ ...form, condition: e.target.value })}
-                    className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-violet-500/30 focus:outline-none">
+                    className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-[#3eff8e]/30 focus:outline-none">
                     <option value="A">A — Impecable</option>
                     <option value="B">B — Detalles</option>
                     <option value="C">C — Uso visible</option>
@@ -671,19 +671,19 @@ export default function TradeInPage() {
                   <label className="text-[10px] font-bold text-white/45 uppercase tracking-widest">Batería %</label>
                   <input type="number" min={0} max={100} value={form.battery_health}
                     onChange={(e) => setForm({ ...form, battery_health: parseInt(e.target.value) || 0 })}
-                    className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-violet-500/30 focus:outline-none" />
+                    className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-[#3eff8e]/30 focus:outline-none" />
                 </div>
               </div>
               <div>
                 <label className="text-[10px] font-bold text-white/45 uppercase tracking-widest">Precio Ofrecido (USD)</label>
                 <input type="number" step="0.01" value={form.price_offered}
                   onChange={(e) => setForm({ ...form, price_offered: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-violet-500/30 focus:outline-none" />
+                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-[#3eff8e]/30 focus:outline-none" />
               </div>
               <div>
                 <label className="text-[10px] font-bold text-white/45 uppercase tracking-widest">Notas</label>
                 <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-violet-500/30 focus:outline-none resize-none"
+                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-[#3eff8e]/30 focus:outline-none resize-none"
                   rows={2} />
               </div>
               <div className="flex gap-3 pt-2">
@@ -692,7 +692,7 @@ export default function TradeInPage() {
                   Cancelar
                 </button>
                 <button type="submit" disabled={saving}
-                  className="flex-1 py-3 bg-violet-600/20 border border-violet-500/30 text-violet-300 rounded-full text-sm font-bold  hover:brightness-95 transition-all disabled:opacity-50">
+                  className="flex-1 py-3 bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e] rounded-full text-sm font-bold  hover:brightness-95 transition-all disabled:opacity-50">
                   {saving ? "Guardando..." : editingId ? "Guardar Cambios" : "Registrar"}
                 </button>
               </div>

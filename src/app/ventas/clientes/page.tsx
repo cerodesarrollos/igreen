@@ -152,7 +152,7 @@ export default function ClientesPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-32">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-400" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#3eff8e]" />
         <span className="ml-3 text-sm text-white/45">Cargando clientes...</span>
       </div>
     );
@@ -161,7 +161,7 @@ export default function ClientesPage() {
   const kpiCards: { label: string; value: number; icon: string; bg: string; color: string }[] = [
     { label: "Total Clientes", value: kpis.total, icon: "groups", bg: "bg-blue-500/15", color: "text-blue-400" },
     { label: "Nuevos Este Mes", value: kpis.newThisMonth, icon: "person_add", bg: "bg-emerald-500/15", color: "text-emerald-600" },
-    { label: "Compradores", value: kpis.compradores, icon: "shopping_bag", bg: "bg-violet-500/15", color: "text-violet-600" },
+    { label: "Compradores", value: kpis.compradores, icon: "shopping_bag", bg: "bg-[#3eff8e]/15", color: "text-[#3eff8e]" },
     { label: "Vendedores", value: kpis.vendedores, icon: "storefront", bg: "bg-amber-500/15", color: "text-amber-400" },
   ];
 
@@ -178,7 +178,7 @@ export default function ClientesPage() {
       <div className="flex justify-end mb-6">
         <button
           onClick={openAdd}
-          className="flex items-center gap-2 px-6 py-3 bg-violet-600/20 border border-violet-500/30 text-violet-300 rounded-full font-bold text-sm  hover:brightness-95 transition-all"
+          className="flex items-center gap-2 px-6 py-3 bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e] rounded-full font-bold text-sm  hover:brightness-95 transition-all"
         >
           <span className="material-symbols-outlined text-lg">person_add</span> Nuevo Cliente
         </button>
@@ -204,7 +204,7 @@ export default function ClientesPage() {
         <div className="relative flex-1 max-w-md">
           <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-white/45">search</span>
           <input
-            className="w-full pl-12 pr-6 py-3 bg-[#1a1a1d] border border-white/[0.08] rounded-xl border border-white/[0.08] focus:ring-1 focus:ring-violet-500/30 text-sm"
+            className="w-full pl-12 pr-6 py-3 bg-[#1a1a1d] border border-white/[0.08] rounded-xl border border-white/[0.08] focus:ring-1 focus:ring-[#3eff8e]/30 text-sm"
             placeholder="Buscar por nombre, teléfono o email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -217,7 +217,7 @@ export default function ClientesPage() {
               onClick={() => setRoleFilter(chip.key)}
               className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
                 roleFilter === chip.key
-                  ? "bg-violet-600/20 border border-violet-500/30 text-violet-300"
+                  ? "bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e]"
                   : "bg-white/[0.06] text-white/55 hover:bg-white/[0.08]"
               }`}
             >
@@ -256,7 +256,7 @@ export default function ClientesPage() {
                       onClick={() => setSelectedClient(selectedClient?.id === c.id ? null : c)}
                       className={`cursor-pointer transition-colors ${
                         selectedClient?.id === c.id
-                          ? "bg-violet-500/10 border-l-2 border-l-violet-400"
+                          ? "bg-[#3eff8e]/10 border-l-2 border-l-[#3eff8e]"
                           : i % 2 === 0
                           ? "bg-white hover:bg-white/[0.03]"
                           : "bg-white/[0.02] hover:bg-white/[0.03]"
@@ -264,8 +264,8 @@ export default function ClientesPage() {
                     >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-violet-500/15 flex items-center justify-center flex-shrink-0">
-                            <span className="text-xs font-bold text-violet-400">{c.name.charAt(0).toUpperCase()}</span>
+                          <div className="w-9 h-9 rounded-full bg-[#3eff8e]/15 flex items-center justify-center flex-shrink-0">
+                            <span className="text-xs font-bold text-[#3eff8e]">{c.name.charAt(0).toUpperCase()}</span>
                           </div>
                           <div>
                             <p className="text-sm font-bold">{c.name}</p>
@@ -301,8 +301,8 @@ export default function ClientesPage() {
             <div className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-violet-500/15 flex items-center justify-center">
-                    <span className="text-lg font-bold text-violet-400">{selectedClient.name.charAt(0).toUpperCase()}</span>
+                  <div className="w-12 h-12 rounded-full bg-[#3eff8e]/15 flex items-center justify-center">
+                    <span className="text-lg font-bold text-[#3eff8e]">{selectedClient.name.charAt(0).toUpperCase()}</span>
                   </div>
                   <div>
                     <h3 className="text-base font-bold">{selectedClient.name}</h3>
@@ -391,7 +391,7 @@ export default function ClientesPage() {
                   required
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-violet-500/30"
+                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-[#3eff8e]/30"
                 />
               </div>
               <div>
@@ -399,7 +399,7 @@ export default function ClientesPage() {
                 <input
                   value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-violet-500/30"
+                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-[#3eff8e]/30"
                   placeholder="+54 11 ..."
                 />
               </div>
@@ -409,7 +409,7 @@ export default function ClientesPage() {
                   type="email"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-violet-500/30"
+                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-[#3eff8e]/30"
                 />
               </div>
               <div>
@@ -417,7 +417,7 @@ export default function ClientesPage() {
                 <input
                   value={form.instagram}
                   onChange={(e) => setForm({ ...form, instagram: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-violet-500/30"
+                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-[#3eff8e]/30"
                   placeholder="usuario (sin @)"
                 />
               </div>
@@ -431,7 +431,7 @@ export default function ClientesPage() {
                       onClick={() => setForm({ ...form, role: r })}
                       className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
                         form.role === r
-                          ? "bg-violet-600/20 border border-violet-500/30 text-violet-300"
+                          ? "bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e]"
                           : "bg-white/[0.06] text-white/55 hover:bg-white/[0.08]"
                       }`}
                     >
@@ -445,7 +445,7 @@ export default function ClientesPage() {
                 <textarea
                   value={form.notes}
                   onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-violet-500/30 resize-none"
+                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-[#3eff8e]/30 resize-none"
                   rows={2}
                 />
               </div>
@@ -460,7 +460,7 @@ export default function ClientesPage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex-1 py-3 bg-violet-600/20 border border-violet-500/30 text-violet-300 rounded-full text-sm font-bold  hover:brightness-95 transition-all disabled:opacity-50"
+                  className="flex-1 py-3 bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e] rounded-full text-sm font-bold  hover:brightness-95 transition-all disabled:opacity-50"
                 >
                   {saving ? "Guardando..." : editingClient ? "Guardar Cambios" : "Crear Cliente"}
                 </button>

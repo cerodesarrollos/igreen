@@ -343,7 +343,7 @@ export default function MetricasPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-32">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-400" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#3eff8e]" />
         <span className="ml-3 text-sm text-white/45">Cargando métricas...</span>
       </div>
     );
@@ -366,7 +366,7 @@ export default function MetricasPage() {
             onClick={() => setPeriod(p.key)}
             className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
               period === p.key
-                ? "bg-violet-600/20 border border-violet-500/30 text-violet-300"
+                ? "bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e]"
                 : "bg-white/[0.06] text-white/55 hover:bg-white/[0.08]"
             }`}
           >
@@ -381,7 +381,7 @@ export default function MetricasPage() {
           { label: "Ventas del Mes", value: `${totalSalesCount} — ${formatPrice(totalSalesAmount)}`, icon: "sell", bg: "bg-blue-500/15", color: "text-blue-400" },
           { label: "Ticket Promedio", value: formatPrice(avgTicket), icon: "confirmation_number", bg: "bg-emerald-500/15", color: "text-emerald-400" },
           { label: "Margen Promedio %", value: `${avgMargin.toFixed(1)}%`, icon: "percent", bg: "bg-orange-100", color: "text-orange-600" },
-          { label: "Garantías Activas", value: activeWarranties.toString(), icon: "verified_user", bg: "bg-violet-500/15", color: "text-violet-400" },
+          { label: "Garantías Activas", value: activeWarranties.toString(), icon: "verified_user", bg: "bg-[#3eff8e]/15", color: "text-[#3eff8e]" },
         ].map((kpi) => (
           <div key={kpi.label} className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 p-5">
             <div className="flex items-center gap-3 mb-3">
@@ -514,7 +514,7 @@ export default function MetricasPage() {
               setEditingExpenseId(null);
               setShowExpenseForm(!showExpenseForm);
             }}
-            className="flex items-center gap-1 px-3 py-1.5 bg-violet-600/20 border border-violet-500/30 text-violet-300 rounded-full text-xs font-bold hover:brightness-95 transition-all"
+            className="flex items-center gap-1 px-3 py-1.5 bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e] rounded-full text-xs font-bold hover:brightness-95 transition-all"
           >
             <span className="material-symbols-outlined text-sm">add</span>
             Agregar
@@ -582,7 +582,7 @@ export default function MetricasPage() {
               <button
                 onClick={saveExpense}
                 disabled={savingExpense || !expenseForm.amount}
-                className="px-4 py-2 bg-violet-600/20 border border-violet-500/30 text-violet-300 rounded-xl text-sm font-bold hover:brightness-95 transition-all disabled:opacity-50"
+                className="px-4 py-2 bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e] rounded-xl text-sm font-bold hover:brightness-95 transition-all disabled:opacity-50"
               >
                 {savingExpense ? "Guardando..." : editingExpenseId ? "Actualizar" : "Guardar"}
               </button>
@@ -673,7 +673,7 @@ export default function MetricasPage() {
             {/* KPI row */}
             <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
               {[
-                { label: "Seguidores", value: (igInsights.profile.followers_count ?? 0).toLocaleString("es-AR"), icon: "group", color: "text-violet-400", bg: "bg-violet-500/15" },
+                { label: "Seguidores", value: (igInsights.profile.followers_count ?? 0).toLocaleString("es-AR"), icon: "group", color: "text-[#3eff8e]", bg: "bg-[#3eff8e]/15" },
                 { label: "Alcance 30d", value: (igInsights.metrics.reach ?? 0).toLocaleString("es-AR"), icon: "radar", color: "text-emerald-400", bg: "bg-emerald-500/15" },
                 { label: "Visitas al perfil", value: (igInsights.metrics.profile_views ?? 0).toLocaleString("es-AR"), icon: "person_search", color: "text-pink-600", bg: "bg-pink-100" },
                 { label: "Clicks al sitio", value: (igInsights.metrics.website_clicks ?? 0).toLocaleString("es-AR"), icon: "link", color: "text-orange-600", bg: "bg-orange-100" },

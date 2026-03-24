@@ -103,7 +103,7 @@ export default function RendicionPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-32">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-400" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#3eff8e]" />
         <span className="ml-3 text-sm text-white/45">Cargando rendición...</span>
       </div>
     );
@@ -194,7 +194,7 @@ export default function RendicionPage() {
             onClick={() => setPeriod(p.key)}
             className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
               period === p.key
-                ? "bg-violet-600/20 border border-violet-500/30 text-violet-300"
+                ? "bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e]"
                 : "bg-white/[0.06] text-white/55 hover:bg-white/[0.08]"
             }`}
           >
@@ -223,7 +223,7 @@ export default function RendicionPage() {
       {/* ── KPI Cards ── */}
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
-          { label: "Stock Consignación", value: stockCount.toString(), icon: "inventory_2", bg: "bg-violet-500/15", color: "text-violet-400" },
+          { label: "Stock Consignación", value: stockCount.toString(), icon: "inventory_2", bg: "bg-[#3eff8e]/15", color: "text-[#3eff8e]" },
           { label: "Vendidos Mes", value: soldThisMonth.toString(), icon: "sell", bg: "bg-emerald-500/15", color: "text-emerald-400" },
           { label: "Ganancia Total", value: formatPrice(totalProfit), icon: "trending_up", bg: "bg-blue-500/15", color: "text-blue-400" },
           { label: "Pendiente Liquidar", value: formatPrice(pendingAmount), icon: "hourglass_top", bg: "bg-amber-500/15", color: "text-amber-400" },
@@ -246,8 +246,8 @@ export default function RendicionPage() {
           {ownerSummaries.map((o) => (
             <div key={o.owner} className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 p-5">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-violet-500/15 flex items-center justify-center">
-                  <span className="text-sm font-bold text-violet-400">{o.owner.charAt(0).toUpperCase()}</span>
+                <div className="w-10 h-10 rounded-xl bg-[#3eff8e]/15 flex items-center justify-center">
+                  <span className="text-sm font-bold text-[#3eff8e]">{o.owner.charAt(0).toUpperCase()}</span>
                 </div>
                 <div>
                   <h4 className="text-sm font-bold">{o.owner}</h4>
@@ -270,7 +270,7 @@ export default function RendicionPage() {
               <button
                 onClick={() => { setModalProvider(o.owner); setShowModal(true); }}
                 disabled={o.totalOwed === 0}
-                className="w-full px-4 py-2 bg-violet-600/20 border border-violet-500/30 text-violet-300 rounded-xl text-sm font-bold hover:brightness-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full px-4 py-2 bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e] rounded-xl text-sm font-bold hover:brightness-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 <span className="material-symbols-outlined text-sm">price_check</span>
                 Liquidar
@@ -387,7 +387,7 @@ export default function RendicionPage() {
               <button
                 onClick={handleSettle}
                 disabled={settling || modalItems.length === 0}
-                className="w-full px-4 py-3 bg-violet-600/20 border border-violet-500/30 text-violet-300 rounded-xl text-sm font-bold hover:brightness-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full px-4 py-3 bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e] rounded-xl text-sm font-bold hover:brightness-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {settling ? (
                   <>

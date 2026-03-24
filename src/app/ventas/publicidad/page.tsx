@@ -191,7 +191,7 @@ export default function PublicidadPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-32">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-400" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#3eff8e]" />
         <span className="ml-3 text-sm text-white/45">Cargando...</span>
       </div>
     );
@@ -205,7 +205,7 @@ export default function PublicidadPage() {
           { label: "Disponibles para publicar", value: products.length.toString(), icon: "smartphone", bg: "bg-blue-500/15", color: "text-blue-400" },
           { label: "Publicados", value: publishedPosts.length.toString(), icon: "check_circle", bg: "bg-emerald-500/15", color: "text-emerald-400" },
           { label: "Pendientes aprobación", value: pendingPosts.length.toString(), icon: "pending", bg: "bg-amber-500/15", color: "text-amber-400" },
-          { label: "Modo agente", value: supervisado ? "Supervisado" : "Automático", icon: "smart_toy", bg: "bg-violet-500/15", color: "text-violet-400" },
+          { label: "Modo agente", value: supervisado ? "Supervisado" : "Automático", icon: "smart_toy", bg: "bg-[#3eff8e]/15", color: "text-[#3eff8e]" },
         ].map((kpi) => (
           <div key={kpi.label} className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 p-5">
             <div className="flex items-center gap-3 mb-3">
@@ -291,11 +291,11 @@ export default function PublicidadPage() {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-bold">{p.model} {p.capacity}</p>
                       <p className="text-xs text-white/50">{p.color} · Cond. {p.condition}{p.battery_health ? ` · 🔋${p.battery_health}%` : ""}</p>
-                      {p.sale_price && <p className="text-sm font-bold text-violet-400 mt-0.5">${p.sale_price.toLocaleString()} USD</p>}
+                      {p.sale_price && <p className="text-sm font-bold text-[#3eff8e] mt-0.5">${p.sale_price.toLocaleString()} USD</p>}
                     </div>
                     <button
                       onClick={() => openModal(p)}
-                      className="flex items-center gap-1.5 px-4 py-2 bg-violet-600/20 border border-violet-500/30 text-violet-300 rounded-full text-xs font-bold hover:brightness-95 transition-all  flex-shrink-0"
+                      className="flex items-center gap-1.5 px-4 py-2 bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e] rounded-full text-xs font-bold hover:brightness-95 transition-all  flex-shrink-0"
                     >
                       <span className="material-symbols-outlined text-sm">campaign</span>
                       Publicar
@@ -346,7 +346,7 @@ export default function PublicidadPage() {
                                 href={`https://www.instagram.com/p/${post.ig_media_id}/`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-violet-400 hover:underline"
+                                className="text-[#3eff8e] hover:underline"
                               >
                                 {post.ig_media_id.slice(0, 12)}...
                               </a>
@@ -488,7 +488,7 @@ export default function PublicidadPage() {
                 <button
                   onClick={handlePublish}
                   disabled={publishing || !imageUrl}
-                  className="flex-1 px-4 py-2.5 bg-violet-600/20 border border-violet-500/30 text-violet-300 rounded-xl text-sm font-bold hover:brightness-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2.5 bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e] rounded-xl text-sm font-bold hover:brightness-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {publishing ? (
                     <>

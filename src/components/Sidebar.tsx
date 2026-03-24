@@ -25,7 +25,7 @@ function NavItem({ href, icon, label, active, collapsed }: {
       title={collapsed ? label : undefined}
       className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors select-none ${
         active
-          ? "bg-violet-600/15 text-violet-300 font-semibold border border-violet-500/20"
+          ? "bg-[#3eff8e]/15 text-[#3eff8e] font-semibold border border-[#3eff8e]/20"
           : "text-white/40 hover:bg-white/[0.04] hover:text-white/70"
       }`}
     >
@@ -50,7 +50,7 @@ export default function Sidebar() {
 
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-3 py-4 border-b border-white/[0.06]">
-        <div className="w-6 h-6 rounded bg-violet-500 flex items-center justify-center shrink-0" style={{boxShadow:'0 0 12px rgba(139,92,246,0.5)'}}>
+        <div className="w-6 h-6 rounded bg-[#3eff8e] flex items-center justify-center shrink-0" style={{boxShadow:'0 0 12px rgba(139,92,246,0.5)'}}>
           <span className="text-black font-black text-[10px]">iG</span>
         </div>
         {!collapsed && <span className="text-sm font-semibold text-white/90">iGreen</span>}

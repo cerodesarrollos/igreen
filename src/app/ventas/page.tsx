@@ -133,11 +133,11 @@ export default function VentasResumenPage() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {kpiCards.map((k) => (
           <Link key={k.label} href={k.link}>
-            <GlassCard className={k.accent ? "ring-1 ring-violet-500/20" : ""}>
+            <GlassCard className={k.accent ? "ring-1 ring-[#3eff8e]/20" : ""}>
               <div className="p-5">
                 <p className="text-[11px] font-normal text-white/50 uppercase tracking-[0.14em] mb-4">{k.label}</p>
-                <p className={`font-medium leading-none tracking-tight ${k.accent ? "text-[32px] text-violet-300" : "text-[26px] text-white/90"}`}>{k.value}</p>
-                {k.accent && <div className="w-6 h-px bg-violet-500/40 mt-3 mb-1" />}
+                <p className={`font-medium leading-none tracking-tight ${k.accent ? "text-[32px] text-[#3eff8e]" : "text-[26px] text-white/90"}`}>{k.value}</p>
+                {k.accent && <div className="w-6 h-px bg-[#3eff8e]/40 mt-3 mb-1" />}
                 <p className="text-[11px] text-white/45 mt-1.5">{k.sub}</p>
               </div>
             </GlassCard>

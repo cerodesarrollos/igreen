@@ -23,7 +23,11 @@ export default function CursorGlow() {
     const animate = () => {
       cx += (tx - cx) * 0.06;
       cy += (ty - cy) * 0.06;
-      el.style.background = `radial-gradient(650px circle at ${cx}px ${cy}px, rgba(124,58,237,0.18) 0%, rgba(109,40,217,0.06) 40%, transparent 65%)`;
+      // Outer diffuse glow
+      el.style.background = `
+        radial-gradient(80px circle at ${cx}px ${cy}px, rgba(62,255,142,0.35) 0%, rgba(62,255,142,0.12) 50%, transparent 70%),
+        radial-gradient(500px circle at ${cx}px ${cy}px, rgba(62,255,142,0.08) 0%, transparent 70%)
+      `;
       raf = requestAnimationFrame(animate);
     };
 
@@ -45,6 +49,7 @@ export default function CursorGlow() {
         zIndex: 0,
         pointerEvents: "none",
         borderRadius: "inherit",
+        mixBlendMode: "screen",
       }}
       aria-hidden
     />
