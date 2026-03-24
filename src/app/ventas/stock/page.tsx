@@ -906,10 +906,8 @@ export default function VentasStockPage() {
                     ))}
                     <div>
                       <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50 block mb-1">Método de Pago</label>
-                      <select value={saleForm.payment_method} onChange={e => setSaleForm({...saleForm, payment_method: e.target.value})}
-                        className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none">
-                        {["efectivo","transferencia","tarjeta_debito","tarjeta_credito","mixto"].map(o => <option key={o} value={o}>{o.replace("_"," ")}</option>)}
-                      </select>
+                      <DarkSelect value={saleForm.payment_method} onChange={v => setSaleForm({...saleForm, payment_method: v})}
+                        options={["efectivo","transferencia","tarjeta_debito","tarjeta_credito","mixto"].map(o => ({ value: o, label: o.replace(/_/g," ") }))} />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       {[["Nombre cliente", saleForm.client_name, (v: string) => setSaleForm({...saleForm, client_name: v})], ["Teléfono", saleForm.client_phone, (v: string) => setSaleForm({...saleForm, client_phone: v})]].map(([lbl, val, set]) => (
