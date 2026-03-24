@@ -671,7 +671,7 @@ export default function VentasStockPage() {
                           {/* Inline detail row */}
                           {isOpen && (
                             <tr key={`${p.id}-detail`} className="border-b border-white/[0.05] bg-white/[0.02]">
-                              <td colSpan={9} className="px-6 py-5">
+                              <td colSpan={10} className="px-4 py-5">
                                 <div className="flex gap-6 items-start">
 
                                   {/* Col 1 — Fotos 2×2 */}
