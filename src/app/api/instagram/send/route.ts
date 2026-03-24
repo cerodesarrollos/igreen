@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
 const PAGE_ACCESS_TOKEN = process.env.META_PAGE_ACCESS_TOKEN || '';
-const IG_ID = '17841408400120435'; // @igreen.recoleta
+const FB_PAGE_ID = '997636063441280'; // Facebook Page IGreen (para Messenger API)
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Enviar via Meta Graph API (server-side, sin CORS)
-    const res = await fetch(`https://graph.facebook.com/v17.0/${IG_ID}/messages`, {
+    const res = await fetch(`https://graph.facebook.com/v17.0/${FB_PAGE_ID}/messages`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     // Guardar outbound en Supabase
     await supabase.from('ig_messages').insert({
       ig_message_id: data.message_id,
-      ig_sender_id: IG_ID,
+      ig_sender_id: FB_PAGE_ID,
       message_text: text,
       message_type: 'text',
       direction: 'outbound',
