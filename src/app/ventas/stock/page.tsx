@@ -703,20 +703,20 @@ export default function VentasStockPage() {
                                     ))}
                                   </div>
 
-                                  {/* Col 3 — Precios + Acciones */}
-                                  <div className="flex flex-col gap-3 min-w-[160px] self-start pl-5 border-l border-white/[0.05]">
+                                  {/* Col 3 — Precios + Acciones side by side */}
+                                  <div className="flex gap-3 self-start pl-5 border-l border-white/[0.05]">
                                     {/* Precios */}
-                                    <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3 space-y-2">
-                                      <div className="flex justify-between items-baseline">
+                                    <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3 space-y-2 min-w-[150px]">
+                                      <div className="flex justify-between items-baseline gap-4">
                                         <span className="text-[9px] uppercase tracking-[0.12em] font-semibold text-white/35">Costo</span>
                                         <span className="text-[12px] font-medium text-white/55">{formatPrice(p.cost_price)}</span>
                                       </div>
-                                      <div className="flex justify-between items-baseline">
+                                      <div className="flex justify-between items-baseline gap-4">
                                         <span className="text-[9px] uppercase tracking-[0.12em] font-semibold text-white/35">Venta</span>
                                         <span className="text-[13px] font-semibold text-white/80">{formatPrice(p.sale_price)}</span>
                                       </div>
                                       {p.cost_price && p.sale_price && (
-                                        <div className="flex justify-between items-baseline pt-2 border-t border-white/[0.05]">
+                                        <div className="flex justify-between items-baseline gap-4 pt-2 border-t border-white/[0.05]">
                                           <span className="text-[9px] uppercase tracking-[0.12em] font-semibold text-white/35">Ganancia</span>
                                           <span className="text-[13px] font-bold text-emerald-400">{formatPrice(p.sale_price - p.cost_price)}</span>
                                         </div>
@@ -724,14 +724,14 @@ export default function VentasStockPage() {
                                     </div>
 
                                     {/* Botones */}
-                                    <div className="flex flex-col gap-1.5">
+                                    <div className="flex flex-col gap-1.5 justify-center min-w-[90px]">
                                       <button onClick={(e) => { e.stopPropagation(); openEditModal(p); }}
-                                        className="flex items-center justify-center gap-1.5 py-2 bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] text-white/55 text-xs font-medium rounded-xl transition-colors">
+                                        className="flex items-center justify-center gap-1.5 py-2 px-3 bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] text-white/55 text-xs font-medium rounded-xl transition-colors">
                                         <span className="material-symbols-outlined text-[14px]">edit</span>Editar
                                       </button>
                                       {p.status === 'disponible' && (
                                         <button onClick={(e) => { e.stopPropagation(); openSaleModal(p); }}
-                                          className="flex items-center justify-center gap-1.5 py-2 bg-white/[0.1] hover:bg-white/[0.15] border border-white/[0.12] text-white/80 text-xs font-semibold rounded-xl transition-colors">
+                                          className="flex items-center justify-center gap-1.5 py-2 px-3 bg-white/[0.1] hover:bg-white/[0.15] border border-white/[0.12] text-white/80 text-xs font-semibold rounded-xl transition-colors">
                                           <span className="material-symbols-outlined text-[14px]">sell</span>Vender
                                         </button>
                                       )}
