@@ -21,24 +21,27 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="theme-color" content="#0d0d10" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
       </head>
-      {/* body es el fondo real — CursorGlow es fixed sobre él */}
-      <body className="antialiased" style={{ background: "#0a0a0d", color: "#ededed" }}>
-        <CursorGlow />
-
-        {/* Shell: z-10 para estar sobre el glow, pero background semi-transparente */}
-        <div className="relative z-10 h-screen w-screen p-3 box-border">
+      <body className="antialiased" style={{ background: "#080809", color: "#ededed" }}>
+        <div className="h-screen w-screen p-3 box-border">
+          {/* Shell: position relative para que CursorGlow (absolute) se quede adentro */}
           <div
-            className="flex h-full overflow-hidden rounded-2xl border border-white/[0.06]"
-            style={{ background: "rgba(13,13,16,0.85)" }}
+            className="relative flex h-full overflow-hidden rounded-2xl border border-white/[0.06]"
+            style={{ background: "#0d0d10" }}
           >
-            <Sidebar />
-            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-              <Header />
-              <main className="flex-1 overflow-y-auto px-8 py-8">
-                <div className="max-w-[1400px] mx-auto">
-                  {children}
-                </div>
-              </main>
+            {/* Glow vive DENTRO del shell — se mueve con el cursor pero no se escapa */}
+            <CursorGlow />
+
+            {/* Contenido en z-10 para estar sobre el glow */}
+            <div className="relative z-10 flex w-full h-full">
+              <Sidebar />
+              <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                <Header />
+                <main className="flex-1 overflow-y-auto px-8 py-8">
+                  <div className="max-w-[1400px] mx-auto">
+                    {children}
+                  </div>
+                </main>
+              </div>
             </div>
           </div>
         </div>

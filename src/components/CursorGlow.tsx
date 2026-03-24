@@ -23,7 +23,7 @@ export default function CursorGlow() {
     const animate = () => {
       cx += (tx - cx) * 0.06;
       cy += (ty - cy) * 0.06;
-      el.style.background = `radial-gradient(700px circle at ${cx}px ${cy}px, rgba(109,40,217,0.10) 0%, rgba(109,40,217,0.03) 45%, transparent 70%)`;
+      el.style.background = `radial-gradient(650px circle at ${cx}px ${cy}px, rgba(124,58,237,0.18) 0%, rgba(109,40,217,0.06) 40%, transparent 65%)`;
       raf = requestAnimationFrame(animate);
     };
 
@@ -40,11 +40,11 @@ export default function CursorGlow() {
     <div
       ref={glowRef}
       style={{
-        position: "fixed",
+        position: "absolute",
         inset: 0,
         zIndex: 0,
         pointerEvents: "none",
-        transition: "none",
+        borderRadius: "inherit",
       }}
       aria-hidden
     />
