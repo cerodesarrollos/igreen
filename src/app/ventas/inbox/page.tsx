@@ -246,43 +246,22 @@ export default function InboxPage() {
     setSending(true);
 
     try {
-      const IG_TOKEN = process.env.NEXT_PUBLIC_IG_TOKEN;
-      const IG_ID = '26252970514364785';
-
-      if (!IG_TOKEN) {
-        alert('Token de Instagram no configurado en variables de entorno');
-        return;
-      }
-
-      // Enviar via Meta API
-      const res = await fetch(`https://graph.instagram.com/v21.0/${IG_ID}/messages`, {
+      const res = await fetch('/api/instagram/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          recipient: { id: selected.sender_id },
-          message: { text: replyText },
-          access_token: IG_TOKEN,
-        })
+          recipientId: selected.sender_id,
+          text: replyText,
+          conversationId: selected.conversation_id,
+        }),
       });
 
       const data = await res.json();
 
-      if (data.message_id) {
-        // Guardar outbound en Supabase
-        await supabase.from('ig_messages').insert({
-          ig_message_id: data.message_id,
-          ig_sender_id: IG_ID,
-          message_text: replyText,
-          direction: 'outbound',
-          status: 'replied',
-          assigned_to: 'human',
-          conversation_id: selected.conversation_id,
-        });
-
+      if (data.ok) {
         setReplyText('');
-        fetchConversations();
       } else {
-        alert('Error enviando: ' + JSON.stringify(data.error));
+        alert('Error enviando: ' + (data.error || 'desconocido'));
       }
     } catch (e: unknown) {
       const err = e as Error;
