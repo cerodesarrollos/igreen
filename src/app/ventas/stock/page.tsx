@@ -804,16 +804,10 @@ export default function VentasStockPage() {
                                         className="flex items-center justify-center gap-1.5 py-2.5 bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] text-white/55 text-xs font-medium rounded-xl transition-colors w-full">
                                         <span className="material-symbols-outlined text-[14px]">edit</span>Editar
                                       </button>
-                                      {p.status === 'disponible' && (
-                                        <button onClick={(e) => { e.stopPropagation(); openSaleModal(p); }}
-                                          className="flex items-center justify-center gap-1.5 py-2.5 bg-white/[0.1] hover:bg-white/[0.15] border border-white/[0.12] text-white/80 text-xs font-semibold rounded-xl transition-colors w-full">
-                                          <span className="material-symbols-outlined text-[14px]">sell</span>Vender
-                                        </button>
-                                      )}
                                       {p.status !== 'vendido' && !showDeleteConfirm && (
                                         <button onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(true); }}
-                                          className="py-1.5 text-[11px] text-red-400/40 hover:text-red-400/70 transition-colors text-center">
-                                          Eliminar
+                                          className="flex items-center justify-center gap-1.5 py-2.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 text-xs font-medium rounded-xl transition-colors w-full">
+                                          <span className="material-symbols-outlined text-[14px]">delete</span>Eliminar
                                         </button>
                                       )}
                                       {p.status !== 'vendido' && showDeleteConfirm && (
