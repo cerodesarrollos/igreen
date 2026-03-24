@@ -5,13 +5,22 @@ const PAGE_TOKEN = process.env.META_PAGE_ACCESS_TOKEN!;
 
 export async function GET() {
   try {
-    // Métricas del perfil (últimos 30 días)
-    const profileRes = await fetch(
-      `https://graph.facebook.com/v17.0/${IG_ID}/insights?metric=impressions,reach,profile_views,website_clicks,follower_count&period=day&since=${Math.floor(Date.now() / 1000) - 30 * 86400}&until=${Math.floor(Date.now() / 1000)}&access_token=${PAGE_TOKEN}`
-    );
-    const profileData = await profileRes.json();
+    const since = Math.floor(Date.now() / 1000) - 30 * 86400;
+    const until = Math.floor(Date.now() / 1000);
 
-    // Info básica del perfil (seguidores actuales)
+    // reach con period=day (funciona sin metric_type)
+    const reachRes = await fetch(
+      `https://graph.facebook.com/v17.0/${IG_ID}/insights?metric=reach&period=day&since=${since}&until=${until}&access_token=${PAGE_TOKEN}`
+    );
+    const reachData = await reachRes.json();
+
+    // profile_views y website_clicks requieren metric_type=total_value
+    const totalMetricsRes = await fetch(
+      `https://graph.facebook.com/v17.0/${IG_ID}/insights?metric=profile_views,website_clicks&period=days_28&metric_type=total_value&access_token=${PAGE_TOKEN}`
+    );
+    const totalMetricsData = await totalMetricsRes.json();
+
+    // Info básica del perfil
     const infoRes = await fetch(
       `https://graph.facebook.com/v17.0/${IG_ID}?fields=followers_count,media_count,biography,website&access_token=${PAGE_TOKEN}`
     );
@@ -23,12 +32,17 @@ export async function GET() {
     );
     const mediaData = await mediaRes.json();
 
-    // Procesar métricas por tipo
-    const metrics: Record<string, { total: number; data: { end_time: string; value: number }[] }> = {};
-    if (profileData.data) {
-      for (const m of profileData.data) {
-        const total = m.values.reduce((sum: number, v: { value: number }) => sum + v.value, 0);
-        metrics[m.name] = { total, data: m.values };
+    // Procesar reach total
+    const reachTotal = reachData.data
+      ? reachData.data[0]?.values?.reduce((sum: number, v: { value: number }) => sum + v.value, 0) || 0
+      : 0;
+    const reachValues = reachData.data?.[0]?.values || [];
+
+    // Procesar total_value metrics
+    const totalMetrics: Record<string, number> = {};
+    if (totalMetricsData.data) {
+      for (const m of totalMetricsData.data) {
+        totalMetrics[m.name] = m.total_value?.value || 0;
       }
     }
 
@@ -40,16 +54,13 @@ export async function GET() {
         website: infoData.website || "",
       },
       metrics: {
-        impressions: metrics.impressions?.total || 0,
-        reach: metrics.reach?.total || 0,
-        profile_views: metrics.profile_views?.total || 0,
-        website_clicks: metrics.website_clicks?.total || 0,
-        follower_count_data: metrics.follower_count?.data || [],
-        impressions_data: metrics.impressions?.data || [],
-        reach_data: metrics.reach?.data || [],
+        reach: reachTotal,
+        profile_views: totalMetrics.profile_views || 0,
+        website_clicks: totalMetrics.website_clicks || 0,
+        reach_data: reachValues,
       },
       media: mediaData.data || [],
-      error: profileData.error || infoData.error || null,
+      error: reachData.error || infoData.error || null,
     });
   } catch (err) {
     console.error("Error fetching insights:", err);
