@@ -474,12 +474,12 @@ export default function InboxPage() {
                     </div>
                   )}
                   {msg.message_type === 'share' && (
-                    <div className="flex items-center gap-1 mb-1 opacity-70">
+                    <div className="flex items-center gap-1 opacity-70">
                       <ImageIcon className="w-4 h-4" />
                       <span className="text-xs italic">Contenido compartido</span>
                     </div>
                   )}
-                  {!['image','video','audio'].includes(msg.message_type) && msg.message_text && (
+                  {!['image','video','audio','share'].includes(msg.message_type) && msg.message_text && (
                     <p className="text-sm">{msg.message_text}</p>
                   )}
                   {['image','video','audio'].includes(msg.message_type) && msg.message_text && msg.message_text !== `[${msg.message_type}]` && (
