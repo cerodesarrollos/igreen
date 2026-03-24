@@ -301,6 +301,9 @@ export default function VentasStockPage() {
   const [saleForm, setSaleForm] = useState({ payment_method: "efectivo", sale_price: "", notes: "", client_name: "", client_phone: "", client_id: "", client_dni: "", client_email: "" });
   const [savingSale, setSavingSale] = useState(false);
   const [saleConfirmation, setSaleConfirmation] = useState<{ product: Product; sale_price: number; payment_method: string } | null>(null);
+  const [clientSearch, setClientSearch] = useState("");
+  const [clientResults, setClientResults] = useState<{id:string;name:string;phone:string;dni:string;email:string}[]>([]);
+  const [showClientDropdown, setShowClientDropdown] = useState(false);
 
   // Delete product
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -384,6 +387,9 @@ export default function VentasStockPage() {
       client_id: "",
     });
     setSaleConfirmation(null);
+    setClientSearch("");
+    setClientResults([]);
+    setShowClientDropdown(false);
     setShowSaleModal(true);
   }
 
@@ -896,6 +902,48 @@ export default function VentasStockPage() {
                       <p className="text-sm font-medium text-white/70">{saleProduct.model}</p>
                       <p className="text-[11px] text-white/55 font-mono">{saleProduct.imei}</p>
                       <p className="text-[11px] text-white/55 mt-0.5">{saleProduct.capacity} · {saleProduct.color} · Grado {saleProduct.condition} · Batería {saleProduct.battery_health}%</p>
+                    </div>
+                    {/* Client search */}
+                    <div className="relative">
+                      <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50 block mb-1">
+                        {saleForm.client_id ? "✓ Cliente seleccionado" : "Buscar Cliente Existente"}
+                      </label>
+                      <div className="relative">
+                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[16px] text-white/30">search</span>
+                        <input type="text" value={clientSearch}
+                          onChange={async (e) => {
+                            const q = e.target.value;
+                            setClientSearch(q);
+                            setSaleForm(f => ({...f, client_id: ""}));
+                            if (q.length >= 2) {
+                              const { data } = await supabase.from("ig_clients").select("id,name,phone,dni,email").or(`name.ilike.%${q}%,phone.ilike.%${q}%,dni.ilike.%${q}%`).limit(6);
+                              setClientResults((data || []) as {id:string;name:string;phone:string;dni:string;email:string}[]);
+                              setShowClientDropdown(true);
+                            } else {
+                              setClientResults([]);
+                              setShowClientDropdown(false);
+                            }
+                          }}
+                          onFocus={() => clientResults.length > 0 && setShowClientDropdown(true)}
+                          placeholder="Nombre, teléfono o DNI..."
+                          className="w-full pl-9 pr-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors" />
+                      </div>
+                      {showClientDropdown && clientResults.length > 0 && (
+                        <div className="absolute z-50 mt-1 w-full rounded-xl bg-[#1e1e22] border border-white/[0.1] shadow-xl overflow-hidden">
+                          {clientResults.map(c => (
+                            <button key={c.id} type="button"
+                              onClick={() => {
+                                setSaleForm(f => ({...f, client_id: c.id, client_name: c.name || "", client_phone: c.phone || "", client_dni: c.dni || "", client_email: c.email || ""}));
+                                setClientSearch(c.name || "");
+                                setShowClientDropdown(false);
+                              }}
+                              className="w-full px-4 py-2.5 text-left hover:bg-white/[0.06] transition-colors border-b border-white/[0.04] last:border-0">
+                              <p className="text-sm text-white/75">{c.name}</p>
+                              <p className="text-[11px] text-white/40">{[c.phone, c.dni].filter(Boolean).join(" · ")}</p>
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
                     <div>
                       <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50 block mb-1">Precio (USD)</label>
