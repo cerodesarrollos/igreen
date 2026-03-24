@@ -597,9 +597,26 @@ export default function VentasStockPage() {
           <span className="material-symbols-outlined text-white/40 text-base">search</span>
           <input className="bg-transparent text-sm text-white/70 placeholder:text-white/35 outline-none w-full" placeholder="Buscar por modelo o IMEI…" value={search} onChange={e => setSearch(e.target.value)} />
         </div>
+        <button onClick={() => {
+          const headers = ['Modelo','IMEI','Capacidad','Color','Condición','Batería','Estado','Origen','Costo','Precio','Defectos'];
+          const rows = filtered.map(p => [
+            p.model, p.imei, p.capacity, p.color, p.condition,
+            p.battery_health + '%', p.status,
+            p.origin || '', p.cost_price, p.sale_price, p.defects || ''
+          ]);
+          const csv = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+          const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a'); a.href = url;
+          a.download = `igreen-stock-${new Date().toISOString().slice(0,10)}.csv`;
+          a.click(); URL.revokeObjectURL(url);
+        }}
+          className="flex items-center gap-2 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-white/55 text-sm font-medium px-4 py-2.5 rounded-xl transition-colors whitespace-nowrap">
+          <span className="material-symbols-outlined text-[16px]">download</span>Exportar
+        </button>
         <button onClick={() => { setAddForm(emptyProductForm); setShowAddModal(true); }}
           className="flex items-center gap-2 bg-white/[0.08] hover:bg-white/[0.12] border border-white/[0.1] text-white/80 text-sm font-medium px-4 py-2.5 rounded-xl transition-colors whitespace-nowrap">
-          <span className="material-symbols-outlined text-[16px]">add</span>Cargar equipo
+          <span className="material-symbols-outlined text-[16px]">add</span>Cargar
         </button>
         <button onClick={() => { const d = allProducts.find(p => p.status === "disponible"); if (d) openSaleModal(d); else alert("No hay equipos disponibles"); }}
           className="flex items-center gap-2 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-white/55 text-sm font-medium px-4 py-2.5 rounded-xl transition-colors whitespace-nowrap">
