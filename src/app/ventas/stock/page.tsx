@@ -672,7 +672,7 @@ export default function VentasStockPage() {
                           {isOpen && (
                             <tr key={`${p.id}-detail`} className="border-b border-white/[0.05] bg-white/[0.02]">
                               <td colSpan={9} className="px-6 py-5">
-                                <div className="grid grid-cols-[auto_1fr_auto] gap-6 items-start">
+                                <div className="flex gap-6 items-start">
 
                                   {/* Col 1 — Fotos 2×2 */}
                                   <div className="grid grid-cols-2 gap-2 self-start pr-5 border-r border-white/[0.05]">
@@ -707,9 +707,9 @@ export default function VentasStockPage() {
                                   </div>
 
                                   {/* Col 3 — Precios + Acciones side by side */}
-                                  <div className="flex gap-3 self-start pl-5 border-l border-white/[0.05]">
+                                  <div className="flex gap-3 self-start pl-5 border-l border-white/[0.05] flex-1">
                                     {/* Precios */}
-                                    <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3 space-y-2 min-w-[150px]">
+                                    <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4 space-y-2.5 flex-1">
                                       <div className="flex justify-between items-baseline gap-4">
                                         <span className="text-[9px] uppercase tracking-[0.12em] font-semibold text-white/35">Costo</span>
                                         <span className="text-[12px] font-medium text-white/55">{formatPrice(p.cost_price)}</span>
@@ -727,14 +727,14 @@ export default function VentasStockPage() {
                                     </div>
 
                                     {/* Botones */}
-                                    <div className="flex flex-col gap-1.5 justify-center min-w-[90px]">
+                                    <div className="flex flex-col gap-1.5 justify-center w-[110px]">
                                       <button onClick={(e) => { e.stopPropagation(); openEditModal(p); }}
-                                        className="flex items-center justify-center gap-1.5 py-2 px-3 bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] text-white/55 text-xs font-medium rounded-xl transition-colors">
+                                        className="flex items-center justify-center gap-1.5 py-2.5 bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] text-white/55 text-xs font-medium rounded-xl transition-colors w-full">
                                         <span className="material-symbols-outlined text-[14px]">edit</span>Editar
                                       </button>
                                       {p.status === 'disponible' && (
                                         <button onClick={(e) => { e.stopPropagation(); openSaleModal(p); }}
-                                          className="flex items-center justify-center gap-1.5 py-2 px-3 bg-white/[0.1] hover:bg-white/[0.15] border border-white/[0.12] text-white/80 text-xs font-semibold rounded-xl transition-colors">
+                                          className="flex items-center justify-center gap-1.5 py-2.5 bg-white/[0.1] hover:bg-white/[0.15] border border-white/[0.12] text-white/80 text-xs font-semibold rounded-xl transition-colors w-full">
                                           <span className="material-symbols-outlined text-[14px]">sell</span>Vender
                                         </button>
                                       )}
