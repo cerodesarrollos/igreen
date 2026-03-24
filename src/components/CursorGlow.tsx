@@ -21,10 +21,9 @@ export default function CursorGlow() {
     };
 
     const animate = () => {
-      // Smooth follow with lerp
-      cx += (tx - cx) * 0.08;
-      cy += (ty - cy) * 0.08;
-      el.style.background = `radial-gradient(600px circle at ${cx}px ${cy}px, rgba(109,40,217,0.12) 0%, rgba(109,40,217,0.04) 40%, transparent 70%)`;
+      cx += (tx - cx) * 0.06;
+      cy += (ty - cy) * 0.06;
+      el.style.background = `radial-gradient(700px circle at ${cx}px ${cy}px, rgba(109,40,217,0.10) 0%, rgba(109,40,217,0.03) 45%, transparent 70%)`;
       raf = requestAnimationFrame(animate);
     };
 
@@ -40,7 +39,13 @@ export default function CursorGlow() {
   return (
     <div
       ref={glowRef}
-      className="pointer-events-none fixed inset-0 z-0 transition-none"
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 0,
+        pointerEvents: "none",
+        transition: "none",
+      }}
       aria-hidden
     />
   );

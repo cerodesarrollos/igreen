@@ -106,7 +106,7 @@ export default function VentasResumenPage() {
     { label: "Ventas",         value: kpis.ventasMes.toString(),   sub: "este mes",   link: "/ventas/metricas", accent: false },
     { label: "Ganancia",       value: fmt(kpis.gananciaMes),       sub: "este mes",   link: "/ventas/metricas", accent: true  },
     { label: "Ticket prom.",   value: fmt(kpis.ticketProm),        sub: "por venta",  link: "/ventas/metricas", accent: false },
-    { label: "Valor stock",    value: fmt(kpis.valorStock),        sub: "disponible", link: "/ventas/stock",    accent: true  },
+    { label: "Valor stock",    value: fmt(kpis.valorStock),        sub: "disponible", link: "/ventas/stock",    accent: false },
   ];
 
   return (
@@ -122,8 +122,7 @@ export default function VentasResumenPage() {
         </div>
         <Link
           href="/ventas/stock"
-          className="flex items-center gap-2 bg-violet-600/20 hover:bg-violet-600/30 border border-violet-500/30 text-violet-300 text-sm font-medium px-4 py-2 rounded-xl transition-colors"
-          style={{boxShadow:'0 0 16px rgba(139,92,246,0.15)'}}
+          className="flex items-center gap-2 bg-white/[0.06] hover:bg-white/[0.10] border border-white/[0.08] text-white/70 text-sm font-medium px-4 py-2 rounded-xl transition-colors"
         >
           <span className="material-symbols-outlined text-[15px]">add</span>
           Agregar equipo
@@ -134,10 +133,11 @@ export default function VentasResumenPage() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {kpiCards.map((k) => (
           <Link key={k.label} href={k.link}>
-            <GlassCard className={k.accent ? "shadow-[0_0_24px_rgba(139,92,246,0.12)]" : ""}>
+            <GlassCard className={k.accent ? "ring-1 ring-violet-500/20" : ""}>
               <div className="p-5">
                 <p className="text-[11px] font-normal text-white/50 uppercase tracking-[0.14em] mb-4">{k.label}</p>
-                <p className={`text-[28px] font-medium leading-none tracking-tight ${k.accent ? "text-violet-300" : "text-white/90"}`}>{k.value}</p>
+                <p className={`font-medium leading-none tracking-tight ${k.accent ? "text-[32px] text-violet-300" : "text-[26px] text-white/90"}`}>{k.value}</p>
+                {k.accent && <div className="w-6 h-px bg-violet-500/40 mt-3 mb-1" />}
                 <p className="text-[11px] text-white/45 mt-1.5">{k.sub}</p>
               </div>
             </GlassCard>

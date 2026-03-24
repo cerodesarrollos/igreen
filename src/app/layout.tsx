@@ -21,13 +21,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="theme-color" content="#0d0d10" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
       </head>
-      <body className="antialiased" style={{ background: "#080809", color: "#ededed" }}>
-        {/* Cursor glow — fixed overlay, pointer-events-none */}
+      {/* body es el fondo real — CursorGlow es fixed sobre él */}
+      <body className="antialiased" style={{ background: "#0a0a0d", color: "#ededed" }}>
         <CursorGlow />
 
-        {/* Outer shell — adds padding + rounded corners to the whole app */}
+        {/* Shell: z-10 para estar sobre el glow, pero background semi-transparente */}
         <div className="relative z-10 h-screen w-screen p-3 box-border">
-          <div className="flex h-full overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0d0d10]/95 backdrop-blur-sm">
+          <div
+            className="flex h-full overflow-hidden rounded-2xl border border-white/[0.06]"
+            style={{ background: "rgba(13,13,16,0.85)" }}
+          >
             <Sidebar />
             <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
               <Header />
