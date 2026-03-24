@@ -298,7 +298,7 @@ export default function VentasStockPage() {
   // Sale modal
   const [showSaleModal, setShowSaleModal] = useState(false);
   const [saleProduct, setSaleProduct] = useState<Product | null>(null);
-  const [saleForm, setSaleForm] = useState({ payment_method: "efectivo", sale_price: "", notes: "", client_name: "", client_phone: "", client_id: "", client_dni: "", client_email: "" });
+  const [saleForm, setSaleForm] = useState({ payment_method: "efectivo", sale_price: "", notes: "", client_name: "", client_phone: "", client_id: "", client_dni: "", client_email: "", extended_warranty: false });
   const [savingSale, setSavingSale] = useState(false);
   const [saleConfirmation, setSaleConfirmation] = useState<{ product: Product; sale_price: number; payment_method: string } | null>(null);
   const [clientSearch, setClientSearch] = useState("");
@@ -387,6 +387,7 @@ export default function VentasStockPage() {
       client_id: "",
       client_dni: "",
       client_email: "",
+      extended_warranty: false,
     });
     setSaleConfirmation(null);
     setClientSearch("");
@@ -985,6 +986,26 @@ export default function VentasStockPage() {
                           className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors" />
                       </div>
                     </div>
+                    {/* Garantía */}
+                    <div className="border-t border-white/[0.06] pt-4 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/50">Garantía</p>
+                          <p className="text-[11px] text-white/35 mt-0.5">90 días incluida</p>
+                        </div>
+                        <span className="text-[11px] text-[#3eff8e] font-medium">✓ Incluida</span>
+                      </div>
+                      <button type="button"
+                        onClick={() => setSaleForm(f => ({...f, extended_warranty: !f.extended_warranty}))}
+                        className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border transition-all ${saleForm.extended_warranty ? "bg-[#3eff8e]/10 border-[#3eff8e]/30 text-[#3eff8e]" : "bg-white/[0.03] border-white/[0.08] text-white/50 hover:border-white/[0.15]"}`}>
+                        <div className="text-left">
+                          <p className="text-sm font-medium">Garantía Extendida</p>
+                          <p className="text-[11px] opacity-60 mt-0.5">Precio desde Configuración</p>
+                        </div>
+                        <span className="material-symbols-outlined text-[20px]">{saleForm.extended_warranty ? "check_circle" : "add_circle"}</span>
+                      </button>
+                    </div>
+
                     <div className="flex gap-3 pt-1">
                       <button type="button" onClick={() => setShowSaleModal(false)} className="flex-1 py-2.5 bg-white/[0.04] border border-white/[0.08] text-white/50 text-sm rounded-xl">Cancelar</button>
                       <button type="submit" disabled={savingSale} className="flex-1 py-2.5 bg-white/[0.1] border border-white/[0.12] text-white/80 text-sm font-semibold rounded-xl disabled:opacity-50">
