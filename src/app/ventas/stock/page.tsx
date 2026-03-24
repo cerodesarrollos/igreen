@@ -322,6 +322,7 @@ export default function VentasStockPage() {
   /* KPI calculations */
   const now = new Date();
   const todayStr = now.toISOString().slice(0, 10);
+  const monthStr = now.toISOString().slice(0, 7);
 
   const disponibles = allProducts.filter((p) => p.status === "disponible").length;
   const reservados = allProducts.filter((p) => p.status === "reservado").length;
@@ -329,6 +330,13 @@ export default function VentasStockPage() {
   const valorStock = allProducts
     .filter((p) => p.status === "disponible")
     .reduce((sum, p) => sum + (p.sale_price || 0), 0);
+
+  const gananciaMes = sales
+    .filter((s) => (s.sold_at || s.created_at).startsWith(monthStr))
+    .reduce((sum, s) => sum + ((s.sale_price || 0) - (s.cost_price || 0)), 0);
+
+  const OBJETIVO_MES = 2000;
+  const objetivoPct = Math.min(100, Math.round((gananciaMes / OBJETIVO_MES) * 100));
 
   /* Filters */
   const filtered = allProducts.filter((p) => {
@@ -571,13 +579,14 @@ export default function VentasStockPage() {
           </div>
         </div>
 
-        {/* RIGHT — 4 KPI cards 2×2 */}
-        <div className="grid grid-cols-2 gap-3 flex-1">
+        {/* RIGHT — 6 KPI cards 3×2 */}
+        <div className="grid grid-cols-3 gap-3 flex-1">
           {[
-            { label: "Disponibles", value: disponibles.toString(),  sub: "en stock",   icon: "inventory_2"  },
-            { label: "Reservados",  value: reservados.toString(),   sub: "con seña",   icon: "bookmark"     },
-            { label: "Vendidos hoy",value: vendidosHoy.toString(),  sub: "hoy",        icon: "sell"         },
-            { label: "Valor stock", value: formatPrice(valorStock), sub: "disponible", icon: "payments"     },
+            { label: "Disponibles", value: disponibles.toString(),  sub: "en stock",   icon: "inventory_2" },
+            { label: "Reservados",  value: reservados.toString(),   sub: "con seña",   icon: "bookmark"    },
+            { label: "Vendidos hoy",value: vendidosHoy.toString(),  sub: "hoy",        icon: "sell"        },
+            { label: "Valor stock", value: formatPrice(valorStock), sub: "disponible", icon: "payments"    },
+            { label: "Ganancia mes", value: formatPrice(gananciaMes), sub: monthStr.slice(5) === new Date().toISOString().slice(5,7) ? "este mes" : monthStr, icon: "trending_up" },
           ].map((k) => (
             <div key={k.label} className="rounded-[18px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d]">
               <div className="rounded-[17px] bg-[#161619] px-5 py-4 h-full shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] flex flex-col justify-between">
@@ -586,12 +595,32 @@ export default function VentasStockPage() {
                   <span className="material-symbols-outlined text-[16px] text-white/15">{k.icon}</span>
                 </div>
                 <div className="mt-3">
-                  <p className="text-[30px] font-medium text-white/90 leading-none tracking-tight">{k.value}</p>
+                  <p className="text-[28px] font-medium text-white/90 leading-none tracking-tight">{k.value}</p>
                   <p className="text-[11px] text-white/35 mt-1">{k.sub}</p>
                 </div>
               </div>
             </div>
           ))}
+
+          {/* Objetivo mensual */}
+          <div className="rounded-[18px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d]">
+            <div className="rounded-[17px] bg-[#161619] px-5 py-4 h-full shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/35">Objetivo mes</p>
+                <span className="material-symbols-outlined text-[16px] text-white/15">flag</span>
+              </div>
+              <div className="mt-3">
+                <div className="flex items-baseline justify-between mb-2">
+                  <p className="text-[28px] font-medium text-white/90 leading-none tracking-tight">{objetivoPct}%</p>
+                  <p className="text-[11px] text-white/35">{formatPrice(OBJETIVO_MES)}</p>
+                </div>
+                <div className="w-full h-1.5 rounded-full bg-white/[0.06]">
+                  <div className="h-full rounded-full bg-[#3eff8e] transition-all duration-500" style={{ width: `${objetivoPct}%` }} />
+                </div>
+                <p className="text-[10px] text-white/30 mt-1.5">{formatPrice(gananciaMes)} ganados</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
