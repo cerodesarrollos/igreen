@@ -145,6 +145,17 @@ export default function Sidebar() {
         })}
       </nav>
 
+      {/* Mobile View Button - visible on small screens */}
+      <div className="pt-4 border-t border-slate-100 md:hidden">
+        <Link
+          href="/ventas/mobile"
+          className="flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-lg bg-[#34C759]/10 text-[#34C759] font-bold transition-all hover:bg-[#34C759]/20 w-full"
+        >
+          <span className="material-symbols-outlined">smartphone</span>
+          <span className="hidden lg:block">Vista Móvil</span>
+        </Link>
+      </div>
+
       {/* Bottom */}
       <div className="pt-4 border-t border-slate-100 space-y-1">
         <Link
