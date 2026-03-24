@@ -672,9 +672,9 @@ export default function VentasStockPage() {
                                 <div className="grid grid-cols-[auto_1fr_auto] gap-6 items-start">
 
                                   {/* Col 1 — Fotos 2×2 */}
-                                  <div className="grid grid-cols-2 gap-1.5 w-[120px] self-start pr-5 border-r border-white/[0.05]">
+                                  <div className="grid grid-cols-2 gap-2 self-start pr-5 border-r border-white/[0.05]">
                                     {[...(p.photos || []), null, null, null, null].slice(0, 4).map((photo, n) => (
-                                      <div key={n} className="w-[55px] h-[55px] rounded-lg bg-white/[0.04] border border-white/[0.07] flex items-center justify-center overflow-hidden">
+                                      <div key={n} className="w-[56px] h-[56px] rounded-lg bg-white/[0.04] border border-white/[0.07] flex items-center justify-center overflow-hidden">
                                         {photo
                                           // eslint-disable-next-line @next/next/no-img-element
                                           ? <img src={photo} alt="" className="w-full h-full object-cover" />
@@ -697,8 +697,8 @@ export default function VentasStockPage() {
                                       ...(p.defects ? [{ l: "Defectos", v: p.defects }] : []),
                                     ].map(i => (
                                       <div key={i.l} className="flex flex-col gap-1">
-                                        <span className="text-[9px] uppercase tracking-[0.12em] font-semibold text-white/35">{i.l}</span>
-                                        <span className={`text-[12px] font-medium text-white/65 leading-tight ${(i as {mono?: boolean}).mono ? 'font-mono' : ''}`}>{i.v}</span>
+                                        <span className="text-[9px] uppercase tracking-[0.12em] font-semibold text-white/40">{i.l}</span>
+                                        <span className={`text-[13px] font-medium text-white/80 leading-tight ${(i as {mono?: boolean}).mono ? 'font-mono' : ''}`}>{i.v}</span>
                                       </div>
                                     ))}
                                   </div>
