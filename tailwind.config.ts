@@ -15,15 +15,22 @@ const config: Config = {
         "cool-grey": "#94a3b8",
         "on-surface": "#1a1c1d",
         "on-surface-variant": "#3d4a3c",
+        // Dark theme
+        dark: {
+          bg:      "#0f1117",
+          surface: "#1a1d27",
+          card:    "#1e2130",
+          border:  "#2a2d3e",
+          muted:   "#3a3d52",
+        },
+        violet: {
+          400: "#a78bfa",
+          500: "#8b5cf6",
+          600: "#7c3aed",
+        },
       },
       fontFamily: {
         sans: ["Inter", "sans-serif"],
-      },
-      borderRadius: {
-        DEFAULT: "0.75rem",
-        lg: "1.5rem",
-        xl: "2rem",
-        full: "9999px",
       },
     },
   },

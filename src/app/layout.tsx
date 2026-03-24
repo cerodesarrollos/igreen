@@ -4,8 +4,8 @@ import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 
 export const metadata: Metadata = {
-  title: "iGreen — Servicio Técnico Apple",
-  description: "Sistema de gestión para servicio técnico Apple",
+  title: "iGreen — Gestión",
+  description: "Sistema de gestión para iGreen",
 };
 
 export default function RootLayout({
@@ -25,19 +25,16 @@ export default function RootLayout({
           rel="stylesheet"
         />
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#34C759" />
+        <meta name="theme-color" content="#0f1117" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
-      <body className="antialiased text-on-surface bg-slate-200/60">
-        {/* App Window */}
-        <div className="m-3 rounded-2xl overflow-hidden bg-white border border-slate-200/80 shadow-xl h-[calc(100vh-1.5rem)] flex">
-          {/* Sidebar inside window */}
+      <body className="antialiased bg-[#0f1117] text-slate-200">
+        <div className="flex h-screen overflow-hidden">
           <Sidebar />
-          {/* Right side: Header + Content */}
-          <div className="flex-1 flex flex-col min-h-0">
+          <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
             <Header />
-            <main className="flex-1 p-6 overflow-y-auto">
+            <main className="flex-1 overflow-y-auto p-6">
               <div className="max-w-[1600px] mx-auto">
                 {children}
               </div>

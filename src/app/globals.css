@@ -4,18 +4,18 @@
 
 body {
   font-family: 'Inter', sans-serif;
-  background-color: #F5F5F7;
-  color: #1a1c1d;
+  background-color: #0f1117;
+  color: #e2e8f0;
 }
 
 .material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
   vertical-align: middle;
 }
 
-::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #eeeef0; border-radius: 10px; }
+::-webkit-scrollbar-thumb { background: #2a2d3e; border-radius: 10px; }
 
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
