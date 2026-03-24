@@ -158,7 +158,7 @@ export default function InboxPage() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-48px)] -mx-8 -my-8 overflow-hidden">
+    <div className="flex h-full -mx-8 -my-8 overflow-hidden">
 
       {/* Conversation list */}
       <div className="w-72 shrink-0 flex flex-col border-r border-white/[0.06] bg-[#0e0e10]">
