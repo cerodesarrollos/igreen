@@ -608,8 +608,8 @@ export default function VentasStockPage() {
                 <table className="w-full text-left">
                   <thead>
                     <tr className="border-b border-white/[0.05]">
-                      {["","Equipo","IMEI","Cap.","Cond.","Bat.","Precio","Estado",""].map((h,i) => (
-                        <th key={i} className="px-4 py-3.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/45">{h}</th>
+                      {["","Equipo","IMEI","Capacidad","Condición","Batería","Defectos","Precio","Estado",""].map((h,i) => (
+                        <th key={i} className={`px-4 py-3.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/45 ${i > 0 && i < 9 ? 'border-l border-white/[0.04]' : ''}`}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -625,28 +625,31 @@ export default function VentasStockPage() {
                             <td className="pl-4 pr-1 py-3.5 w-6">
                               <span className={`material-symbols-outlined text-[16px] text-white/30 transition-transform duration-200 ${isOpen ? 'rotate-90' : ''}`}>chevron_right</span>
                             </td>
-                            <td className="px-4 py-3.5">
+                            <td className="px-4 py-3.5 border-l border-white/[0.04]">
                               <div>
                                 <p className="text-sm font-medium text-white/80">{p.model}</p>
                                 <p className="text-[10px] text-white/55">{p.color}{p.is_new ? ' · NUEVO' : ''}</p>
                               </div>
                             </td>
-                            <td className="px-4 py-3.5 font-mono text-[11px] text-white/55">••••{p.imei.slice(-4)}</td>
-                            <td className="px-4 py-3.5 text-sm text-white/60">{p.capacity}</td>
-                            <td className="px-4 py-3.5">
+                            <td className="px-4 py-3.5 font-mono text-[11px] text-white/55 border-l border-white/[0.04]">••••{p.imei.slice(-4)}</td>
+                            <td className="px-4 py-3.5 text-sm text-white/60 border-l border-white/[0.04]">{p.capacity}</td>
+                            <td className="px-4 py-3.5 border-l border-white/[0.04]">
                               <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-md ${
                                 p.condition === 'A' ? 'bg-emerald-500/10 text-emerald-400' :
                                 p.condition === 'B' ? 'bg-amber-500/10 text-amber-400' :
                                 'bg-red-500/10 text-red-400'
-                              }`}>{p.condition}</span>
+                              }`}>Grado {p.condition}</span>
                             </td>
-                            <td className="px-4 py-3.5">
+                            <td className="px-4 py-3.5 border-l border-white/[0.04]">
                               <span className={`text-sm font-medium ${p.battery_health > 85 ? 'text-emerald-400' : p.battery_health >= 70 ? 'text-amber-400' : 'text-red-400'}`}>
                                 {p.battery_health}%
                               </span>
                             </td>
-                            <td className="px-4 py-3.5 text-sm font-medium text-white/70">{formatPrice(p.sale_price)}</td>
-                            <td className="px-4 py-3.5">
+                            <td className="px-4 py-3.5 text-[12px] text-white/40 max-w-[140px] border-l border-white/[0.04]">
+                              <span className="line-clamp-1">{p.defects || '—'}</span>
+                            </td>
+                            <td className="px-4 py-3.5 text-sm font-medium text-white/70 border-l border-white/[0.04]">{formatPrice(p.sale_price)}</td>
+                            <td className="px-4 py-3.5 border-l border-white/[0.04]">
                               <span className={`text-[11px] font-medium px-2 py-0.5 rounded-md ${
                                 p.status === 'disponible' ? 'bg-white/[0.07] text-white/50' :
                                 p.status === 'reservado'  ? 'bg-amber-500/10 text-amber-400' :
@@ -655,7 +658,7 @@ export default function VentasStockPage() {
                                 {p.status === 'disponible' ? 'Disponible' : p.status === 'reservado' ? 'Reservado' : 'Vendido'}
                               </span>
                             </td>
-                            <td className="px-4 py-3.5 text-right">
+                            <td className="px-4 py-3.5 text-right border-l border-white/[0.04]">
                               {p.status === 'disponible' && (
                                 <button onClick={ev => { ev.stopPropagation(); openSaleModal(p); }}
                                   className="text-white/40 hover:text-white/70 transition-colors">
