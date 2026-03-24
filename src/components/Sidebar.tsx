@@ -23,10 +23,10 @@ function NavItem({ href, icon, label, active, collapsed }: {
     <Link
       href={href}
       title={collapsed ? label : undefined}
-      className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm transition-colors select-none ${
+      className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors select-none ${
         active
-          ? "bg-white/10 text-white font-medium"
-          : "text-[#888] hover:text-[#ededed] hover:bg-white/5"
+          ? "bg-white/[0.06] text-white/90 font-semibold"
+          : "text-white/40 hover:bg-white/[0.04] hover:text-white/70"
       }`}
     >
       <span
@@ -46,20 +46,20 @@ export default function Sidebar() {
   const w = collapsed ? "w-[48px]" : "w-[200px]";
 
   return (
-    <aside className={`${w} shrink-0 border-r border-[#1a1a1a] bg-[#0a0a0a] flex flex-col transition-all duration-150 h-full overflow-hidden`}>
+    <aside className={`${w} shrink-0 bg-[#111114] border-r border-white/[0.06] flex flex-col transition-all duration-150 h-full overflow-hidden`}>
 
       {/* Logo */}
-      <div className="flex items-center gap-2.5 px-3 py-4 border-b border-[#1a1a1a]">
+      <div className="flex items-center gap-2.5 px-3 py-4 border-b border-white/[0.06]">
         <div className="w-6 h-6 rounded bg-white flex items-center justify-center shrink-0">
           <span className="text-black font-black text-[10px]">iG</span>
         </div>
-        {!collapsed && <span className="text-sm font-semibold text-white">iGreen</span>}
+        {!collapsed && <span className="text-sm font-semibold text-white/90">iGreen</span>}
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-3 space-y-px no-scrollbar">
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden p-2 space-y-px no-scrollbar">
         {!collapsed && (
-          <p className="px-2.5 pb-1.5 text-[10px] font-medium uppercase tracking-widest text-[#444]">
+          <p className="px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/20">
             Ventas
           </p>
         )}
@@ -74,9 +74,9 @@ export default function Sidebar() {
           />
         ))}
 
-        <div className="pt-3">
+        <div className="pt-2">
           {!collapsed && (
-            <p className="px-2.5 pb-1.5 text-[10px] font-medium uppercase tracking-widest text-[#333]">
+            <p className="px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/10">
               Próximamente
             </p>
           )}
@@ -88,22 +88,26 @@ export default function Sidebar() {
             <div
               key={item.label}
               title={collapsed ? item.label : undefined}
-              className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[#333] cursor-not-allowed select-none"
+              className="flex items-center gap-3 px-3 py-2 rounded-lg text-white/15 cursor-not-allowed select-none"
             >
               <span className="material-symbols-outlined text-[16px] shrink-0">{item.icon}</span>
-              {!collapsed && <span className="text-sm truncate flex-1">{item.label}</span>}
-              {!collapsed && <span className="material-symbols-outlined text-[12px] text-[#333]">lock</span>}
+              {!collapsed && (
+                <>
+                  <span className="text-sm truncate flex-1">{item.label}</span>
+                  <span className="material-symbols-outlined text-[12px]">lock</span>
+                </>
+              )}
             </div>
           ))}
         </div>
       </nav>
 
       {/* Bottom */}
-      <div className="px-2 py-2 border-t border-[#1a1a1a] space-y-px">
+      <div className="p-2 border-t border-white/[0.06] space-y-px">
         <NavItem href="/settings" icon="settings" label="Ajustes" active={pathname === "/settings"} collapsed={collapsed} />
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[#555] hover:text-[#ededed] hover:bg-white/5 transition-colors text-sm"
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-white/25 hover:text-white/50 hover:bg-white/[0.04] transition-colors text-sm"
         >
           <span
             className="material-symbols-outlined text-[16px] shrink-0 transition-transform"

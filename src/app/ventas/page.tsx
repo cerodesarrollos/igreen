@@ -7,8 +7,6 @@ import { supabase } from "@/lib/supabase";
 interface ActivityLog {
   id: string;
   action: string;
-  entity_type: string;
-  entity_id: string;
   details: string | null;
   created_at: string;
 }
@@ -24,6 +22,17 @@ interface Appointment {
 function fmt(n: number | null) {
   if (n === null || n === undefined) return "—";
   return `$${n.toLocaleString("es-AR")}`;
+}
+
+// Card estilo Litigium: borde gradiente + inner shadow
+function GlassCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div className={`rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] transition-all hover:from-[#333338] hover:to-[#222225] ${className}`}>
+      <div className="rounded-[19px] bg-[#161619] h-full shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_8px_32px_-8px_rgba(0,0,0,0.6)]">
+        {children}
+      </div>
+    </div>
+  );
 }
 
 export default function VentasResumenPage() {
@@ -80,148 +89,148 @@ export default function VentasResumenPage() {
 
   if (loading) return (
     <div className="flex items-center justify-center py-40">
-      <div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin opacity-40" />
+      <div className="w-4 h-4 rounded-full border border-white/20 border-t-white/60 animate-spin" />
     </div>
   );
 
   const stLabel = (s: string) => ({
-    pendiente:  { label: "Pendiente",  color: "#555" },
-    confirmado: { label: "Confirmado", color: "#888" },
-    completado: { label: "Completado", color: "#aaa" },
-    "no-show":  { label: "No asistió", color: "#666" },
-  }[s] || { label: s, color: "#555" });
+    pendiente:  { label: "Pendiente",  color: "rgba(255,255,255,0.3)" },
+    confirmado: { label: "Confirmado", color: "rgba(255,255,255,0.6)" },
+    completado: { label: "Completado", color: "rgba(134,239,172,0.8)" },
+    "no-show":  { label: "No asistió", color: "rgba(252,165,165,0.7)" },
+  }[s] || { label: s, color: "rgba(255,255,255,0.3)" });
+
+  const kpiCards = [
+    { label: "Disponibles",    value: kpis.disponibles.toString(), sub: "en stock",   link: "/ventas/stock"    },
+    { label: "Reservados",     value: kpis.reservados.toString(),  sub: "con seña",   link: "/ventas/turnos"   },
+    { label: "Ventas",         value: kpis.ventasMes.toString(),   sub: "este mes",   link: "/ventas/metricas" },
+    { label: "Ganancia",       value: fmt(kpis.gananciaMes),       sub: "este mes",   link: "/ventas/metricas" },
+    { label: "Ticket prom.",   value: fmt(kpis.ticketProm),        sub: "por venta",  link: "/ventas/metricas" },
+    { label: "Valor stock",    value: fmt(kpis.valorStock),        sub: "disponible", link: "/ventas/stock"    },
+  ];
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
 
-      {/* Page header */}
-      <div className="flex items-end justify-between border-b border-[#1a1a1a] pb-6">
+      {/* Header */}
+      <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Resumen</h1>
-          <p className="text-sm text-[#555] mt-1">
-            {new Date().toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+          <p className="text-[11px] text-white/25 uppercase tracking-[0.14em] mb-2">
+            {new Date().toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" })}
           </p>
+          <h1 className="text-[28px] font-medium text-white/90 leading-none tracking-tight">Resumen</h1>
         </div>
         <Link
           href="/ventas/stock"
-          className="flex items-center gap-2 bg-white text-black text-sm font-semibold px-4 py-2 rounded-md hover:bg-[#ededed] transition-colors"
+          className="flex items-center gap-2 bg-white/[0.08] hover:bg-white/[0.12] border border-white/[0.1] text-white/80 text-sm font-medium px-4 py-2 rounded-xl transition-colors"
         >
-          <span className="material-symbols-outlined text-[16px]">add</span>
+          <span className="material-symbols-outlined text-[15px]">add</span>
           Agregar equipo
         </Link>
       </div>
 
-      {/* KPIs */}
-      <div>
-        <p className="text-xs font-medium uppercase tracking-widest text-[#444] mb-4">Métricas del mes</p>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {[
-            { label: "Disponibles",    value: kpis.disponibles.toString(), sub: "en stock",      link: "/ventas/stock"    },
-            { label: "Reservados",     value: kpis.reservados.toString(),  sub: "con seña",      link: "/ventas/turnos"   },
-            { label: "Ventas",         value: kpis.ventasMes.toString(),   sub: "este mes",      link: "/ventas/metricas" },
-            { label: "Ganancia",       value: fmt(kpis.gananciaMes),       sub: "este mes",      link: "/ventas/metricas" },
-            { label: "Ticket prom.",   value: fmt(kpis.ticketProm),        sub: "por venta",     link: "/ventas/metricas" },
-            { label: "Valor stock",    value: fmt(kpis.valorStock),        sub: "disponible",    link: "/ventas/stock"    },
-          ].map((k) => (
-            <Link
-              key={k.label}
-              href={k.link}
-              className="group border border-[#1a1a1a] rounded-lg p-4 hover:border-[#333] transition-colors"
-            >
-              <p className="text-2xl font-bold text-white tabular-nums tracking-tight group-hover:text-white">{k.value}</p>
-              <p className="text-xs font-medium text-[#ededed] mt-1">{k.label}</p>
-              <p className="text-[10px] text-[#444] mt-0.5">{k.sub}</p>
-            </Link>
-          ))}
-        </div>
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        {kpiCards.map((k) => (
+          <Link key={k.label} href={k.link}>
+            <GlassCard>
+              <div className="p-5">
+                <p className="text-[11px] font-normal text-white/25 uppercase tracking-[0.14em] mb-4">{k.label}</p>
+                <p className="text-[28px] font-medium text-white/90 leading-none tracking-tight">{k.value}</p>
+                <p className="text-[11px] text-white/20 mt-1.5">{k.sub}</p>
+              </div>
+            </GlassCard>
+          </Link>
+        ))}
       </div>
 
-      {/* Alertas + Turnos */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      {/* Turnos + Alertas */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
-        {/* Alertas */}
-        <div>
-          <p className="text-xs font-medium uppercase tracking-widest text-[#444] mb-4">Estado del sistema</p>
-          <div className="border border-[#1a1a1a] rounded-lg divide-y divide-[#1a1a1a]">
-            {alerts.map((alert, i) => {
-              const dot = { warning: "#f59e0b", danger: "#ef4444", ok: "#22c55e" }[alert.type];
-              return (
-                <Link
-                  key={i}
-                  href={alert.link}
-                  className="flex items-center gap-3 px-4 py-3 hover:bg-[#111] transition-colors first:rounded-t-lg last:rounded-b-lg"
-                >
-                  <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: dot }} />
-                  <p className="text-sm text-[#aaa] flex-1">{alert.text}</p>
-                  {alert.link !== "#" && (
-                    <span className="material-symbols-outlined text-[#333] text-base">chevron_right</span>
-                  )}
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Turnos de hoy */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-xs font-medium uppercase tracking-widest text-[#444]">Turnos de hoy</p>
-            <Link href="/ventas/turnos" className="text-xs text-[#555] hover:text-[#888] transition-colors">
-              Ver todos →
-            </Link>
-          </div>
-          <div className="border border-[#1a1a1a] rounded-lg">
+        {/* Turnos */}
+        <GlassCard>
+          <div className="p-5">
+            <div className="flex items-center justify-between mb-5">
+              <p className="text-[11px] font-normal text-white/25 uppercase tracking-[0.14em]">Turnos de hoy</p>
+              <Link href="/ventas/turnos" className="text-[11px] text-white/25 hover:text-white/50 transition-colors">
+                Ver todos →
+              </Link>
+            </div>
             {turnosHoy.length === 0 ? (
-              <div className="flex items-center justify-center py-12">
-                <p className="text-sm text-[#333]">Sin turnos para hoy</p>
+              <div className="flex items-center justify-center py-10">
+                <p className="text-sm text-white/20">Sin turnos para hoy</p>
               </div>
             ) : (
-              <div className="divide-y divide-[#1a1a1a]">
+              <div className="space-y-1">
                 {turnosHoy.map((t) => {
                   const st = stLabel(t.status);
                   return (
-                    <div key={t.id} className="flex items-center gap-4 px-4 py-3 hover:bg-[#111] transition-colors first:rounded-t-lg last:rounded-b-lg">
-                      <p className="text-sm font-semibold text-white tabular-nums w-12 shrink-0">
+                    <div key={t.id} className="flex items-center gap-4 py-2.5 border-b border-white/[0.04] last:border-0">
+                      <p className="text-sm font-semibold text-white/70 tabular-nums w-12 shrink-0">
                         {new Date(t.scheduled_at).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })}
                       </p>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-[#ededed] truncate">{t.client_name}</p>
-                        {t.notes && <p className="text-[10px] text-[#444] truncate">{t.notes}</p>}
-                      </div>
-                      <p className="text-xs shrink-0" style={{ color: st.color }}>{st.label}</p>
+                      <p className="text-sm text-white/60 flex-1 truncate">{t.client_name}</p>
+                      <p className="text-[11px] shrink-0" style={{ color: st.color }}>{st.label}</p>
                     </div>
                   );
                 })}
               </div>
             )}
           </div>
-        </div>
+        </GlassCard>
+
+        {/* Alertas */}
+        <GlassCard>
+          <div className="p-5">
+            <p className="text-[11px] font-normal text-white/25 uppercase tracking-[0.14em] mb-5">Estado del sistema</p>
+            <div className="space-y-1">
+              {alerts.map((alert, i) => {
+                const dot = { warning: "#f59e0b", danger: "#ef4444", ok: "#22c55e" }[alert.type];
+                return (
+                  <Link
+                    key={i}
+                    href={alert.link}
+                    className="flex items-center gap-3 py-2.5 border-b border-white/[0.04] last:border-0 hover:opacity-80 transition-opacity"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: dot }} />
+                    <p className="text-sm text-white/50 flex-1">{alert.text}</p>
+                    {alert.link !== "#" && (
+                      <span className="material-symbols-outlined text-white/15 text-base">chevron_right</span>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </GlassCard>
       </div>
 
       {/* Actividad */}
-      <div>
-        <p className="text-xs font-medium uppercase tracking-widest text-[#444] mb-4">Actividad reciente</p>
-        {activity.length === 0 ? (
-          <div className="border border-[#1a1a1a] rounded-lg flex items-center justify-center py-12">
-            <p className="text-sm text-[#333]">Sin actividad registrada</p>
-          </div>
-        ) : (
-          <div className="border border-[#1a1a1a] rounded-lg divide-y divide-[#1a1a1a]">
-            {activity.map((a) => (
-              <div key={a.id} className="flex items-start gap-4 px-4 py-3 hover:bg-[#111] transition-colors first:rounded-t-lg last:rounded-b-lg">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#333] mt-1.5 shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-[#aaa] truncate">{a.action}</p>
-                  {a.details && <p className="text-xs text-[#444] truncate mt-0.5">{a.details}</p>}
+      <GlassCard>
+        <div className="p-5">
+          <p className="text-[11px] font-normal text-white/25 uppercase tracking-[0.14em] mb-5">Actividad reciente</p>
+          {activity.length === 0 ? (
+            <div className="flex items-center justify-center py-10">
+              <p className="text-sm text-white/20">Sin actividad registrada</p>
+            </div>
+          ) : (
+            <div className="space-y-0">
+              {activity.map((a) => (
+                <div key={a.id} className="flex items-start gap-4 py-2.5 border-b border-white/[0.04] last:border-0">
+                  <div className="w-1 h-1 rounded-full bg-white/20 mt-2 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-white/55 truncate">{a.action}</p>
+                    {a.details && <p className="text-[11px] text-white/20 truncate mt-0.5">{a.details}</p>}
+                  </div>
+                  <p className="text-[11px] text-white/20 shrink-0 tabular-nums whitespace-nowrap">
+                    {new Date(a.created_at).toLocaleString("es-AR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+                  </p>
                 </div>
-                <p className="text-[11px] text-[#333] shrink-0 tabular-nums whitespace-nowrap">
-                  {new Date(a.created_at).toLocaleString("es-AR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </GlassCard>
 
     </div>
   );
