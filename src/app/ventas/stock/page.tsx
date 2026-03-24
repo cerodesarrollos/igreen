@@ -86,10 +86,7 @@ const emptyProductForm = {
 };
 
 /* ───── helpers ───── */
-function conditionLabel(c: "A" | "B" | "C") {
-  const map = { A: "Impecable", B: "Detalles menores", C: "Uso visible" };
-  return map[c];
-}
+
 
 function formatPrice(n: number | null) {
   if (n === null || n === undefined) return "—";
