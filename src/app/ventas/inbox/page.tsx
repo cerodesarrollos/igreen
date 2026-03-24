@@ -171,6 +171,10 @@ export default function InboxPage() {
       const conv = convMap.get(cid)!;
       conv.messages.push(msg);
 
+      // Actualizar nombre/username si aún no tenemos y este mensaje los tiene
+      if (!conv.sender_name && msg.sender_name) conv.sender_name = msg.sender_name;
+      if (!conv.sender_username && msg.sender_username) conv.sender_username = msg.sender_username;
+
       if (msg.status === 'unread' && msg.direction === 'inbound') {
         conv.unread_count++;
       }
