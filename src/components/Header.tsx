@@ -20,8 +20,9 @@ export default function Header() {
   const page = pageTitles[pathname] || "";
 
   return (
-    <header className="h-12 shrink-0 border-b border-white/[0.06] bg-[#111114] flex items-center justify-between px-6">
-      <p className="text-sm font-semibold text-white/80">{page}</p>
+    // Same height as sidebar logo block (py-4 = 16px top+bottom + text ≈ 56px total)
+    <header className="shrink-0 border-b border-white/[0.06] bg-[#111114] flex items-center justify-between px-3 py-4">
+      <p className="text-sm font-semibold text-white/80 pl-0.5">{page}</p>
 
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2 bg-white/[0.04] border border-white/[0.06] rounded-lg px-3 py-1.5 w-48 lg:w-64 hover:border-white/[0.1] transition-colors">
