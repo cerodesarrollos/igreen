@@ -743,84 +743,86 @@ export default function VentasStockPage() {
                           {/* Inline detail row */}
                           {isOpen && (
                             <tr key={`${p.id}-detail`} className="border-b border-white/[0.05] bg-white/[0.02]">
-                              <td colSpan={11} className="px-4 py-5">
-                                <div className="flex gap-6 items-start">
 
-                                  {/* Col 1 — Fotos 2×3 */}
-                                  <div className="grid grid-cols-3 gap-2 self-start pr-5 border-r border-white/[0.05]">
-                                    {[...(p.photos || []), null, null, null, null, null, null].slice(0, 6).map((photo, n) => (
-                                      <div key={n} className="w-[52px] h-[52px] rounded-lg bg-white/[0.04] border border-white/[0.07] flex items-center justify-center overflow-hidden">
-                                        {photo
-                                          // eslint-disable-next-line @next/next/no-img-element
-                                          ? <img src={photo} alt="" className="w-full h-full object-cover" />
-                                          : <span className="material-symbols-outlined text-white/10 text-base">image</span>
-                                        }
-                                      </div>
-                                    ))}
-                                  </div>
-
-                                  {/* Col 2 — Datos del equipo */}
-                                  <div className="grid grid-cols-4 gap-x-6 gap-y-3 content-start">
-                                    {[
-                                      { l: "IMEI",      v: p.imei, mono: true },
-                                      { l: "Capacidad", v: p.capacity },
-                                      { l: "Color",     v: p.color },
-                                      { l: "Condición", v: `Grado ${p.condition}` },
-                                      { l: "Batería",   v: `${p.battery_health}%` },
-                                      { l: "Tipo",      v: p.is_new ? 'Nuevo' : 'Usado' },
-                                      { l: "Origen",    v: p.origin === 'consignacion' ? `Consig. — ${p.consignment_owner || '?'}` : 'Stock propio' },
-                                      ...(p.defects ? [{ l: "Defectos", v: p.defects }] : []),
-                                    ].map(i => (
-                                      <div key={i.l} className="flex flex-col gap-1">
-                                        <span className="text-[9px] uppercase tracking-[0.12em] font-semibold text-white/40">{i.l}</span>
-                                        <span className={`text-[13px] font-medium text-white/80 leading-tight ${(i as {mono?: boolean}).mono ? 'font-mono' : ''}`}>{i.v}</span>
-                                      </div>
-                                    ))}
-                                  </div>
-
-                                  {/* Col 3 — Precios + Acciones side by side */}
-                                  <div className="flex gap-3 self-start pl-5 border-l border-white/[0.05] flex-1">
-                                    {/* Precios */}
-                                    <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4 space-y-2.5 w-[140px] shrink-0">
-                                      <div className="flex justify-between items-baseline gap-4">
-                                        <span className="text-[9px] uppercase tracking-[0.12em] font-semibold text-white/35">Costo</span>
-                                        <span className="text-[12px] font-medium text-white/55">{formatPrice(p.cost_price)}</span>
-                                      </div>
-                                      <div className="flex justify-between items-baseline gap-4">
-                                        <span className="text-[9px] uppercase tracking-[0.12em] font-semibold text-white/35">Venta</span>
-                                        <span className="text-[13px] font-semibold text-white/80">{formatPrice(p.sale_price)}</span>
-                                      </div>
-                                      {p.cost_price && p.sale_price && (
-                                        <div className="flex justify-between items-baseline gap-4 pt-2 border-t border-white/[0.05]">
-                                          <span className="text-[9px] uppercase tracking-[0.12em] font-semibold text-white/35">Ganancia</span>
-                                          <span className="text-[13px] font-bold text-emerald-400">{formatPrice(p.sale_price - p.cost_price)}</span>
-                                        </div>
-                                      )}
+                              {/* Zona 1 — Fotos (alinea con chevron + Equipo) */}
+                              <td colSpan={2} className="px-4 py-4 align-top border-r border-white/[0.05]">
+                                <div className="grid grid-cols-3 gap-2">
+                                  {[...(p.photos || []), null, null, null, null, null, null].slice(0, 6).map((photo, n) => (
+                                    <div key={n} className="w-[52px] h-[52px] rounded-lg bg-white/[0.04] border border-white/[0.07] flex items-center justify-center overflow-hidden">
+                                      {photo
+                                        // eslint-disable-next-line @next/next/no-img-element
+                                        ? <img src={photo} alt="" className="w-full h-full object-cover" />
+                                        : <span className="material-symbols-outlined text-white/10 text-base">image</span>
+                                      }
                                     </div>
+                                  ))}
+                                </div>
+                              </td>
 
-                                    {/* Botones */}
-                                    <div className="flex flex-col gap-1.5 justify-center w-[110px]">
-                                      <button onClick={(e) => { e.stopPropagation(); openEditModal(p); }}
-                                        className="flex items-center justify-center gap-1.5 py-2.5 bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] text-white/55 text-xs font-medium rounded-xl transition-colors w-full">
-                                        <span className="material-symbols-outlined text-[14px]">edit</span>Editar
+                              {/* Zona 2 — Datos (alinea con IMEI → Días) */}
+                              <td colSpan={6} className="px-5 py-4 align-top border-r border-white/[0.05]">
+                                <div className="grid grid-cols-4 gap-x-8 gap-y-4">
+                                  {[
+                                    { l: "IMEI",      v: p.imei, mono: true },
+                                    { l: "Capacidad", v: p.capacity },
+                                    { l: "Color",     v: p.color },
+                                    { l: "Condición", v: `Grado ${p.condition}` },
+                                    { l: "Batería",   v: `${p.battery_health}%` },
+                                    { l: "Tipo",      v: p.is_new ? 'Nuevo' : 'Usado' },
+                                    { l: "Origen",    v: p.origin === 'consignacion' ? `Consig. — ${p.consignment_owner || '?'}` : 'Stock propio' },
+                                    ...(p.defects ? [{ l: "Defectos", v: p.defects }] : [{ l: "Defectos", v: '—' }]),
+                                  ].map(i => (
+                                    <div key={i.l} className="flex flex-col gap-1">
+                                      <span className="text-[9px] uppercase tracking-[0.12em] font-semibold text-white/40">{i.l}</span>
+                                      <span className={`text-[13px] font-medium text-white/80 leading-tight ${(i as {mono?: boolean}).mono ? 'font-mono text-[11px]' : ''}`}>{i.v}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </td>
+
+                              {/* Zona 3 — Precios + Acciones (alinea con Precio → Estado → acción) */}
+                              <td colSpan={3} className="px-5 py-4 align-top">
+                                <div className="flex gap-3 h-full">
+                                  {/* Precios */}
+                                  <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4 space-y-2.5 flex-1">
+                                    <div className="flex justify-between items-baseline">
+                                      <span className="text-[9px] uppercase tracking-[0.12em] font-semibold text-white/35">Costo</span>
+                                      <span className="text-[12px] font-medium text-white/55">{formatPrice(p.cost_price)}</span>
+                                    </div>
+                                    <div className="flex justify-between items-baseline">
+                                      <span className="text-[9px] uppercase tracking-[0.12em] font-semibold text-white/35">Venta</span>
+                                      <span className="text-[13px] font-semibold text-white/80">{formatPrice(p.sale_price)}</span>
+                                    </div>
+                                    {p.cost_price && p.sale_price && (
+                                      <div className="flex justify-between items-baseline pt-2 border-t border-white/[0.05]">
+                                        <span className="text-[9px] uppercase tracking-[0.12em] font-semibold text-white/35">Ganancia</span>
+                                        <span className="text-[13px] font-bold text-emerald-400">{formatPrice(p.sale_price - p.cost_price)}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                  {/* Botones */}
+                                  <div className="flex flex-col gap-1.5 justify-center w-[100px]">
+                                    <button onClick={(e) => { e.stopPropagation(); openEditModal(p); }}
+                                      className="flex items-center justify-center gap-1.5 py-2.5 bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] text-white/55 text-xs font-medium rounded-xl transition-colors w-full">
+                                      <span className="material-symbols-outlined text-[14px]">edit</span>Editar
+                                    </button>
+                                    {p.status !== 'vendido' && !showDeleteConfirm && (
+                                      <button onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(true); }}
+                                        className="flex items-center justify-center gap-1.5 py-2.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 text-xs font-medium rounded-xl transition-colors w-full">
+                                        <span className="material-symbols-outlined text-[14px]">delete</span>Eliminar
                                       </button>
-                                      {p.status !== 'vendido' && !showDeleteConfirm && (
-                                        <button onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(true); }}
-                                          className="flex items-center justify-center gap-1.5 py-2.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 text-xs font-medium rounded-xl transition-colors w-full">
-                                          <span className="material-symbols-outlined text-[14px]">delete</span>Eliminar
+                                    )}
+                                    {p.status !== 'vendido' && showDeleteConfirm && (
+                                      <div className="flex gap-1.5">
+                                        <button onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(false); }} className="flex-1 py-1.5 bg-white/[0.05] border border-white/[0.08] text-white/45 text-xs rounded-lg">No</button>
+                                        <button onClick={(e) => { e.stopPropagation(); handleDeleteProduct(); }} disabled={deletingProduct} className="flex-1 py-1.5 bg-red-500/20 border border-red-500/30 text-red-400 text-xs rounded-lg disabled:opacity-50">
+                                          {deletingProduct ? "…" : "Sí"}
                                         </button>
-                                      )}
-                                      {p.status !== 'vendido' && showDeleteConfirm && (
-                                        <div className="flex gap-1.5">
-                                          <button onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(false); }} className="flex-1 py-1.5 bg-white/[0.05] border border-white/[0.08] text-white/45 text-xs rounded-lg">No</button>
-                                          <button onClick={(e) => { e.stopPropagation(); handleDeleteProduct(); }} disabled={deletingProduct} className="flex-1 py-1.5 bg-red-500/20 border border-red-500/30 text-red-400 text-xs rounded-lg disabled:opacity-50">
-                                            {deletingProduct ? "…" : "Sí"}
-                                          </button>
-                                        </div>
-                                      )}
-                                    </div>
+                                      </div>
+                                    )}
                                   </div>
-
+                                </div>
+                              </td>
                                 </div>
                               </td>
                             </tr>
