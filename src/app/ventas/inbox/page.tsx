@@ -458,18 +458,33 @@ export default function InboxPage() {
                     ? 'bg-green-500 text-white rounded-2xl rounded-br-sm'
                     : 'bg-white text-slate-800 rounded-2xl rounded-bl-sm shadow-sm border border-slate-100'
                 } px-4 py-2.5`}>
-                  {msg.message_type !== 'text' && msg.media_url && (
+                  {msg.message_type === 'image' && msg.media_url && (
                     <div className="mb-1">
-                      <img src={msg.media_url} alt="media" className="rounded-lg max-w-full" />
+                      <img src={msg.media_url} alt="imagen" className="rounded-lg max-w-full max-h-60 object-cover" />
                     </div>
                   )}
-                  {msg.message_type !== 'text' && !msg.media_url && (
+                  {msg.message_type === 'video' && msg.media_url && (
+                    <div className="mb-1">
+                      <video src={msg.media_url} controls className="rounded-lg max-w-full max-h-60" />
+                    </div>
+                  )}
+                  {msg.message_type === 'audio' && msg.media_url && (
+                    <div className="mb-1">
+                      <audio src={msg.media_url} controls className="w-full" />
+                    </div>
+                  )}
+                  {msg.message_type === 'share' && (
                     <div className="flex items-center gap-1 mb-1 opacity-70">
                       <ImageIcon className="w-4 h-4" />
-                      <span className="text-xs">[{msg.message_type}]</span>
+                      <span className="text-xs italic">Contenido compartido</span>
                     </div>
                   )}
-                  <p className="text-sm">{msg.message_text}</p>
+                  {!['image','video','audio'].includes(msg.message_type) && msg.message_text && (
+                    <p className="text-sm">{msg.message_text}</p>
+                  )}
+                  {['image','video','audio'].includes(msg.message_type) && msg.message_text && msg.message_text !== `[${msg.message_type}]` && (
+                    <p className="text-sm mt-1">{msg.message_text}</p>
+                  )}
                   <p className={`text-xs mt-1 ${msg.direction === 'outbound' ? 'text-green-100' : 'text-slate-400'}`}>
                     {formatTime(msg.created_at)}
                   </p>
