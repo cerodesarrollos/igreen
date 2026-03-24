@@ -671,8 +671,8 @@ export default function VentasStockPage() {
                 <table className="w-full text-left">
                   <thead>
                     <tr className="border-b border-white/[0.05]">
-                      {["","Equipo","IMEI","Capacidad","Condición","Batería","Defectos","Precio","Estado",""].map((h,i) => (
-                        <th key={i} className={`px-4 py-3.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/45 ${i > 0 && i < 9 ? 'border-l border-white/[0.04]' : ''}`}>{h}</th>
+                      {["","Equipo","IMEI","Capacidad","Condición","Batería","Defectos","Días","Precio","Estado",""].map((h,i) => (
+                        <th key={i} className={`px-4 py-3.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/45 ${i > 0 && i < 10 ? 'border-l border-white/[0.04]' : ''}`}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -711,6 +711,15 @@ export default function VentasStockPage() {
                             <td className="px-4 py-3.5 text-[12px] text-white/40 max-w-[140px] border-l border-white/[0.04]">
                               <span className="line-clamp-1">{p.defects || '—'}</span>
                             </td>
+                            <td className="px-4 py-3.5 border-l border-white/[0.04]">
+                              {(() => {
+                                if (p.status === 'vendido') return <span className="text-sm text-white/25">—</span>;
+                                const ref = p.loaded_at || p.created_at;
+                                const days = Math.floor((Date.now() - new Date(ref).getTime()) / 86400000);
+                                const color = days <= 7 ? 'text-emerald-400' : days <= 20 ? 'text-amber-400' : 'text-red-400';
+                                return <span className={`text-sm font-medium ${color}`}>{days}d</span>;
+                              })()}
+                            </td>
                             <td className="px-4 py-3.5 text-sm font-medium text-white/70 border-l border-white/[0.04]">{formatPrice(p.sale_price)}</td>
                             <td className="px-4 py-3.5 border-l border-white/[0.04]">
                               <span className={`text-[11px] font-medium px-2 py-0.5 rounded-md ${
@@ -724,8 +733,8 @@ export default function VentasStockPage() {
                             <td className="px-4 py-3.5 text-right border-l border-white/[0.04]">
                               {p.status === 'disponible' && (
                                 <button onClick={ev => { ev.stopPropagation(); openSaleModal(p); }}
-                                  className="text-white/40 hover:text-white/70 transition-colors">
-                                  <span className="material-symbols-outlined text-[18px]">sell</span>
+                                  className="flex items-center gap-1 bg-[#3eff8e]/10 hover:bg-[#3eff8e]/20 text-[#3eff8e] text-[11px] font-semibold px-2.5 py-1 rounded-lg transition-colors whitespace-nowrap">
+                                  <span className="material-symbols-outlined text-[13px]">sell</span>Vender
                                 </button>
                               )}
                             </td>
@@ -734,7 +743,7 @@ export default function VentasStockPage() {
                           {/* Inline detail row */}
                           {isOpen && (
                             <tr key={`${p.id}-detail`} className="border-b border-white/[0.05] bg-white/[0.02]">
-                              <td colSpan={10} className="px-4 py-5">
+                              <td colSpan={11} className="px-4 py-5">
                                 <div className="flex gap-6 items-start">
 
                                   {/* Col 1 — Fotos 2×2 */}
