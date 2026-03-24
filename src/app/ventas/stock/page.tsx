@@ -385,6 +385,8 @@ export default function VentasStockPage() {
       client_name: "",
       client_phone: "",
       client_id: "",
+      client_dni: "",
+      client_email: "",
     });
     setSaleConfirmation(null);
     setClientSearch("");
