@@ -298,7 +298,7 @@ export default function VentasStockPage() {
   // Sale modal
   const [showSaleModal, setShowSaleModal] = useState(false);
   const [saleProduct, setSaleProduct] = useState<Product | null>(null);
-  const [saleForm, setSaleForm] = useState({ payment_method: "efectivo", sale_price: "", notes: "", client_name: "", client_phone: "", client_id: "" });
+  const [saleForm, setSaleForm] = useState({ payment_method: "efectivo", sale_price: "", notes: "", client_name: "", client_phone: "", client_id: "", client_dni: "", client_email: "" });
   const [savingSale, setSavingSale] = useState(false);
   const [saleConfirmation, setSaleConfirmation] = useState<{ product: Product; sale_price: number; payment_method: string } | null>(null);
 
@@ -413,6 +413,8 @@ export default function VentasStockPage() {
         const { data: newClient } = await supabase.from("ig_clients").insert({
           name: saleForm.client_name,
           phone: saleForm.client_phone || null,
+          dni: saleForm.client_dni || null,
+          email: saleForm.client_email || null,
         }).select("id").single();
         if (newClient) clientId = newClient.id;
       }
@@ -893,30 +895,45 @@ export default function VentasStockPage() {
                     <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3">
                       <p className="text-sm font-medium text-white/70">{saleProduct.model}</p>
                       <p className="text-[11px] text-white/55 font-mono">{saleProduct.imei}</p>
-                      <p className="text-[11px] text-white/55 mt-0.5">{saleProduct.capacity} · {saleProduct.color} · Grado {saleProduct.condition}</p>
+                      <p className="text-[11px] text-white/55 mt-0.5">{saleProduct.capacity} · {saleProduct.color} · Grado {saleProduct.condition} · Batería {saleProduct.battery_health}%</p>
                     </div>
-                    {[
-                      { label: "Precio (USD)", type: "number", val: saleForm.sale_price, set: (v: string) => setSaleForm({...saleForm, sale_price: v}), required: true, step: "0.01" },
-                    ].map(f => (
-                      <div key={f.label}>
-                        <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50 block mb-1">{f.label}</label>
-                        <input type={f.type} required={f.required} step={f.step} value={f.val} onChange={e => f.set(e.target.value)}
-                          className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors" />
-                      </div>
-                    ))}
+                    <div>
+                      <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50 block mb-1">Precio (USD)</label>
+                      <input type="number" required step="0.01" value={saleForm.sale_price} onChange={e => setSaleForm({...saleForm, sale_price: e.target.value})}
+                        className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors" />
+                    </div>
                     <div>
                       <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50 block mb-1">Método de Pago</label>
                       <DarkSelect value={saleForm.payment_method} onChange={v => setSaleForm({...saleForm, payment_method: v})}
-                        options={["efectivo","transferencia","tarjeta_debito","tarjeta_credito","mixto"].map(o => ({ value: o, label: o.replace(/_/g," ") }))} />
+                        options={[
+                          { value: "efectivo", label: "Efectivo" },
+                          { value: "transferencia", label: "Transferencia" },
+                          { value: "tarjeta_debito", label: "Tarjeta Débito" },
+                          { value: "tarjeta_credito", label: "Tarjeta Crédito" },
+                          { value: "mixto", label: "Mixto" },
+                        ]} />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
-                      {[["Nombre cliente", saleForm.client_name, (v: string) => setSaleForm({...saleForm, client_name: v})], ["Teléfono", saleForm.client_phone, (v: string) => setSaleForm({...saleForm, client_phone: v})]].map(([lbl, val, set]) => (
-                        <div key={lbl as string}>
-                          <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50 block mb-1">{lbl as string}</label>
-                          <input type="text" value={val as string} onChange={e => (set as (v: string) => void)(e.target.value)} placeholder="Opcional"
-                            className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors" />
-                        </div>
-                      ))}
+                      <div>
+                        <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50 block mb-1">Nombre Cliente</label>
+                        <input type="text" value={saleForm.client_name} onChange={e => setSaleForm({...saleForm, client_name: e.target.value})} placeholder="Opcional"
+                          className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors" />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50 block mb-1">Teléfono</label>
+                        <input type="text" value={saleForm.client_phone} onChange={e => setSaleForm({...saleForm, client_phone: e.target.value})} placeholder="Opcional"
+                          className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors" />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50 block mb-1">DNI</label>
+                        <input type="text" value={saleForm.client_dni} onChange={e => setSaleForm({...saleForm, client_dni: e.target.value})} placeholder="Opcional"
+                          className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors" />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50 block mb-1">Email</label>
+                        <input type="email" value={saleForm.client_email} onChange={e => setSaleForm({...saleForm, client_email: e.target.value})} placeholder="Opcional"
+                          className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors" />
+                      </div>
                     </div>
                     <div className="flex gap-3 pt-1">
                       <button type="button" onClick={() => setShowSaleModal(false)} className="flex-1 py-2.5 bg-white/[0.04] border border-white/[0.08] text-white/50 text-sm rounded-xl">Cancelar</button>
