@@ -1,489 +1,468 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useEffect, useState, useRef } from 'react';
+import { supabase } from '@/lib/supabase';
+import { 
+  AtSign, Search, RefreshCw, UserCheck, Image as ImageIcon,
+  Send, AlertCircle
+} from 'lucide-react';
 
-/* ─── TYPES ─── */
 interface Message {
-  id: number;
-  from: "client" | "ia" | "human";
-  text: string;
-  time: string;
-  isImage?: boolean;
+  id: string;
+  ig_message_id: string;
+  ig_sender_id: string;
+  sender_username: string | null;
+  sender_name: string | null;
+  message_text: string;
+  message_type: string;
+  media_url: string | null;
+  direction: 'inbound' | 'outbound';
+  status: 'unread' | 'read' | 'replied' | 'archived';
+  assigned_to: string;
+  conversation_id: string;
+  created_at: string;
 }
 
 interface Conversation {
-  id: number;
-  name: string;
-  initials: string;
-  color: string;
-  phone: string;
-  preview: string;
-  time: string;
-  unread: number;
-  responder: "ia" | "human";
-  responderName?: string;
-  hasTurno?: boolean;
-  clientSince?: string;
-  interest?: string;
-  status?: string;
+  conversation_id: string;
+  sender_id: string;
+  sender_name: string | null;
+  sender_username: string | null;
+  last_message: string;
+  last_message_time: string;
+  unread_count: number;
+  status: string;
   messages: Message[];
 }
 
-/* ─── MOCK DATA ─── */
-const CONVERSATIONS: Conversation[] = [
-  {
-    id: 1,
-    name: "María López",
-    initials: "ML",
-    color: "bg-pink-500",
-    phone: "+54 9 11 2345-6789",
-    preview: "Hola, tienen iPhone 14 Pro 256GB?",
-    time: "Hace 2 min",
-    unread: 2,
-    responder: "ia",
-    clientSince: "Marzo 2026",
-    interest: "iPhone 14 Pro 256GB",
-    status: "Interesada — turno agendado",
-    messages: [
-      { id: 1, from: "client", text: "Hola! Vi en Instagram que tienen iPhones. Tienen el 14 Pro 256GB?", time: "14:32" },
-      { id: 2, from: "ia", text: "¡Hola María! Sí, tenemos iPhone 14 Pro 256GB disponible en condición A (impecable) y B. El de condición A está a USD 850 y el B a USD 720. Ambos con 90 días de garantía. ¿Te interesa alguno?", time: "14:32" },
-      { id: 3, from: "client", text: "El de condición A, tiene buena batería?", time: "14:35" },
-      { id: 4, from: "ia", text: "¡Sí! Tiene 92% de salud de batería. Te mando unas fotos 📸", time: "14:35" },
-      { id: 5, from: "ia", text: "3 fotos enviadas", time: "14:36", isImage: true },
-      { id: 6, from: "client", text: "Se ve muy bien! Puedo ir a verlo?", time: "14:40" },
-      { id: 7, from: "ia", text: "¡Claro! Estamos en Los Ríos 1774, de lunes a viernes 10 a 18hs. ¿Querés que te agendemos un turno? Así te lo tenemos reservado.", time: "14:40" },
-      { id: 8, from: "client", text: "Dale, mañana a las 15 puede ser?", time: "14:42" },
-      { id: 9, from: "ia", text: "Perfecto, te agendé turno para mañana a las 15:00. El equipo queda reservado a tu nombre. Te mando recordatorio 1 hora antes por WhatsApp. ¡Te esperamos! 📱", time: "14:42" },
-    ],
-  },
-  {
-    id: 2,
-    name: "Carlos Duarte",
-    initials: "CD",
-    color: "bg-blue-500",
-    phone: "+54 9 11 3456-7890",
-    preview: "Perfecto, paso mañana a las 16",
-    time: "Hace 15 min",
-    unread: 0,
-    responder: "ia",
-    hasTurno: true,
-    clientSince: "Febrero 2026",
-    interest: "iPhone 15 128GB",
-    status: "Turno reservado — mañana 16:00",
-    messages: [
-      { id: 1, from: "client", text: "Buenas! Tienen algún iPhone 15 en stock?", time: "14:00" },
-      { id: 2, from: "ia", text: "¡Hola Carlos! Sí, tenemos iPhone 15 128GB condición A a USD 920. ¿Te interesa?", time: "14:00" },
-      { id: 3, from: "client", text: "Sí, puedo ir mañana?", time: "14:05" },
-      { id: 4, from: "ia", text: "¡Claro! ¿A qué hora te queda bien? Estamos de 10 a 18hs.", time: "14:05" },
-      { id: 5, from: "client", text: "Perfecto, paso mañana a las 16", time: "14:10" },
-      { id: 6, from: "ia", text: "Listo, te agendé turno para mañana a las 16:00. ¡Te esperamos!", time: "14:10" },
-    ],
-  },
-  {
-    id: 3,
-    name: "Lucía Fernández",
-    initials: "LF",
-    color: "bg-purple-500",
-    phone: "+54 9 11 4567-8901",
-    preview: "Cuánto sale el iPhone 13?",
-    time: "Hace 1h",
-    unread: 1,
-    responder: "ia",
-    clientSince: "Nuevo",
-    interest: "iPhone 13",
-    status: "Consulta inicial",
-    messages: [
-      { id: 1, from: "client", text: "Hola! Cuánto sale el iPhone 13?", time: "13:15" },
-    ],
-  },
-  {
-    id: 4,
-    name: "Diego Martínez",
-    initials: "DM",
-    color: "bg-amber-600",
-    phone: "+54 9 11 5678-9012",
-    preview: "Me sirve, ¿aceptan transferencia?",
-    time: "Hace 3h",
-    unread: 0,
-    responder: "human",
-    responderName: "Matías",
-    clientSince: "Enero 2026",
-    interest: "iPhone 14 128GB",
-    status: "Negociando forma de pago",
-    messages: [
-      { id: 1, from: "client", text: "Buenas, vi que tienen iPhone 14 128GB. Cuánto?", time: "11:00" },
-      { id: 2, from: "ia", text: "¡Hola Diego! Sí, tenemos iPhone 14 128GB condición A a USD 680. ¿Te interesa?", time: "11:00" },
-      { id: 3, from: "client", text: "Un poco caro, hacen algo de descuento?", time: "11:05" },
-      { id: 4, from: "human", text: "Hola Diego, soy Matías. Para ese equipo podemos dejarlo en USD 650 si es efectivo. ¿Te sirve?", time: "11:20" },
-      { id: 5, from: "client", text: "Me sirve, ¿aceptan transferencia?", time: "11:25" },
-    ],
-  },
-  {
-    id: 5,
-    name: "Ana Ruiz",
-    initials: "AR",
-    color: "bg-teal-500",
-    phone: "+54 9 11 6789-0123",
-    preview: "Gracias, quedó impecable el iPhone",
-    time: "Ayer",
-    unread: 0,
-    responder: "ia",
-    clientSince: "Diciembre 2025",
-    interest: "iPhone 13 Pro (comprado)",
-    status: "Post-venta — satisfecha",
-    messages: [
-      { id: 1, from: "client", text: "Hola! Quería decirles que quedó impecable el iPhone 13 Pro que compré. Muy contenta!", time: "18:00" },
-      { id: 2, from: "ia", text: "¡Qué bueno Ana, nos alegra mucho! Recordá que tenés 90 días de garantía. Cualquier cosa escribinos. 😊", time: "18:00" },
-      { id: 3, from: "client", text: "Gracias, quedó impecable el iPhone", time: "18:05" },
-    ],
-  },
-  {
-    id: 6,
-    name: "Tomás Herrera",
-    initials: "TH",
-    color: "bg-red-500",
-    phone: "+54 9 11 7890-1234",
-    preview: "Tienen batería para iPhone 12?",
-    time: "Ayer",
-    unread: 0,
-    responder: "ia",
-    clientSince: "Marzo 2026",
-    interest: "Batería iPhone 12",
-    status: "Derivado a servicio técnico",
-    messages: [
-      { id: 1, from: "client", text: "Hola, tienen batería para iPhone 12? La mía ya no dura nada", time: "16:00" },
-      { id: 2, from: "ia", text: "¡Hola Tomás! Sí, hacemos cambio de batería para iPhone 12. El servicio está a $35.000 con batería incluida y tiene 60 días de garantía. ¿Querés agendar un turno?", time: "16:00" },
-      { id: 3, from: "client", text: "Sí dale, cuánto tarda?", time: "16:05" },
-      { id: 4, from: "ia", text: "El cambio de batería demora aproximadamente 40 minutos. Te derivo con nuestro equipo de servicio técnico para agendar el turno. ¡Ellos te contactan enseguida!", time: "16:05" },
-    ],
-  },
-];
+export default function InboxPage() {
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [selected, setSelected] = useState<Conversation | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [filterStatus, setFilterStatus] = useState<string>('todos');
+  const [search, setSearch] = useState('');
+  const [replyText, setReplyText] = useState('');
+  const [sending, setSending] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-type FilterType = "todas" | "sin_leer" | "ia" | "humano";
-
-/* ─── COMPONENT ─── */
-export default function InboxVentasPage() {
-  const [activeId, setActiveId] = useState(1);
-  const [filter, setFilter] = useState<FilterType>("todas");
-  const [search, setSearch] = useState("");
-  const [showPanel, setShowPanel] = useState(false);
-
-  const totalUnread = CONVERSATIONS.reduce((s, c) => s + c.unread, 0);
-
-  const filtered = CONVERSATIONS.filter((c) => {
-    if (filter === "sin_leer" && c.unread === 0) return false;
-    if (filter === "ia" && c.responder !== "ia") return false;
-    if (filter === "humano" && c.responder !== "human") return false;
-    if (search && !c.name.toLowerCase().includes(search.toLowerCase())) return false;
-    return true;
-  });
-
-  const active = CONVERSATIONS.find((c) => c.id === activeId)!;
-
-  const filters: { key: FilterType; label: string }[] = [
-    { key: "todas", label: "Todas" },
-    { key: "sin_leer", label: "Sin leer" },
-    { key: "ia", label: "IA" },
-    { key: "humano", label: "Humano" },
+  const filters = [
+    { key: 'todos', label: 'Todos' },
+    { key: 'unread', label: 'Sin leer' },
+    { key: 'agent', label: 'IA' },
+    { key: 'human', label: 'Humano' },
+    { key: 'archived', label: 'Archivados' },
   ];
 
+  useEffect(() => {
+    fetchConversations();
+
+    // Realtime subscription
+    const channel = supabase
+      .channel('ig_messages_changes')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'ig_messages'
+      }, () => {
+        fetchConversations();
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [filterStatus]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [selected?.messages]);
+
+  async function fetchConversations() {
+    setLoading(true);
+    const query = supabase
+      .from('ig_messages')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error(error);
+      setLoading(false);
+      return;
+    }
+
+    // Agrupar por conversation_id
+    const convMap = new Map<string, Conversation>();
+
+    for (const msg of (data || [])) {
+      const cid = msg.conversation_id || msg.ig_sender_id;
+
+      if (!convMap.has(cid)) {
+        convMap.set(cid, {
+          conversation_id: cid,
+          sender_id: msg.ig_sender_id,
+          sender_name: msg.sender_name,
+          sender_username: msg.sender_username,
+          last_message: msg.message_text || '',
+          last_message_time: msg.created_at,
+          unread_count: 0,
+          status: msg.assigned_to || 'agent',
+          messages: [],
+        });
+      }
+
+      const conv = convMap.get(cid)!;
+      conv.messages.push(msg);
+
+      if (msg.status === 'unread' && msg.direction === 'inbound') {
+        conv.unread_count++;
+      }
+    }
+
+    // Ordenar mensajes dentro de cada conversación
+    const convList = Array.from(convMap.values()).map(c => ({
+      ...c,
+      messages: c.messages.sort((a, b) => 
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      )
+    }));
+
+    // Filtrar
+    let filtered = convList;
+    if (filterStatus === 'unread') {
+      filtered = convList.filter(c => c.unread_count > 0);
+    } else if (filterStatus === 'agent') {
+      filtered = convList.filter(c => c.status === 'agent');
+    } else if (filterStatus === 'human') {
+      filtered = convList.filter(c => c.status === 'human');
+    } else if (filterStatus === 'archived') {
+      filtered = convList.filter(c => c.messages.some(m => m.status === 'archived'));
+    }
+
+    if (search) {
+      filtered = filtered.filter(c =>
+        c.sender_name?.toLowerCase().includes(search.toLowerCase()) ||
+        c.sender_username?.toLowerCase().includes(search.toLowerCase()) ||
+        c.last_message.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+
+    setConversations(filtered);
+
+    // Actualizar conversación seleccionada si hay
+    if (selected) {
+      const updated = convList.find(c => c.conversation_id === selected.conversation_id);
+      if (updated) setSelected(updated);
+    }
+
+    setLoading(false);
+  }
+
+  async function selectConversation(conv: Conversation) {
+    setSelected(conv);
+
+    // Marcar como leídos
+    const unreadIds = conv.messages
+      .filter(m => m.status === 'unread' && m.direction === 'inbound')
+      .map(m => m.id);
+
+    if (unreadIds.length > 0) {
+      await supabase
+        .from('ig_messages')
+        .update({ status: 'read' })
+        .in('id', unreadIds);
+
+      fetchConversations();
+    }
+  }
+
+  async function assignToHuman(conv: Conversation) {
+    await supabase
+      .from('ig_messages')
+      .update({ assigned_to: 'human' })
+      .eq('conversation_id', conv.conversation_id);
+    fetchConversations();
+  }
+
+  async function sendReply() {
+    if (!selected || !replyText.trim() || sending) return;
+    setSending(true);
+
+    try {
+      const IG_TOKEN = process.env.NEXT_PUBLIC_IG_TOKEN;
+      const IG_ID = '26252970514364785';
+
+      if (!IG_TOKEN) {
+        alert('Token de Instagram no configurado en variables de entorno');
+        return;
+      }
+
+      // Enviar via Meta API
+      const res = await fetch(`https://graph.instagram.com/v21.0/${IG_ID}/messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipient: { id: selected.sender_id },
+          message: { text: replyText },
+          access_token: IG_TOKEN,
+        })
+      });
+
+      const data = await res.json();
+
+      if (data.message_id) {
+        // Guardar outbound en Supabase
+        await supabase.from('ig_messages').insert({
+          ig_message_id: data.message_id,
+          ig_sender_id: IG_ID,
+          message_text: replyText,
+          direction: 'outbound',
+          status: 'replied',
+          assigned_to: 'human',
+          conversation_id: selected.conversation_id,
+        });
+
+        setReplyText('');
+        fetchConversations();
+      } else {
+        alert('Error enviando: ' + JSON.stringify(data.error));
+      }
+    } catch (e: unknown) {
+      const err = e as Error;
+      alert('Error: ' + err.message);
+    } finally {
+      setSending(false);
+    }
+  }
+
+  function formatTime(iso: string) {
+    const d = new Date(iso);
+    const now = new Date();
+    const diff = now.getTime() - d.getTime();
+    if (diff < 60000) return 'ahora';
+    if (diff < 3600000) return `${Math.floor(diff / 60000)}m`;
+    if (diff < 86400000) return d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+    return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' });
+  }
+
+  function getInitials(name: string | null, username: string | null) {
+    const n = name || username || '?';
+    return n.slice(0, 2).toUpperCase();
+  }
+
+  const noMessages = !loading && conversations.length === 0;
+
   return (
-    <div className="-m-6 -mt-4 flex flex-col h-[calc(100vh-5rem)]">
-      {/* ── DEMO BANNER ── */}
-      <div className="flex items-center gap-2 px-4 py-2.5 bg-amber-50 border-b border-amber-200 text-amber-800 text-xs font-medium shrink-0">
-        <span className="material-symbols-outlined text-base">smart_toy</span>
-        Demo — Los datos son de ejemplo. La integración real requiere WhatsApp Business API.
-      </div>
-
-      {/* ── MAIN GRID ── */}
-      <div className="flex-1 grid grid-cols-12 min-h-0">
-        {/* ═══ LEFT: CONVERSATION LIST ═══ */}
-        <aside className="col-span-4 border-r border-slate-200 flex flex-col bg-white min-h-0">
-          {/* Header */}
-          <div className="px-4 pt-4 pb-3 border-b border-slate-100 shrink-0">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-bold text-on-surface">Conversaciones</h2>
-              {totalUnread > 0 && (
-                <span className="bg-primary text-white text-[11px] font-bold px-2 py-0.5 rounded-full">
-                  {totalUnread}
-                </span>
-              )}
+    <div className="flex h-[calc(100vh-64px)]">
+      {/* Lista de conversaciones */}
+      <div className="w-80 flex-shrink-0 border-r border-slate-200 bg-white flex flex-col">
+        {/* Header */}
+        <div className="p-4 border-b border-slate-200">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <AtSign className="w-5 h-5 text-pink-500" />
+              <span className="font-semibold text-slate-800">Instagram DMs</span>
             </div>
-
-            {/* Search */}
-            <div className="relative mb-3">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-cool-grey text-lg">
-                search
-              </span>
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 bg-slate-100 rounded-xl text-sm placeholder:text-cool-grey focus:outline-none focus:ring-2 focus:ring-primary/30"
-                placeholder="Buscar conversación..."
-              />
-            </div>
-
-            {/* Filter chips */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1">
-              {filters.map((f) => (
-                <button
-                  key={f.key}
-                  onClick={() => setFilter(f.key)}
-                  className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${
-                    filter === f.key
-                      ? "bg-primary text-white"
-                      : "bg-slate-100 text-cool-grey hover:bg-slate-200"
-                  }`}
-                >
-                  {f.label}
-                </button>
-              ))}
-            </div>
+            <button onClick={fetchConversations} className="p-1.5 rounded-lg hover:bg-slate-100">
+              <RefreshCw className="w-4 h-4 text-slate-500" />
+            </button>
           </div>
-
-          {/* Conversation items */}
-          <div className="flex-1 overflow-y-auto">
-            {filtered.map((c) => (
+          <div className="relative mb-3">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Buscar..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="w-full pl-9 pr-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+          </div>
+          <div className="flex gap-1.5 flex-wrap">
+            {filters.map(f => (
               <button
-                key={c.id}
-                onClick={() => setActiveId(c.id)}
-                className={`w-full flex items-start gap-3 px-4 py-3 text-left transition-colors border-l-4 ${
-                  c.id === activeId
-                    ? "bg-primary/5 border-primary"
-                    : "border-transparent hover:bg-slate-50"
+                key={f.key}
+                onClick={() => setFilterStatus(f.key)}
+                className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+                  filterStatus === f.key
+                    ? 'bg-green-500 text-white'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
               >
-                {/* Avatar */}
-                <div
-                  className={`${c.color} text-white w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0`}
-                >
-                  {c.initials}
-                </div>
-
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-semibold text-sm text-on-surface truncate">{c.name}</span>
-                    <span className="text-[10px] text-cool-grey whitespace-nowrap">{c.time}</span>
-                  </div>
-                  <p className="text-xs text-cool-grey truncate mt-0.5">{c.preview}</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span
-                      className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${
-                        c.responder === "ia"
-                          ? "bg-blue-50 text-blue-600"
-                          : "bg-orange-50 text-orange-600"
-                      }`}
-                    >
-                      {c.responder === "ia" ? "IA" : `HUMANO${c.responderName ? ` · ${c.responderName}` : ""}`}
-                    </span>
-                    {c.hasTurno && (
-                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-green-50 text-green-700">
-                        Turno
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Unread badge */}
-                {c.unread > 0 && (
-                  <span className="w-5 h-5 bg-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center shrink-0 mt-1">
-                    {c.unread}
-                  </span>
-                )}
+                {f.label}
               </button>
             ))}
-
-            {filtered.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-16 text-cool-grey">
-                <span className="material-symbols-outlined text-3xl mb-2">search_off</span>
-                <p className="text-sm">No se encontraron conversaciones</p>
-              </div>
-            )}
           </div>
-        </aside>
+        </div>
 
-        {/* ═══ RIGHT: OPEN CHAT ═══ */}
-        <section className="col-span-8 flex flex-col bg-slate-50 min-h-0">
-          {/* Chat header */}
-          <div className="flex items-center justify-between px-5 py-3 bg-white border-b border-slate-200 shrink-0">
+        {/* Lista */}
+        <div className="flex-1 overflow-y-auto">
+          {loading && (
+            <div className="flex items-center justify-center h-24">
+              <div className="w-6 h-6 border-2 border-green-500 border-t-transparent rounded-full animate-spin" />
+            </div>
+          )}
+
+          {noMessages && (
+            <div className="flex flex-col items-center justify-center h-48 text-slate-400 px-4 text-center">
+              <AtSign className="w-10 h-10 mb-3 opacity-30" />
+              <p className="text-sm font-medium">Sin mensajes todavía</p>
+              <p className="text-xs mt-1">Los DMs de @igreen.recoleta aparecerán acá</p>
+            </div>
+          )}
+
+          {conversations.map(conv => (
+            <button
+              key={conv.conversation_id}
+              onClick={() => selectConversation(conv)}
+              className={`w-full text-left p-4 border-b border-slate-100 hover:bg-slate-50 transition-colors ${
+                selected?.conversation_id === conv.conversation_id ? 'bg-green-50 border-l-2 border-l-green-500' : ''
+              }`}
+            >
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
+                  {getInitials(conv.sender_name, conv.sender_username)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-0.5">
+                    <span className="font-medium text-sm text-slate-800 truncate">
+                      {conv.sender_name || conv.sender_username || conv.sender_id.slice(0, 10) + '...'}
+                    </span>
+                    <span className="text-xs text-slate-400 flex-shrink-0 ml-1">
+                      {formatTime(conv.last_message_time)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-slate-500 truncate">{conv.last_message}</p>
+                    <div className="flex items-center gap-1 flex-shrink-0 ml-1">
+                      {conv.unread_count > 0 && (
+                        <span className="w-5 h-5 rounded-full bg-green-500 text-white text-xs flex items-center justify-center">
+                          {conv.unread_count}
+                        </span>
+                      )}
+                      {conv.status === 'human' && (
+                        <span className="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full">H</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Panel de chat */}
+      {selected ? (
+        <div className="flex-1 flex flex-col bg-white">
+          {/* Header del chat */}
+          <div className="p-4 border-b border-slate-200 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div
-                className={`${active.color} text-white w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold`}
-              >
-                {active.initials}
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center text-white font-semibold">
+                {getInitials(selected.sender_name, selected.sender_username)}
               </div>
               <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-sm text-on-surface">{active.name}</span>
-                  <span className="text-[10px] text-cool-grey">{active.phone}</span>
-                </div>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className="flex items-center gap-1 text-[10px] text-green-600 font-medium">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                    En línea
-                  </span>
-                  <span className="text-slate-300">·</span>
-                  <span
-                    className={`text-[10px] font-semibold ${
-                      active.responder === "ia" ? "text-blue-600" : "text-orange-600"
-                    }`}
-                  >
-                    {active.responder === "ia" ? "Respondiendo IA 🤖" : `Respondiendo ${active.responderName ?? "Humano"} 👤`}
-                  </span>
-                </div>
+                <p className="font-semibold text-slate-800">
+                  {selected.sender_name || selected.sender_username || 'Usuario'}
+                </p>
+                {selected.sender_username && (
+                  <p className="text-xs text-slate-500">@{selected.sender_username}</p>
+                )}
               </div>
+              <span className={`text-xs px-2 py-0.5 rounded-full ${
+                selected.status === 'agent'
+                  ? 'bg-purple-100 text-purple-600'
+                  : 'bg-blue-100 text-blue-600'
+              }`}>
+                {selected.status === 'agent' ? '🤖 Agente IA' : '👤 Humano'}
+              </span>
             </div>
             <div className="flex items-center gap-2">
-              {active.responder === "ia" && (
-                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 text-orange-700 text-xs font-semibold rounded-lg hover:bg-orange-100 transition-colors">
-                  <span className="material-symbols-outlined text-sm">front_hand</span>
+              {selected.status === 'agent' && (
+                <button
+                  onClick={() => assignToHuman(selected)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-sm hover:bg-blue-100 transition-colors"
+                >
+                  <UserCheck className="w-4 h-4" />
                   Tomar conversación
                 </button>
               )}
-              <button
-                onClick={() => setShowPanel(!showPanel)}
-                className={`p-1.5 rounded-lg transition-colors ${
-                  showPanel ? "bg-primary/10 text-primary" : "text-cool-grey hover:bg-slate-100"
-                }`}
+            </div>
+          </div>
+
+          {/* Mensajes */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50">
+            {selected.messages.map(msg => (
+              <div
+                key={msg.id}
+                className={`flex ${msg.direction === 'outbound' ? 'justify-end' : 'justify-start'}`}
               >
-                <span className="material-symbols-outlined text-xl">info</span>
+                <div className={`max-w-xs lg:max-w-md xl:max-w-lg ${
+                  msg.direction === 'outbound'
+                    ? 'bg-green-500 text-white rounded-2xl rounded-br-sm'
+                    : 'bg-white text-slate-800 rounded-2xl rounded-bl-sm shadow-sm border border-slate-100'
+                } px-4 py-2.5`}>
+                  {msg.message_type !== 'text' && msg.media_url && (
+                    <div className="mb-1">
+                      <img src={msg.media_url} alt="media" className="rounded-lg max-w-full" />
+                    </div>
+                  )}
+                  {msg.message_type !== 'text' && !msg.media_url && (
+                    <div className="flex items-center gap-1 mb-1 opacity-70">
+                      <ImageIcon className="w-4 h-4" />
+                      <span className="text-xs">[{msg.message_type}]</span>
+                    </div>
+                  )}
+                  <p className="text-sm">{msg.message_text}</p>
+                  <p className={`text-xs mt-1 ${msg.direction === 'outbound' ? 'text-green-100' : 'text-slate-400'}`}>
+                    {formatTime(msg.created_at)}
+                  </p>
+                </div>
+              </div>
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Input de respuesta */}
+          <div className="p-4 border-t border-slate-200 bg-white">
+            {selected.status === 'agent' && (
+              <div className="flex items-center gap-2 mb-2 text-xs text-slate-500">
+                <AlertCircle className="w-3.5 h-3.5" />
+                Respondiendo como humano. La IA está asignada a esta conversación.
+              </div>
+            )}
+            <div className="flex items-end gap-2">
+              <textarea
+                value={replyText}
+                onChange={e => setReplyText(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendReply();
+                  }
+                }}
+                placeholder="Escribí una respuesta... (Enter para enviar)"
+                rows={2}
+                className="flex-1 resize-none px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+              <button
+                onClick={sendReply}
+                disabled={!replyText.trim() || sending}
+                className="p-2.5 bg-green-500 text-white rounded-xl hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {sending
+                  ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  : <Send className="w-5 h-5" />
+                }
               </button>
             </div>
           </div>
-
-          {/* Chat body */}
-          <div className="flex-1 flex min-h-0">
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
-              {active.messages.map((m) => {
-                const isClient = m.from === "client";
-                return (
-                  <div key={m.id} className={`flex ${isClient ? "justify-start" : "justify-end"}`}>
-                    <div
-                      className={`max-w-[70%] rounded-2xl px-4 py-2.5 ${
-                        isClient
-                          ? "bg-white border border-slate-200 rounded-tl-md"
-                          : "bg-primary/10 rounded-tr-md"
-                      }`}
-                    >
-                      {/* Responder tag */}
-                      {!isClient && (
-                        <div className="flex items-center gap-1 mb-1">
-                          <span
-                            className={`text-[10px] font-semibold ${
-                              m.from === "ia" ? "text-blue-500" : "text-orange-500"
-                            }`}
-                          >
-                            {m.from === "ia" ? "🤖 IA" : "👤 Humano"}
-                          </span>
-                        </div>
-                      )}
-
-                      {/* Image placeholder */}
-                      {m.isImage ? (
-                        <div className="flex items-center gap-2 bg-slate-100 rounded-xl px-4 py-6 text-cool-grey">
-                          <span className="material-symbols-outlined text-xl">photo_camera</span>
-                          <span className="text-xs font-medium">{m.text}</span>
-                        </div>
-                      ) : (
-                        <p className="text-sm text-on-surface leading-relaxed">{m.text}</p>
-                      )}
-
-                      {/* Timestamp */}
-                      <p className={`text-[10px] text-slate-400 mt-1 ${isClient ? "text-left" : "text-right"}`}>
-                        {m.time}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Client info panel */}
-            {showPanel && (
-              <div className="w-72 border-l border-slate-200 bg-white p-4 overflow-y-auto shrink-0">
-                <h3 className="font-bold text-sm text-on-surface mb-4">Info del cliente</h3>
-
-                <div className="flex flex-col items-center mb-4">
-                  <div
-                    className={`${active.color} text-white w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold mb-2`}
-                  >
-                    {active.initials}
-                  </div>
-                  <p className="font-semibold text-sm text-on-surface">{active.name}</p>
-                  <p className="text-xs text-cool-grey">{active.phone}</p>
-                </div>
-
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-[10px] text-cool-grey uppercase tracking-wider font-semibold mb-1">
-                      Cliente desde
-                    </p>
-                    <p className="text-xs text-on-surface">{active.clientSince}</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-cool-grey uppercase tracking-wider font-semibold mb-1">
-                      Equipo de interés
-                    </p>
-                    <p className="text-xs text-on-surface">{active.interest}</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-cool-grey uppercase tracking-wider font-semibold mb-1">
-                      Estado
-                    </p>
-                    <p className="text-xs text-on-surface">{active.status}</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-cool-grey uppercase tracking-wider font-semibold mb-1">
-                      Respondiendo
-                    </p>
-                    <div className="flex items-center gap-1.5">
-                      <span
-                        className={`text-xs font-semibold ${
-                          active.responder === "ia" ? "text-blue-600" : "text-orange-600"
-                        }`}
-                      >
-                        {active.responder === "ia" ? "🤖 IA" : `👤 ${active.responderName ?? "Humano"}`}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Chat footer */}
-          <div className="px-5 py-3 bg-white border-t border-slate-200 shrink-0">
-            {active.responder === "ia" ? (
-              <div className="flex items-center gap-3">
-                <div className="flex-1 flex items-center gap-2 px-4 py-2.5 bg-slate-100 rounded-xl text-sm text-cool-grey">
-                  <span className="material-symbols-outlined text-base animate-pulse">smart_toy</span>
-                  La IA está respondiendo...
-                </div>
-                <button className="flex items-center gap-1.5 px-4 py-2.5 bg-orange-50 text-orange-700 text-xs font-semibold rounded-xl hover:bg-orange-100 transition-colors whitespace-nowrap">
-                  <span className="material-symbols-outlined text-sm">front_hand</span>
-                  Tomar conversación
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-3">
-                <input
-                  disabled
-                  className="flex-1 px-4 py-2.5 bg-slate-100 rounded-xl text-sm placeholder:text-cool-grey"
-                  placeholder="Escribí un mensaje..."
-                />
-                <button
-                  disabled
-                  className="p-2.5 bg-primary text-white rounded-xl opacity-50"
-                >
-                  <span className="material-symbols-outlined text-lg">send</span>
-                </button>
-              </div>
-            )}
-          </div>
-        </section>
-      </div>
+        </div>
+      ) : (
+        <div className="flex-1 flex flex-col items-center justify-center bg-slate-50 text-slate-400">
+          <AtSign className="w-16 h-16 mb-4 opacity-20" />
+          <p className="text-lg font-medium">Seleccioná una conversación</p>
+          <p className="text-sm mt-1">Los mensajes de @igreen.recoleta aparecen acá en tiempo real</p>
+        </div>
+      )}
     </div>
   );
 }
