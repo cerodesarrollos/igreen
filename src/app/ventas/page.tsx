@@ -101,12 +101,12 @@ export default function VentasResumenPage() {
   }[s] || { label: s, color: "rgba(255,255,255,0.3)" });
 
   const kpiCards = [
-    { label: "Disponibles",    value: kpis.disponibles.toString(), sub: "en stock",   link: "/ventas/stock"    },
-    { label: "Reservados",     value: kpis.reservados.toString(),  sub: "con seña",   link: "/ventas/turnos"   },
-    { label: "Ventas",         value: kpis.ventasMes.toString(),   sub: "este mes",   link: "/ventas/metricas" },
-    { label: "Ganancia",       value: fmt(kpis.gananciaMes),       sub: "este mes",   link: "/ventas/metricas" },
-    { label: "Ticket prom.",   value: fmt(kpis.ticketProm),        sub: "por venta",  link: "/ventas/metricas" },
-    { label: "Valor stock",    value: fmt(kpis.valorStock),        sub: "disponible", link: "/ventas/stock"    },
+    { label: "Disponibles",    value: kpis.disponibles.toString(), sub: "en stock",   link: "/ventas/stock",    accent: false },
+    { label: "Reservados",     value: kpis.reservados.toString(),  sub: "con seña",   link: "/ventas/turnos",   accent: false },
+    { label: "Ventas",         value: kpis.ventasMes.toString(),   sub: "este mes",   link: "/ventas/metricas", accent: false },
+    { label: "Ganancia",       value: fmt(kpis.gananciaMes),       sub: "este mes",   link: "/ventas/metricas", accent: true  },
+    { label: "Ticket prom.",   value: fmt(kpis.ticketProm),        sub: "por venta",  link: "/ventas/metricas", accent: false },
+    { label: "Valor stock",    value: fmt(kpis.valorStock),        sub: "disponible", link: "/ventas/stock",    accent: true  },
   ];
 
   return (
@@ -122,7 +122,8 @@ export default function VentasResumenPage() {
         </div>
         <Link
           href="/ventas/stock"
-          className="flex items-center gap-2 bg-white/[0.08] hover:bg-white/[0.12] border border-white/[0.1] text-white/80 text-sm font-medium px-4 py-2 rounded-xl transition-colors"
+          className="flex items-center gap-2 bg-violet-600/20 hover:bg-violet-600/30 border border-violet-500/30 text-violet-300 text-sm font-medium px-4 py-2 rounded-xl transition-colors"
+          style={{boxShadow:'0 0 16px rgba(139,92,246,0.15)'}}
         >
           <span className="material-symbols-outlined text-[15px]">add</span>
           Agregar equipo
@@ -133,10 +134,10 @@ export default function VentasResumenPage() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {kpiCards.map((k) => (
           <Link key={k.label} href={k.link}>
-            <GlassCard>
+            <GlassCard className={k.accent ? "shadow-[0_0_24px_rgba(139,92,246,0.12)]" : ""}>
               <div className="p-5">
                 <p className="text-[11px] font-normal text-white/50 uppercase tracking-[0.14em] mb-4">{k.label}</p>
-                <p className="text-[28px] font-medium text-white/90 leading-none tracking-tight">{k.value}</p>
+                <p className={`text-[28px] font-medium leading-none tracking-tight ${k.accent ? "text-violet-300" : "text-white/90"}`}>{k.value}</p>
                 <p className="text-[11px] text-white/45 mt-1.5">{k.sub}</p>
               </div>
             </GlassCard>
