@@ -552,7 +552,7 @@ export default function VentasStockPage() {
       <div className="flex gap-4 mb-6 items-stretch">
 
         {/* LEFT — Filters */}
-        <div className="w-[220px] shrink-0 rounded-[18px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d]">
+        <div className="w-[280px] shrink-0 rounded-[18px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d]">
           <div className="rounded-[17px] bg-[#161619] h-full shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] divide-y divide-white/[0.04] flex flex-col">
             {[
               { label: "Estado",    opts: [["todos","Todos"],["disponible","Disponible"],["reservado","Reservado"],["vendido","Vendido"]], val: statusFilter, set: setStatusFilter },
