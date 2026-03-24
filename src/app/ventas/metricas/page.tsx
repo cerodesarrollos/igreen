@@ -112,7 +112,7 @@ const emptyExpenseForm = {
 interface IgInsights {
   profile: { followers_count: number; media_count: number };
   metrics: {
-    impressions: number;
+    impressions?: number;
     reach: number;
     profile_views: number;
     website_clicks: number;
@@ -673,11 +673,10 @@ export default function MetricasPage() {
             {/* KPI row */}
             <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
               {[
-                { label: "Seguidores", value: igInsights.profile.followers_count.toLocaleString("es-AR"), icon: "group", color: "text-purple-600", bg: "bg-purple-100" },
-                { label: "Impresiones", value: igInsights.metrics.impressions.toLocaleString("es-AR"), icon: "visibility", color: "text-blue-600", bg: "bg-blue-100" },
-                { label: "Alcance", value: igInsights.metrics.reach.toLocaleString("es-AR"), icon: "radar", color: "text-green-600", bg: "bg-green-100" },
-                { label: "Visitas al perfil", value: igInsights.metrics.profile_views.toLocaleString("es-AR"), icon: "person_search", color: "text-pink-600", bg: "bg-pink-100" },
-                { label: "Clicks al sitio", value: igInsights.metrics.website_clicks.toLocaleString("es-AR"), icon: "link", color: "text-orange-600", bg: "bg-orange-100" },
+                { label: "Seguidores", value: (igInsights.profile.followers_count ?? 0).toLocaleString("es-AR"), icon: "group", color: "text-purple-600", bg: "bg-purple-100" },
+                { label: "Alcance 30d", value: (igInsights.metrics.reach ?? 0).toLocaleString("es-AR"), icon: "radar", color: "text-green-600", bg: "bg-green-100" },
+                { label: "Visitas al perfil", value: (igInsights.metrics.profile_views ?? 0).toLocaleString("es-AR"), icon: "person_search", color: "text-pink-600", bg: "bg-pink-100" },
+                { label: "Clicks al sitio", value: (igInsights.metrics.website_clicks ?? 0).toLocaleString("es-AR"), icon: "link", color: "text-orange-600", bg: "bg-orange-100" },
               ].map((kpi) => (
                 <div key={kpi.label} className="bg-slate-50 rounded-xl p-4">
                   <div className={`w-8 h-8 rounded-lg ${kpi.bg} flex items-center justify-center mb-2`}>
