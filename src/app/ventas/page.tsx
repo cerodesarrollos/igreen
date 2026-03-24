@@ -25,7 +25,20 @@ interface Appointment {
 
 function formatPrice(n: number | null) {
   if (n === null || n === undefined) return "—";
-  return `$${n.toLocaleString("es-AR")} USD`;
+  return `$${n.toLocaleString("es-AR")}`;
+}
+
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 13) return "Buenos días";
+  if (h < 20) return "Buenas tardes";
+  return "Buenas noches";
+}
+
+function formatDate() {
+  return new Date().toLocaleDateString("es-AR", {
+    weekday: "long", day: "numeric", month: "long",
+  });
 }
 
 export default function VentasResumenPage() {
@@ -51,7 +64,7 @@ export default function VentasResumenPage() {
       const [prodRes, salesRes, actRes, aptRes, warrantyRes] = await Promise.all([
         supabase.from("ig_products").select("*"),
         supabase.from("ig_sales").select("*"),
-        supabase.from("ig_activity_log").select("*").order("created_at", { ascending: false }).limit(10),
+        supabase.from("ig_activity_log").select("*").order("created_at", { ascending: false }).limit(8),
         supabase.from("ig_appointments").select("*").gte("scheduled_at", todayStr + "T00:00:00").lte("scheduled_at", todayStr + "T23:59:59").order("scheduled_at", { ascending: true }),
         supabase.from("ig_warranties").select("id, status"),
       ]);
@@ -73,23 +86,19 @@ export default function VentasResumenPage() {
       setActivity((actRes.data || []) as ActivityLog[]);
       setTurnosHoy((aptRes.data || []) as Appointment[]);
 
-      // Alerts
       const alertList: { text: string; type: "warning" | "danger" | "info"; link: string }[] = [];
       const lowBattery = products.filter((p) => p.status === "disponible" && p.battery_health < 80);
       if (lowBattery.length > 0) alertList.push({ text: `${lowBattery.length} equipo(s) con batería < 80%`, type: "warning", link: "/ventas/stock" });
-      
       const stale = products.filter((p) => {
         if (p.status !== "disponible") return false;
         const days = (Date.now() - new Date(p.created_at).getTime()) / 86400000;
         return days > 30;
       });
       if (stale.length > 0) alertList.push({ text: `${stale.length} equipo(s) sin vender hace +30 días`, type: "danger", link: "/ventas/metricas" });
-
       const openWarranties = warranties.filter((w) => w.status === "abierta");
       if (openWarranties.length > 0) alertList.push({ text: `${openWarranties.length} garantía(s) abierta(s)`, type: "warning", link: "/ventas/metricas" });
-
       if (disponibles === 0) alertList.push({ text: "Sin stock disponible", type: "danger", link: "/ventas/stock" });
-      if (disponibles > 0 && disponibles <= 3) alertList.push({ text: `Stock bajo: solo ${disponibles} equipo(s)`, type: "warning", link: "/ventas/stock" });
+      else if (disponibles <= 3) alertList.push({ text: `Stock bajo — solo ${disponibles} equipo(s)`, type: "warning", link: "/ventas/stock" });
       if (alertList.length === 0) alertList.push({ text: "Todo en orden", type: "info", link: "#" });
 
       setAlerts(alertList);
@@ -101,90 +110,124 @@ export default function VentasResumenPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-32">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        <span className="ml-3 text-sm text-cool-grey">Cargando resumen...</span>
+        <div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-900 border-t-transparent" />
+        <span className="ml-3 text-sm text-slate-400">Cargando...</span>
       </div>
     );
   }
 
-  const kpiCards = [
-    { label: "Disponibles", value: kpis.disponibles.toString(), icon: "phone_iphone", bg: "bg-green-50", color: "text-green-600", link: "/ventas/stock" },
-    { label: "Reservados", value: kpis.reservados.toString(), icon: "schedule", bg: "bg-amber-50", color: "text-amber-600", link: "/ventas/turnos" },
-    { label: "Ventas Mes", value: kpis.ventasMes.toString(), icon: "sell", bg: "bg-blue-50", color: "text-blue-600", link: "/ventas/metricas" },
-    { label: "Ganancia Mes", value: formatPrice(kpis.gananciaMes), icon: "trending_up", bg: "bg-emerald-50", color: "text-emerald-600", link: "/ventas/metricas" },
-    { label: "Ticket Promedio", value: formatPrice(kpis.ticketProm), icon: "receipt", bg: "bg-violet-50", color: "text-violet-600", link: "/ventas/metricas" },
-    { label: "Valor Stock", value: formatPrice(kpis.valorStock), icon: "account_balance_wallet", bg: "bg-sky-50", color: "text-sky-600", link: "/ventas/stock" },
-  ];
-
-  const alertStyles = {
-    warning: { bg: "bg-amber-50", border: "border-amber-100", icon: "warning", iconColor: "text-amber-600", textColor: "text-amber-800" },
-    danger: { bg: "bg-red-50", border: "border-red-100", icon: "error", iconColor: "text-red-600", textColor: "text-red-800" },
-    info: { bg: "bg-green-50", border: "border-green-100", icon: "check_circle", iconColor: "text-green-600", textColor: "text-green-800" },
-  };
-
   const statusLabel = (s: string) => {
     const map: Record<string, { label: string; color: string }> = {
-      pendiente: { label: "Pendiente", color: "bg-slate-100 text-slate-700" },
-      confirmado: { label: "Confirmado", color: "bg-green-100 text-green-700" },
-      completado: { label: "Completado", color: "bg-blue-100 text-blue-700" },
-      "no-show": { label: "No asistió", color: "bg-red-100 text-red-700" },
+      pendiente: { label: "Pendiente", color: "bg-slate-100 text-slate-600" },
+      confirmado: { label: "Confirmado", color: "bg-indigo-50 text-indigo-700" },
+      completado: { label: "Completado", color: "bg-emerald-50 text-emerald-700" },
+      "no-show": { label: "No asistió", color: "bg-red-50 text-red-600" },
     };
-    return map[s] || { label: s, color: "bg-slate-100 text-slate-700" };
+    return map[s] || { label: s, color: "bg-slate-100 text-slate-600" };
   };
 
   return (
-    <>
-      {/* FILA 1 — KPIs clickeables */}
-      <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
-        {kpiCards.map((kpi) => (
+    <div className="space-y-6">
+
+      {/* HEADER */}
+      <div className="flex items-end justify-between">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">{formatDate()}</p>
+          <h1 className="text-2xl font-bold text-slate-900">{getGreeting()}, iGreen 👋</h1>
+        </div>
+        <Link
+          href="/ventas/stock"
+          className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors"
+        >
+          <span className="material-symbols-outlined text-base">add_circle</span>
+          Agregar equipo
+        </Link>
+      </div>
+
+      {/* HERO METRICS — las 2 más importantes */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Link href="/ventas/metricas" className="group relative bg-slate-900 rounded-2xl p-7 overflow-hidden hover:bg-slate-800 transition-colors">
+          {/* fondo decorativo */}
+          <div className="absolute -right-6 -top-6 w-32 h-32 bg-white/5 rounded-full" />
+          <div className="absolute -right-2 -bottom-8 w-24 h-24 bg-white/5 rounded-full" />
+          <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Ganancia del mes</p>
+          <p className="text-4xl font-black text-white tracking-tight mb-1">
+            {formatPrice(kpis.gananciaMes)} <span className="text-lg font-semibold text-slate-400">USD</span>
+          </p>
+          <p className="text-xs text-slate-500">{kpis.ventasMes} venta{kpis.ventasMes !== 1 ? "s" : ""} este mes</p>
+          <span className="absolute bottom-6 right-6 material-symbols-outlined text-white/10 text-6xl group-hover:text-white/15 transition-colors">trending_up</span>
+        </Link>
+
+        <Link href="/ventas/stock" className="group relative bg-slate-900 rounded-2xl p-7 overflow-hidden hover:bg-slate-800 transition-colors">
+          <div className="absolute -right-6 -top-6 w-32 h-32 bg-white/5 rounded-full" />
+          <div className="absolute -right-2 -bottom-8 w-24 h-24 bg-white/5 rounded-full" />
+          <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Valor en stock</p>
+          <p className="text-4xl font-black text-white tracking-tight mb-1">
+            {formatPrice(kpis.valorStock)} <span className="text-lg font-semibold text-slate-400">USD</span>
+          </p>
+          <p className="text-xs text-slate-500">{kpis.disponibles} equipo{kpis.disponibles !== 1 ? "s" : ""} disponible{kpis.disponibles !== 1 ? "s" : ""}</p>
+          <span className="absolute bottom-6 right-6 material-symbols-outlined text-white/10 text-6xl group-hover:text-white/15 transition-colors">inventory_2</span>
+        </Link>
+      </div>
+
+      {/* SECONDARY METRICS */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {[
+          { label: "Disponibles", value: kpis.disponibles, suffix: "equipos", icon: "phone_iphone", link: "/ventas/stock" },
+          { label: "Reservados", value: kpis.reservados, suffix: "equipos", icon: "schedule", link: "/ventas/turnos" },
+          { label: "Ventas mes", value: kpis.ventasMes, suffix: "unidades", icon: "sell", link: "/ventas/metricas" },
+          { label: "Ticket promedio", value: formatPrice(kpis.ticketProm), suffix: "USD", icon: "receipt_long", link: "/ventas/metricas", isString: true },
+        ].map((k) => (
           <Link
-            key={kpi.label}
-            href={kpi.link}
-            className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 hover:shadow-md hover:border-primary/20 transition-all group cursor-pointer"
+            key={k.label}
+            href={k.link}
+            className="bg-white border border-slate-100 rounded-xl p-5 hover:border-slate-300 hover:shadow-sm transition-all group"
           >
-            <div className={`p-1.5 ${kpi.bg} rounded-lg w-fit mb-3`}>
-              <span className={`material-symbols-outlined ${kpi.color} text-lg`}>{kpi.icon}</span>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{k.label}</p>
+              <span className="material-symbols-outlined text-slate-300 text-base group-hover:text-slate-500 transition-colors">{k.icon}</span>
             </div>
-            <p className="text-[10px] text-cool-grey font-bold uppercase tracking-wider mb-0.5">{kpi.label}</p>
-            <h3 className="text-lg font-bold tracking-tight group-hover:text-primary transition-colors">{kpi.value}</h3>
+            <p className="text-2xl font-black text-slate-900">{k.isString ? k.value : k.value}</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">{k.suffix}</p>
           </Link>
         ))}
-      </section>
+      </div>
 
-      {/* FILA 2 — Turnos de Hoy + Alertas */}
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Turnos de Hoy */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+      {/* FILA 3 — Turnos + Alertas */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+        {/* Turnos de hoy */}
+        <div className="bg-white border border-slate-100 rounded-xl p-6">
           <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-primary">calendar_today</span>
-              <h3 className="text-lg font-bold">Turnos de Hoy</h3>
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center">
+                <span className="material-symbols-outlined text-white text-[16px]">calendar_today</span>
+              </div>
+              <h3 className="font-bold text-slate-900">Turnos de hoy</h3>
             </div>
-            <Link href="/ventas/turnos" className="text-[10px] font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full hover:bg-primary/20 transition-colors">
+            <Link href="/ventas/turnos" className="text-[10px] font-bold text-slate-400 hover:text-slate-700 transition-colors uppercase tracking-wider">
               Ver todos →
             </Link>
           </div>
           {turnosHoy.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-10 text-cool-grey">
-              <span className="material-symbols-outlined text-3xl mb-2">event_available</span>
-              <p className="text-xs font-medium">Sin turnos programados para hoy</p>
+            <div className="flex flex-col items-center justify-center py-10 text-slate-300">
+              <span className="material-symbols-outlined text-4xl mb-2">event_available</span>
+              <p className="text-xs font-medium text-slate-400">Sin turnos para hoy</p>
             </div>
           ) : (
             <div className="space-y-2">
               {turnosHoy.map((t) => {
                 const st = statusLabel(t.status);
                 return (
-                  <div key={t.id} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors">
-                    <div className="text-center min-w-[44px]">
-                      <p className="text-sm font-bold text-primary">
-                        {new Date(t.scheduled_at).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })}
-                      </p>
-                    </div>
+                  <div key={t.id} className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 transition-colors">
+                    <p className="text-sm font-black text-slate-900 min-w-[44px]">
+                      {new Date(t.scheduled_at).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })}
+                    </p>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{t.client_name}</p>
-                      {t.notes && <p className="text-[10px] text-cool-grey truncate">{t.notes}</p>}
+                      <p className="text-sm font-semibold text-slate-800 truncate">{t.client_name}</p>
+                      {t.notes && <p className="text-[10px] text-slate-400 truncate">{t.notes}</p>}
                     </div>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${st.color}`}>{st.label}</span>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap ${st.color}`}>{st.label}</span>
                   </div>
                 );
               })}
@@ -193,58 +236,67 @@ export default function VentasResumenPage() {
         </div>
 
         {/* Alertas */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-          <div className="flex items-center gap-2 mb-5">
-            <span className="material-symbols-outlined text-amber-500">notification_important</span>
-            <h3 className="text-lg font-bold">Alertas</h3>
+        <div className="bg-white border border-slate-100 rounded-xl p-6">
+          <div className="flex items-center gap-2.5 mb-5">
+            <div className="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center">
+              <span className="material-symbols-outlined text-white text-[16px]">notifications</span>
+            </div>
+            <h3 className="font-bold text-slate-900">Alertas</h3>
           </div>
           <div className="space-y-2">
             {alerts.map((alert, i) => {
-              const s = alertStyles[alert.type];
+              const styles = {
+                warning: { dot: "bg-amber-400", text: "text-amber-700", bg: "hover:bg-amber-50" },
+                danger: { dot: "bg-red-400", text: "text-red-700", bg: "hover:bg-red-50" },
+                info: { dot: "bg-emerald-400", text: "text-emerald-700", bg: "hover:bg-emerald-50" },
+              }[alert.type];
               return (
                 <Link
                   key={i}
                   href={alert.link}
-                  className={`flex items-center gap-3 p-3 rounded-xl ${s.bg} border ${s.border} hover:brightness-95 transition-all`}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${styles.bg}`}
                 >
-                  <span className={`material-symbols-outlined ${s.iconColor} text-lg`}>{s.icon}</span>
-                  <p className={`text-xs font-medium ${s.textColor} flex-1`}>{alert.text}</p>
-                  {alert.link !== "#" && <span className="material-symbols-outlined text-cool-grey text-sm">chevron_right</span>}
+                  <span className={`w-2 h-2 rounded-full shrink-0 ${styles.dot}`} />
+                  <p className={`text-xs font-semibold flex-1 ${styles.text}`}>{alert.text}</p>
+                  {alert.link !== "#" && <span className="material-symbols-outlined text-slate-300 text-base">chevron_right</span>}
                 </Link>
               );
             })}
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* FILA 3 — Actividad Reciente (ancho completo) */}
-      <section className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-        <div className="flex items-center gap-2 mb-5">
-          <span className="material-symbols-outlined text-primary">history</span>
-          <h3 className="text-lg font-bold">Actividad Reciente</h3>
+      {/* ACTIVIDAD RECIENTE */}
+      <div className="bg-white border border-slate-100 rounded-xl p-6">
+        <div className="flex items-center gap-2.5 mb-5">
+          <div className="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center">
+            <span className="material-symbols-outlined text-white text-[16px]">history</span>
+          </div>
+          <h3 className="font-bold text-slate-900">Actividad reciente</h3>
         </div>
         {activity.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-cool-grey">
-            <span className="material-symbols-outlined text-3xl mb-2">history</span>
-            <p className="text-xs font-medium">Sin actividad registrada</p>
+          <div className="flex flex-col items-center justify-center py-12 text-slate-300">
+            <span className="material-symbols-outlined text-4xl mb-2">history</span>
+            <p className="text-xs font-medium text-slate-400">Sin actividad registrada</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="divide-y divide-slate-50">
             {activity.map((a) => (
-              <div key={a.id} className="flex items-start gap-3 p-3 rounded-xl bg-slate-50">
-                <div className="w-2 h-2 rounded-full bg-primary mt-1.5 shrink-0"></div>
+              <div key={a.id} className="flex items-start gap-4 py-3 first:pt-0 last:pb-0">
+                <div className="w-1.5 h-1.5 rounded-full bg-slate-300 mt-2 shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{a.action}</p>
-                  {a.details && <p className="text-xs text-on-surface-variant mt-0.5 truncate">{a.details}</p>}
-                  <p className="text-[10px] text-cool-grey mt-1">
-                    {new Date(a.created_at).toLocaleString("es-AR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
-                  </p>
+                  <p className="text-sm font-semibold text-slate-800 truncate">{a.action}</p>
+                  {a.details && <p className="text-xs text-slate-400 truncate mt-0.5">{a.details}</p>}
                 </div>
+                <p className="text-[10px] text-slate-400 whitespace-nowrap shrink-0">
+                  {new Date(a.created_at).toLocaleString("es-AR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+                </p>
               </div>
             ))}
           </div>
         )}
-      </section>
-    </>
+      </div>
+
+    </div>
   );
 }
