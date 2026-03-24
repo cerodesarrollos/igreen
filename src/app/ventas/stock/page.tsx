@@ -86,52 +86,9 @@ const emptyProductForm = {
 };
 
 /* ───── helpers ───── */
-function maskImei(imei: string) {
-  return "•••••" + imei.slice(-4);
-}
-
 function conditionLabel(c: "A" | "B" | "C") {
   const map = { A: "Impecable", B: "Detalles menores", C: "Uso visible" };
   return map[c];
-}
-
-function conditionBadge(c: "A" | "B" | "C") {
-  const map = {
-    A: "bg-green-100 text-green-700",
-    B: "bg-amber-100 text-amber-700",
-    C: "bg-red-100 text-red-700",
-  };
-  return (
-    <span className={`px-2 py-0.5 ${map[c]} text-[10px] font-bold rounded-full whitespace-nowrap`}>
-      {c} — {conditionLabel(c)}
-    </span>
-  );
-}
-
-function batteryColor(pct: number) {
-  if (pct > 85) return "text-green-600";
-  if (pct >= 70) return "text-amber-600";
-  return "text-red-500";
-}
-
-function statusBadge(s: string) {
-  const map: Record<string, string> = {
-    disponible: "bg-green-100 text-green-700",
-    reservado: "bg-amber-100 text-amber-700",
-    vendido: "bg-slate-200 text-slate-600",
-  };
-  const labels: Record<string, string> = { disponible: "Disponible", reservado: "Reservado", vendido: "Vendido" };
-  return (
-    <span className={`px-2.5 py-0.5 ${map[s] || "bg-white/[0.04] text-white/40"} text-[10px] font-bold rounded-full`}>
-      {labels[s] || s}
-    </span>
-  );
-}
-
-function originBadge(o: string) {
-  return o === "propio"
-    ? <span className="px-3 py-1 bg-green-100 text-green-700 text-[10px] font-black uppercase tracking-widest rounded-full">Stock Propio</span>
-    : <span className="px-3 py-1 bg-white/[0.06] text-white/50 text-[10px] font-black uppercase tracking-widest rounded-full">Consignación</span>;
 }
 
 function formatPrice(n: number | null) {
