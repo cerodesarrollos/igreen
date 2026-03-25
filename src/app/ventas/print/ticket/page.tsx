@@ -16,8 +16,7 @@ interface SaleData {
   sold_at: string;
   client_name: string | null;
   client_phone: string | null;
-  client_dni: string | null;
-  extended_warranty: boolean;
+  warranty_days: number;
   warranty_until: string | null;
   product: {
     model: string;
@@ -80,8 +79,8 @@ function TicketContent() {
         .from("ig_sales")
         .select(`
           id, sale_price, payment_method, sold_at,
-          client_name, client_phone, client_dni,
-          extended_warranty, warranty_until,
+          client_name, client_phone,
+          warranty_days, warranty_until,
           product:ig_products(model, capacity, color, condition, battery_health, imei)
         `)
         .order("sold_at", { ascending: false })
@@ -124,7 +123,7 @@ function TicketContent() {
   }
 
   const garCode = generateGarCode(sale.id, sale.sold_at);
-  const warrantyDays = sale.extended_warranty ? 180 : 90;
+  const warrantyDays = sale.warranty_days || 90;
   const warrantyUntil = sale.warranty_until || addDays(sale.sold_at, warrantyDays);
   const imeiMasked = sale.product.imei
     ? "••••••••" + sale.product.imei.slice(-4)
@@ -185,9 +184,8 @@ function TicketContent() {
 
         <div className="my-2">
           {sale.client_name && <p>Cliente: <span className="font-bold">{sale.client_name}</span></p>}
-          {sale.client_dni && <p>DNI: {sale.client_dni}</p>}
           {sale.client_phone && <p>Tel: {sale.client_phone}</p>}
-          {!sale.client_name && !sale.client_dni && <p className="text-slate-400 italic">Sin datos de cliente</p>}
+          {!sale.client_name && !sale.client_phone && <p className="text-slate-400 italic">Sin datos de cliente</p>}
         </div>
 
         <p className="text-center text-slate-400">─────────────────────</p>

@@ -16,9 +16,7 @@ interface SaleData {
   sold_at: string;
   client_name: string | null;
   client_phone: string | null;
-  client_dni: string | null;
-  client_email: string | null;
-  extended_warranty: boolean;
+  warranty_days: number;
   warranty_until: string | null;
   product: {
     id: string;
@@ -77,8 +75,8 @@ function GarantiaContent() {
         .from("ig_sales")
         .select(`
           id, sale_price, payment_method, sold_at,
-          client_name, client_phone, client_dni, client_email,
-          extended_warranty, warranty_until,
+          client_name, client_phone,
+          warranty_days, warranty_until,
           product:ig_products(id, model, capacity, color, condition, battery_health, imei, product_code)
         `)
         .order("sold_at", { ascending: false })
@@ -125,7 +123,7 @@ function GarantiaContent() {
   }
 
   const garCode = generateGarCode(sale.id, sale.sold_at);
-  const warrantyDays = sale.extended_warranty ? 180 : 90;
+  const warrantyDays = sale.warranty_days || 90;
   const warrantyUntil = sale.warranty_until || addDays(sale.sold_at, warrantyDays);
 
   return (
@@ -208,19 +206,14 @@ function GarantiaContent() {
               {sale.client_name && (
                 <div className="flex"><span className="text-slate-500 w-48 flex-shrink-0">Nombre:</span><span className="font-bold">{sale.client_name}</span></div>
               )}
-              {sale.client_dni && (
-                <div className="flex"><span className="text-slate-500 w-48 flex-shrink-0">DNI:</span><span className="font-bold">{sale.client_dni}</span></div>
-              )}
               {sale.client_phone && (
                 <div className="flex"><span className="text-slate-500 w-48 flex-shrink-0">Teléfono:</span><span className="font-bold">{sale.client_phone}</span></div>
-              )}
-              {sale.client_email && (
-                <div className="flex"><span className="text-slate-500 w-48 flex-shrink-0">Email:</span><span className="font-bold">{sale.client_email}</span></div>
               )}
             </div>
           ) : (
             <p className="text-sm text-slate-400 italic">Venta sin datos de cliente registrados</p>
           )}
+
         </div>
 
         {/* Cobertura */}
