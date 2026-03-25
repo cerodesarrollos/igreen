@@ -706,19 +706,19 @@ export default function VentasStockPage() {
     const condLabel = p.condition === 'A' ? 'Grado A — Excelente' : p.condition === 'B' ? 'Grado B — Muy bueno' : 'Grado C — Bueno';
     w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Etiqueta ${p.product_code || p.id}</title>
 <style>
-  @page { size: 62mm 29mm landscape; margin: 1mm; }
+  @page { size: 62mm 29mm; margin: 0; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { width: 62mm; height: 29mm; overflow: hidden; }
   body { font-family: Arial, Helvetica, sans-serif; background: #fff; color: #000; }
-  .label { width: 100%; height: 100%; padding: 1.5mm 2mm; display: flex; flex-direction: column; justify-content: space-between; }
+  .label { width: 62mm; height: 29mm; padding: 2mm 3mm; display: flex; flex-direction: column; justify-content: space-between; }
   .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 2mm; }
-  .model { font-size: 7.5pt; font-weight: 700; color: #000; line-height: 1.2; }
+  .model { font-size: 8pt; font-weight: 700; color: #000; line-height: 1.2; }
   .sub { font-weight: 400; font-size: 6pt; color: #333; }
-  .code { font-size: 7pt; font-weight: 900; color: #000; font-family: monospace; white-space: nowrap; }
+  .code { font-size: 7.5pt; font-weight: 900; color: #000; font-family: monospace; white-space: nowrap; }
   .mid { font-size: 5.5pt; color: #444; line-height: 1.3; }
   .bottom { display: flex; justify-content: space-between; align-items: flex-end; }
   .store { font-size: 5pt; color: #777; letter-spacing: 0.3px; text-transform: uppercase; }
-  .price { font-size: 9.5pt; font-weight: 900; color: #000; }
+  .price { font-size: 10pt; font-weight: 900; color: #000; }
   @media print {
     html, body { width: 62mm; height: 29mm; }
     body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
