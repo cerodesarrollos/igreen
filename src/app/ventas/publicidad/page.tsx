@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import StoryCanvas from "@/components/StoryCanvas";
+import PhotoUploader from "@/components/PhotoUploader";
 
 /* ───── Types ───── */
 interface Product {
@@ -434,24 +435,40 @@ export default function PublicidadPage() {
               {/* Tab: Post */}
               {modalTab === "post" && (
                 <>
-                  {imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={imageUrl} alt="Preview" className="w-full aspect-square object-cover rounded-xl mb-4" />
-                  ) : (
-                    <div className="w-full aspect-square bg-white/[0.04] border border-white/[0.07] rounded-xl mb-4 flex flex-col items-center justify-center">
-                      <span className="material-symbols-outlined text-4xl text-white/25 mb-2">add_photo_alternate</span>
-                      <p className="text-xs text-white/35">Sin foto — el agente no puede publicar sin imagen</p>
+                  {/* Foto preview o uploader */}
+                  <div className="mb-4">
+                    {imageUrl ? (
+                      <div className="relative group">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={imageUrl} alt="Preview" className="w-full aspect-square object-cover rounded-xl" />
+                        <button
+                          onClick={() => setImageUrl("")}
+                          className="absolute top-2 right-2 w-7 h-7 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <span className="material-symbols-outlined text-[14px] text-white/70">close</span>
+                        </button>
+                      </div>
+                    ) : (
+                      <PhotoUploader
+                        productId={selectedProduct.id}
+                        currentPhotos={selectedProduct.photos || []}
+                        onPhotosChange={(photos) => {
+                          setImageUrl(photos[0] || "");
+                          setSelectedProduct({ ...selectedProduct, photos });
+                        }}
+                      />
+                    )}
+                  </div>
+
+                  {imageUrl && (
+                    <div className="mb-4">
+                      <label className="block text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">URL de la imagen</label>
+                      <input
+                        type="url" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://..."
+                        className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2 text-sm focus:outline-none placeholder:text-white/25"
+                      />
                     </div>
                   )}
-
-                  <div className="mb-4">
-                    <label className="block text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">URL de la imagen *</label>
-                    <input
-                      type="url" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://..."
-                      className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2 text-sm focus:outline-none placeholder:text-white/25"
-                    />
-                    <p className="text-[10px] text-white/30 mt-1">Debe ser una URL pública accesible por Meta</p>
-                  </div>
 
                   <div className="mb-4">
                     <label className="block text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Caption</label>
@@ -489,16 +506,29 @@ export default function PublicidadPage() {
               {/* Tab: Historia */}
               {modalTab === "historia" && (
                 <div className="space-y-4">
-                  <div>
-                    <label className="block text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">URL de la foto del equipo</label>
-                    <input
-                      type="url"
-                      value={imageUrl}
-                      onChange={(e) => setImageUrl(e.target.value)}
-                      placeholder="https://... (o cargá la foto en Stock primero)"
-                      className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2 text-sm focus:outline-none placeholder:text-white/25"
-                    />
-                  </div>
+                  {!imageUrl && (
+                    <div>
+                      <label className="block text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2">Foto del equipo</label>
+                      <PhotoUploader
+                        productId={selectedProduct.id}
+                        currentPhotos={selectedProduct.photos || []}
+                        onPhotosChange={(photos) => {
+                          setImageUrl(photos[0] || "");
+                          setSelectedProduct({ ...selectedProduct, photos });
+                        }}
+                      />
+                    </div>
+                  )}
+                  {imageUrl && (
+                    <div className="flex items-center gap-2 p-2 bg-white/[0.04] border border-white/[0.07] rounded-xl">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={imageUrl} alt="" className="w-10 h-10 object-cover rounded-lg flex-shrink-0" />
+                      <p className="text-xs text-white/50 flex-1 truncate">{selectedProduct.model}</p>
+                      <button onClick={() => setImageUrl("")} className="p-1 hover:bg-white/[0.07] rounded-lg transition-colors">
+                        <span className="material-symbols-outlined text-[14px] text-white/35">close</span>
+                      </button>
+                    </div>
+                  )}
                   <StoryCanvas
                     imageUrl={imageUrl}
                     model={selectedProduct.model}
