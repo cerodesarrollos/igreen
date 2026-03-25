@@ -572,9 +572,9 @@ export default function VentasStockPage() {
     const condLabel = p.condition === 'A' ? 'Grado A — Excelente' : p.condition === 'B' ? 'Grado B — Muy bueno' : 'Grado C — Bueno';
     w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Etiqueta ${p.product_code || p.id}</title>
 <style>
-  @page { size: 50mm 30mm; margin: 0; }
+  @page { size: 62mm 29mm; margin: 0; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { width: 50mm; height: 30mm; font-family: Arial, sans-serif; background: #fff; display: flex; align-items: stretch; }
+  body { width: 62mm; height: 29mm; font-family: Arial, sans-serif; background: #fff; display: flex; align-items: stretch; }
   .label { width: 100%; padding: 2mm 2.5mm; display: flex; flex-direction: column; justify-content: space-between; }
   .top { display: flex; justify-content: space-between; align-items: flex-start; }
   .model { font-size: 7pt; font-weight: 700; color: #000; line-height: 1.2; }
