@@ -41,13 +41,21 @@ export default function InboxPage() {
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const filters = [
+  const channels = [
+    { key: 'instagram', label: 'Instagram', icon: 'photo_camera' },
+    { key: 'whatsapp', label: 'WhatsApp', icon: 'chat' },
+    { key: 'messenger', label: 'Messenger', icon: 'forum' },
+  ];
+
+  const statusFilters = [
     { key: 'todos', label: 'Todos' },
     { key: 'unread', label: 'Sin leer' },
-    { key: 'agent', label: 'IA' },
-    { key: 'human', label: 'Humano' },
-    { key: 'archived', label: 'Archivados' },
+    { key: 'attention', label: 'Atención' },
+    { key: 'waiting', label: 'Esperando' },
+    { key: 'done', label: 'Finalizados' },
   ];
+
+  const [activeChannel, setActiveChannel] = useState<string>('instagram');
 
   useEffect(() => {
     fetchConversations();
@@ -162,25 +170,53 @@ export default function InboxPage() {
 
       {/* Conversation list */}
       <div className="w-72 shrink-0 flex flex-col border-r border-white/[0.06] bg-[#0e0e10]">
-        {/* Header */}
-        <div className="p-4 border-b border-white/[0.06] space-y-3">
-          <div className="flex items-center justify-between">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/50">Instagram DMs</p>
-            <button onClick={fetchConversations} className="text-white/50 hover:text-white/50 transition-colors">
-              <span className="material-symbols-outlined text-[16px]">refresh</span>
+
+        {/* Channel tabs */}
+        <div className="flex border-b border-white/[0.06]">
+          {channels.map(ch => (
+            <button
+              key={ch.key}
+              onClick={() => setActiveChannel(ch.key)}
+              title={ch.label}
+              className={`flex-1 flex flex-col items-center justify-center py-3 gap-1 transition-colors relative ${
+                activeChannel === ch.key
+                  ? 'text-white/90'
+                  : 'text-white/30 hover:text-white/55'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[18px]">{ch.icon}</span>
+              <span className="text-[9px] font-medium tracking-wide">{ch.label}</span>
+              {activeChannel === ch.key && (
+                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-[2px] rounded-full bg-[#3eff8e]" />
+              )}
+              {/* Hardcode badge: WA and Messenger not connected yet */}
+              {ch.key !== 'instagram' && (
+                <span className="absolute top-2 right-3 text-[8px] text-white/20 font-medium">pronto</span>
+              )}
             </button>
-          </div>
+          ))}
+        </div>
+
+        {/* Search + status filters */}
+        <div className="p-3 border-b border-white/[0.06] space-y-2.5">
           <div className="flex items-center gap-2 bg-white/[0.04] border border-white/[0.06] rounded-lg px-3 py-1.5">
-            <span className="material-symbols-outlined text-white/50 text-base">search</span>
-            <input type="text" placeholder="Buscar..." value={search} onChange={e => setSearch(e.target.value)} className="bg-transparent text-sm text-white/70 placeholder:text-white/45 outline-none w-full" />
+            <span className="material-symbols-outlined text-white/40 text-base">search</span>
+            <input type="text" placeholder="Buscar..." value={search} onChange={e => setSearch(e.target.value)} className="bg-transparent text-sm text-white/70 placeholder:text-white/35 outline-none w-full" />
           </div>
-          <div className="flex gap-1 flex-wrap">
-            {filters.map(f => (
+          <div className="flex gap-1 flex-wrap items-center">
+            {statusFilters.map(f => (
               <button key={f.key} onClick={() => setFilterStatus(f.key)}
-                className={`px-2.5 py-1 rounded-md text-[10px] font-medium transition-colors ${filterStatus === f.key ? 'bg-white/[0.1] text-white/80' : 'text-white/55 hover:text-white/50'}`}>
+                className={`px-2.5 py-1 rounded-md text-[10px] font-medium transition-colors ${
+                  filterStatus === f.key
+                    ? 'bg-white/[0.1] text-white/85'
+                    : 'text-white/40 hover:text-white/60'
+                }`}>
                 {f.label}
               </button>
             ))}
+            <button onClick={fetchConversations} className="ml-auto text-white/30 hover:text-white/55 transition-colors">
+              <span className="material-symbols-outlined text-[15px]">refresh</span>
+            </button>
           </div>
         </div>
 
