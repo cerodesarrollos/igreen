@@ -706,29 +706,33 @@ export default function VentasStockPage() {
     const condLabel = p.condition === 'A' ? 'Grado A — Excelente' : p.condition === 'B' ? 'Grado B — Muy bueno' : 'Grado C — Bueno';
     w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Etiqueta ${p.product_code || p.id}</title>
 <style>
-  @page { size: 62mm 29mm; margin: 0; }
+  @page { size: 62mm 29mm; margin: 1mm; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { width: 62mm; height: 29mm; font-family: Arial, sans-serif; background: #fff; display: flex; align-items: stretch; }
-  .label { width: 100%; padding: 2mm 2.5mm; display: flex; flex-direction: column; justify-content: space-between; }
-  .top { display: flex; justify-content: space-between; align-items: flex-start; }
-  .model { font-size: 7pt; font-weight: 700; color: #000; line-height: 1.2; }
-  .code { font-size: 6.5pt; font-weight: 800; color: #000; font-family: monospace; letter-spacing: 0.5px; }
-  .mid { font-size: 5.5pt; color: #444; line-height: 1.4; }
-  .price { font-size: 9pt; font-weight: 900; color: #000; }
+  html, body { width: 62mm; height: 29mm; overflow: hidden; }
+  body { font-family: Arial, Helvetica, sans-serif; background: #fff; color: #000; }
+  .label { width: 100%; height: 100%; padding: 1.5mm 2mm; display: flex; flex-direction: column; justify-content: space-between; }
+  .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 2mm; }
+  .model { font-size: 7.5pt; font-weight: 700; color: #000; line-height: 1.2; }
+  .sub { font-weight: 400; font-size: 6pt; color: #333; }
+  .code { font-size: 7pt; font-weight: 900; color: #000; font-family: monospace; white-space: nowrap; }
+  .mid { font-size: 5.5pt; color: #444; line-height: 1.3; }
   .bottom { display: flex; justify-content: space-between; align-items: flex-end; }
-  .store { font-size: 5pt; color: #888; letter-spacing: 0.5px; text-transform: uppercase; }
-  .battery { font-size: 5.5pt; color: #555; }
-  @media print { body { -webkit-print-color-adjust: exact; } }
+  .store { font-size: 5pt; color: #777; letter-spacing: 0.3px; text-transform: uppercase; }
+  .price { font-size: 9.5pt; font-weight: 900; color: #000; }
+  @media print {
+    html, body { width: 62mm; height: 29mm; }
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
 </style></head><body>
 <div class="label">
   <div class="top">
-    <div class="model">${p.model}<br><span style="font-weight:400;font-size:5.5pt">${p.capacity} · ${p.color}</span></div>
+    <div class="model">${p.model}<br><span class="sub">${[p.capacity, p.color].filter(Boolean).join(' · ')}</span></div>
     <div class="code">${p.product_code || '—'}</div>
   </div>
-  <div class="mid">${condLabel} · Bat. ${p.battery_health}%${p.imei ? ` · ${p.imei.slice(-4).padStart(p.imei.length, '·')}` : ''}</div>
+  <div class="mid">${condLabel}${p.battery_health ? ` · Bat. ${p.battery_health}%` : ''}${p.imei ? ` · IMEI ···${p.imei.slice(-4)}` : ''}</div>
   <div class="bottom">
     <div class="store">iGreen · Los Ríos 1774</div>
-    <div class="price">${p.sale_price ? 'USD ' + p.sale_price.toLocaleString('es-AR') : '—'}</div>
+    <div class="price">${p.sale_price ? 'USD&nbsp;' + p.sale_price.toLocaleString('es-AR') : '—'}</div>
   </div>
 </div>
 </body></html>`);
