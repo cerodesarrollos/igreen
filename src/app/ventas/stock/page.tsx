@@ -94,20 +94,46 @@ function InlinePhotoUploader({ photos, onChange }: { photos: string[]; onChange:
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const [uploadProgress, setUploadProgress] = useState("");
 
   async function uploadFiles(files: FileList | File[]) {
-    const arr = Array.from(files).filter((f) => f.type.startsWith("image/"));
+    const arr = Array.from(files);
     if (!arr.length) return;
     setUploading(true);
+    setUploadError("");
     const newUrls: string[] = [];
-    for (const file of arr) {
-      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+
+    for (let i = 0; i < arr.length; i++) {
+      const file = arr[i];
+      setUploadProgress(`Subiendo ${i + 1}/${arr.length}...`);
+
+      // Detect extension — HEIC support
+      let ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      let contentType = file.type;
+      if (!contentType || contentType === "application/octet-stream") {
+        // iPhone HEIC sin content-type
+        if (ext === "heic" || ext === "heif") {
+          contentType = "image/heic";
+        } else {
+          contentType = "image/jpeg";
+        }
+      }
+      // Force HEIC to be uploaded as-is (browsers that support it will show it)
       const path = `tmp/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const { error } = await supabase.storage.from(BUCKET).upload(path, file, { contentType: file.type, upsert: false });
-      if (!error) newUrls.push(`${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path}`);
+
+      const { error } = await supabase.storage.from(BUCKET).upload(path, file, { contentType, upsert: false });
+      if (error) {
+        setUploadError(`Error en ${file.name}: ${error.message}`);
+        console.error("Upload error:", error);
+        continue;
+      }
+      newUrls.push(`${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path}`);
     }
-    onChange([...photos, ...newUrls]);
+
+    if (newUrls.length > 0) onChange([...photos, ...newUrls]);
     setUploading(false);
+    setUploadProgress("");
   }
 
   function removePhoto(url: string) {
@@ -141,14 +167,17 @@ function InlinePhotoUploader({ photos, onChange }: { photos: string[]; onChange:
         className={`flex flex-col items-center justify-center gap-2 p-5 rounded-xl border-2 border-dashed cursor-pointer transition-all ${dragOver ? "border-white/30 bg-white/[0.06]" : "border-white/[0.10] bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/[0.16]"}`}
       >
         {uploading ? (
-          <><div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white/30" /><p className="text-xs text-white/45">Subiendo...</p></>
+          <><div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white/30" /><p className="text-xs text-white/45">{uploadProgress || "Subiendo..."}</p></>
         ) : (
           <><span className="material-symbols-outlined text-2xl text-white/25">add_photo_alternate</span>
           <p className="text-xs text-white/50 text-center"><span className="font-bold text-white/65">Click</span> o arrastrá las fotos · múltiples a la vez</p>
-          <p className="text-[10px] text-white/30">JPG, PNG, WEBP · máx 10MB c/u</p></>
+          <p className="text-[10px] text-white/30">JPG, PNG, HEIC, WEBP · máx 10MB c/u</p></>
         )}
-        <input ref={inputRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => e.target.files && uploadFiles(e.target.files)} />
+        <input ref={inputRef} type="file" accept="image/*,image/heic,image/heif" multiple className="hidden" onChange={(e) => e.target.files && uploadFiles(e.target.files)} />
       </div>
+      {uploadError && (
+        <p className="text-[11px] text-white/45 bg-white/[0.04] border border-white/[0.07] rounded-lg px-3 py-2">⚠️ {uploadError}</p>
+      )}
       {photos.length > 0 && <p className="text-[10px] text-white/30 text-center">La primera foto es la principal · Hover para eliminar</p>}
     </div>
   );
