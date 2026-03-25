@@ -578,6 +578,7 @@ export default function VentasStockPage() {
   }
 
   return (
+    <div className="px-8 py-8 max-w-[1400px] mx-auto overflow-y-auto flex-1">
     <>
       {/* Top row: Filters left + KPIs right */}
       <div className="flex gap-4 mb-6 items-stretch">
@@ -1029,5 +1030,6 @@ export default function VentasStockPage() {
         <ProductFormModal title="Editar Equipo" form={editForm} setForm={setEditForm} onSubmit={handleEditProduct} onClose={() => setShowEditModal(false)} saving={savingEdit} submitLabel="Guardar Cambios" />
       )}
     </>
+    </div>
   );
 }

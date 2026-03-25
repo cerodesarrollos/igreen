@@ -198,6 +198,7 @@ export default function PublicidadPage() {
   }
 
   return (
+    <div className="px-8 py-8 max-w-[1400px] mx-auto overflow-y-auto flex-1">
     <>
       {/* ── KPI Cards ── */}
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -507,5 +508,6 @@ export default function PublicidadPage() {
         </div>
       )}
     </>
+    </div>
   );
 }
