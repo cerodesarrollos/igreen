@@ -488,16 +488,28 @@ export default function PublicidadPage() {
 
               {/* Tab: Historia */}
               {modalTab === "historia" && (
-                <StoryCanvas
-                  imageUrl={imageUrl}
-                  model={selectedProduct.model}
-                  capacity={selectedProduct.capacity}
-                  color={selectedProduct.color}
-                  condition={selectedProduct.condition}
-                  batteryHealth={selectedProduct.battery_health}
-                  price={selectedProduct.sale_price}
-                  isNew={selectedProduct.is_new}
-                />
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">URL de la foto del equipo</label>
+                    <input
+                      type="url"
+                      value={imageUrl}
+                      onChange={(e) => setImageUrl(e.target.value)}
+                      placeholder="https://... (o cargá la foto en Stock primero)"
+                      className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2 text-sm focus:outline-none placeholder:text-white/25"
+                    />
+                  </div>
+                  <StoryCanvas
+                    imageUrl={imageUrl}
+                    model={selectedProduct.model}
+                    capacity={selectedProduct.capacity}
+                    color={selectedProduct.color}
+                    condition={selectedProduct.condition}
+                    batteryHealth={selectedProduct.battery_health}
+                    price={selectedProduct.sale_price}
+                    isNew={selectedProduct.is_new}
+                  />
+                </div>
               )}
             </div>
           </div>
