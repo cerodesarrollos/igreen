@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
+import StoryCanvas from "@/components/StoryCanvas";
 
 /* ───── Types ───── */
 interface Product {
@@ -76,6 +77,7 @@ export default function PublicidadPage() {
   const [imageUrl, setImageUrl] = useState("");
   const [publishing, setPublishing] = useState(false);
   const [publishError, setPublishError] = useState("");
+  const [modalTab, setModalTab] = useState<"post" | "historia">("post");
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -103,6 +105,7 @@ export default function PublicidadPage() {
     setCaption(buildCaption(p));
     setImageUrl(p.photos?.[0] || "");
     setPublishError("");
+    setModalTab("post");
     setShowModal(true);
   }
 
@@ -397,7 +400,8 @@ export default function PublicidadPage() {
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
           <div className="bg-[#161619] border border-white/[0.10] rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="p-6">
-              <div className="flex justify-between items-start mb-4">
+              {/* Header */}
+              <div className="flex justify-between items-start mb-5">
                 <div>
                   <h3 className="text-lg font-bold">Publicar en Instagram</h3>
                   <p className="text-sm text-white/45">{selectedProduct.model} {selectedProduct.capacity}</p>
@@ -407,55 +411,94 @@ export default function PublicidadPage() {
                 </button>
               </div>
 
-              {imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={imageUrl} alt="Preview" className="w-full aspect-square object-cover rounded-xl mb-4" />
-              ) : (
-                <div className="w-full aspect-square bg-white/[0.04] border border-white/[0.07] rounded-xl mb-4 flex flex-col items-center justify-center">
-                  <span className="material-symbols-outlined text-4xl text-white/25 mb-2">add_photo_alternate</span>
-                  <p className="text-xs text-white/35">Sin foto — el agente no puede publicar sin imagen</p>
-                </div>
+              {/* Tabs */}
+              <div className="flex gap-1 p-1 bg-white/[0.04] border border-white/[0.07] rounded-xl mb-5">
+                {(["post", "historia"] as const).map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setModalTab(tab)}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold transition-all ${
+                      modalTab === tab
+                        ? "bg-white/[0.10] border border-white/[0.12] text-white/85"
+                        : "text-white/40 hover:text-white/60"
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-[14px]">
+                      {tab === "post" ? "image" : "auto_awesome"}
+                    </span>
+                    {tab === "post" ? "Post Feed" : "Historia"}
+                  </button>
+                ))}
+              </div>
+
+              {/* Tab: Post */}
+              {modalTab === "post" && (
+                <>
+                  {imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={imageUrl} alt="Preview" className="w-full aspect-square object-cover rounded-xl mb-4" />
+                  ) : (
+                    <div className="w-full aspect-square bg-white/[0.04] border border-white/[0.07] rounded-xl mb-4 flex flex-col items-center justify-center">
+                      <span className="material-symbols-outlined text-4xl text-white/25 mb-2">add_photo_alternate</span>
+                      <p className="text-xs text-white/35">Sin foto — el agente no puede publicar sin imagen</p>
+                    </div>
+                  )}
+
+                  <div className="mb-4">
+                    <label className="block text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">URL de la imagen *</label>
+                    <input
+                      type="url" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://..."
+                      className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2 text-sm focus:outline-none placeholder:text-white/25"
+                    />
+                    <p className="text-[10px] text-white/30 mt-1">Debe ser una URL pública accesible por Meta</p>
+                  </div>
+
+                  <div className="mb-4">
+                    <label className="block text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Caption</label>
+                    <textarea
+                      value={caption} onChange={(e) => setCaption(e.target.value)} rows={8}
+                      className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2 text-sm font-mono resize-none focus:outline-none"
+                    />
+                  </div>
+
+                  {publishError && (
+                    <div className="mb-4 p-3 bg-white/[0.04] border border-white/[0.08] text-white/55 text-xs rounded-xl">
+                      ❌ {publishError}
+                    </div>
+                  )}
+
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setShowModal(false)}
+                      className="flex-1 px-4 py-2.5 bg-white/[0.06] border border-white/[0.08] text-white/50 rounded-xl text-sm font-bold hover:bg-white/[0.09] transition-all"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={handlePublish} disabled={publishing || !imageUrl}
+                      className="flex-1 px-4 py-2.5 bg-white/[0.10] border border-white/[0.16] text-white/85 rounded-xl text-sm font-bold hover:bg-white/[0.13] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                      {publishing ? (
+                        <><div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white/50" /> Publicando...</>
+                      ) : supervisado ? "Enviar a cola" : "Publicar ahora"}
+                    </button>
+                  </div>
+                </>
               )}
 
-              <div className="mb-4">
-                <label className="block text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">URL de la imagen *</label>
-                <input
-                  type="url" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://..."
-                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2 text-sm focus:outline-none placeholder:text-white/25"
+              {/* Tab: Historia */}
+              {modalTab === "historia" && (
+                <StoryCanvas
+                  imageUrl={imageUrl}
+                  model={selectedProduct.model}
+                  capacity={selectedProduct.capacity}
+                  color={selectedProduct.color}
+                  condition={selectedProduct.condition}
+                  batteryHealth={selectedProduct.battery_health}
+                  price={selectedProduct.sale_price}
+                  isNew={selectedProduct.is_new}
                 />
-                <p className="text-[10px] text-white/30 mt-1">Debe ser una URL pública accesible por Meta</p>
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Caption</label>
-                <textarea
-                  value={caption} onChange={(e) => setCaption(e.target.value)} rows={8}
-                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2 text-sm font-mono resize-none focus:outline-none"
-                />
-              </div>
-
-              {publishError && (
-                <div className="mb-4 p-3 bg-white/[0.04] border border-white/[0.08] text-white/55 text-xs rounded-xl">
-                  ❌ {publishError}
-                </div>
               )}
-
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="flex-1 px-4 py-2.5 bg-white/[0.06] border border-white/[0.08] text-white/50 rounded-xl text-sm font-bold hover:bg-white/[0.09] transition-all"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={handlePublish} disabled={publishing || !imageUrl}
-                  className="flex-1 px-4 py-2.5 bg-white/[0.10] border border-white/[0.16] text-white/85 rounded-xl text-sm font-bold hover:bg-white/[0.13] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {publishing ? (
-                    <><div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white/50" /> Publicando...</>
-                  ) : supervisado ? "Enviar a cola" : "Publicar ahora"}
-                </button>
-              </div>
             </div>
           </div>
         </div>
