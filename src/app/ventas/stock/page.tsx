@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 /* ───── types ───── */
 interface Product {
   id: string;
+  product_code: string | null;
   imei: string;
   model: string;
   brand: string;
@@ -565,6 +566,43 @@ export default function VentasStockPage() {
   }
 
   /* Delete Product */
+  function printLabel(p: Product) {
+    const w = window.open('', '_blank', 'width=400,height=300');
+    if (!w) return;
+    const condLabel = p.condition === 'A' ? 'Grado A — Excelente' : p.condition === 'B' ? 'Grado B — Muy bueno' : 'Grado C — Bueno';
+    w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Etiqueta ${p.product_code || p.id}</title>
+<style>
+  @page { size: 50mm 30mm; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { width: 50mm; height: 30mm; font-family: Arial, sans-serif; background: #fff; display: flex; align-items: stretch; }
+  .label { width: 100%; padding: 2mm 2.5mm; display: flex; flex-direction: column; justify-content: space-between; }
+  .top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .model { font-size: 7pt; font-weight: 700; color: #000; line-height: 1.2; }
+  .code { font-size: 6.5pt; font-weight: 800; color: #000; font-family: monospace; letter-spacing: 0.5px; }
+  .mid { font-size: 5.5pt; color: #444; line-height: 1.4; }
+  .price { font-size: 9pt; font-weight: 900; color: #000; }
+  .bottom { display: flex; justify-content: space-between; align-items: flex-end; }
+  .store { font-size: 5pt; color: #888; letter-spacing: 0.5px; text-transform: uppercase; }
+  .battery { font-size: 5.5pt; color: #555; }
+  @media print { body { -webkit-print-color-adjust: exact; } }
+</style></head><body>
+<div class="label">
+  <div class="top">
+    <div class="model">${p.model}<br><span style="font-weight:400;font-size:5.5pt">${p.capacity} · ${p.color}</span></div>
+    <div class="code">${p.product_code || '—'}</div>
+  </div>
+  <div class="mid">${condLabel} · Bat. ${p.battery_health}%${p.imei ? ` · ${p.imei.slice(-4).padStart(p.imei.length, '·')}` : ''}</div>
+  <div class="bottom">
+    <div class="store">iGreen · Los Ríos 1774</div>
+    <div class="price">${p.sale_price ? 'USD ' + p.sale_price.toLocaleString('es-AR') : '—'}</div>
+  </div>
+</div>
+</body></html>`);
+    w.document.close();
+    w.focus();
+    setTimeout(() => { w.print(); }, 300);
+  }
+
   async function handleDeleteProduct() {
     if (!selectedProduct) return;
     setDeletingProduct(true);
@@ -826,7 +864,7 @@ export default function VentasStockPage() {
                             <td className="px-4 py-3.5 border-l border-white/[0.04]">
                               <div>
                                 <p className="text-sm font-medium text-white/80">{p.model}</p>
-                                <p className="text-[10px] text-white/55">{p.color}{p.is_new ? ' · NUEVO' : ''}</p>
+                                <p className="text-[10px] text-white/40 font-mono">{p.product_code || '—'}{p.color ? ` · ${p.color}` : ''}{p.is_new ? ' · NUEVO' : ''}</p>
                               </div>
                             </td>
                             <td className="px-4 py-3.5 font-mono text-[11px] text-white/55 border-l border-white/[0.04]">••••{p.imei.slice(-4)}</td>
@@ -940,6 +978,10 @@ export default function VentasStockPage() {
                                     <button onClick={(e) => { e.stopPropagation(); openEditModal(p); }}
                                       className="flex items-center justify-center gap-1.5 py-2.5 bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] text-white/55 text-xs font-medium rounded-xl transition-colors w-full">
                                       <span className="material-symbols-outlined text-[14px]">edit</span>Editar
+                                    </button>
+                                    <button onClick={(e) => { e.stopPropagation(); printLabel(p); }}
+                                      className="flex items-center justify-center gap-1.5 py-2.5 bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] text-white/55 text-xs font-medium rounded-xl transition-colors w-full">
+                                      <span className="material-symbols-outlined text-[14px]">label</span>Etiqueta
                                     </button>
                                     {p.status !== 'vendido' && !showDeleteConfirm && (
                                       <button onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(true); }}
