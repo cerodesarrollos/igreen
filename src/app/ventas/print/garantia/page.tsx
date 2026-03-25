@@ -146,13 +146,14 @@ function GarantiaContent() {
     <>
       <style>{`
         @media print {
-          @page { size: A4; margin: 14mm 16mm; }
+          @page { size: A4; margin: 14mm 16mm; background: white; }
+          html, body { background: white !important; }
           body * { visibility: hidden; }
           .print-area, .print-area * { visibility: visible; }
-          .print-area { position: absolute; left: 0; top: 0; width: 100%; }
+          .print-area { position: absolute; left: 0; top: 0; width: 100%; background: white; }
           .no-print { display: none !important; }
         }
-        body { margin: 0; padding: 0; }
+        body { margin: 0; padding: 0; background: white; }
       `}</style>
 
       {/* Action bar */}
@@ -172,9 +173,13 @@ function GarantiaContent() {
 
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "28px", paddingBottom: "20px", borderBottom: "2px solid #111" }}>
-          {/* Logo */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-igreen.png" alt="iGreen" style={{ height: "36px", objectFit: "contain" }} />
+          {/* Logo + dirección */}
+          <div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo-igreen.png" alt="iGreen" style={{ height: "34px", objectFit: "contain", marginBottom: "6px", display: "block" }} />
+            <p style={{ fontSize: "10px", color: "#888", lineHeight: "1.5", margin: 0 }}>Las Heras 1774, Recoleta, CABA</p>
+            <p style={{ fontSize: "10px", color: "#888", margin: 0 }}>+54 9 11 3129-1774</p>
+          </div>
           {/* Cert info */}
           <div style={{ textAlign: "right" }}>
             <p style={{ fontSize: "10px", color: "#888", marginBottom: "2px", textTransform: "uppercase", letterSpacing: "0.1em" }}>Certificado de Garantía</p>
@@ -210,10 +215,17 @@ function GarantiaContent() {
 
         {/* Cobertura */}
         <Section title="Cobertura">
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0 24px", marginBottom: "14px" }}>
-            <Row label="Vigencia" value={`${warrantyDays} días${warrantyDays > 90 ? " (extendida)" : ""}`} />
-            <Row label="Desde" value={formatDate(sale.sold_at)} />
-            <Row label="Hasta" value={formatDate(warrantyUntil)} />
+          <div style={{ display: "flex", gap: "0", marginBottom: "14px", background: "#f8f8f8", borderRadius: "8px", overflow: "hidden" }}>
+            {[
+              { label: "Vigencia", value: `${warrantyDays} días${warrantyDays > 90 ? " (ext.)" : ""}` },
+              { label: "Desde", value: formatDate(sale.sold_at) },
+              { label: "Hasta", value: formatDate(warrantyUntil) },
+            ].map((item, i) => (
+              <div key={i} style={{ flex: 1, padding: "10px 14px", borderRight: i < 2 ? "1px solid #eee" : "none" }}>
+                <p style={{ fontSize: "9px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.1em", color: "#888", marginBottom: "3px" }}>{item.label}</p>
+                <p style={{ fontSize: "13px", fontWeight: "700", color: "#111" }}>{item.value}</p>
+              </div>
+            ))}
           </div>
 
           {/* Qué cubre / No cubre */}
@@ -259,7 +271,7 @@ function GarantiaContent() {
 
         {/* Footer */}
         <div style={{ textAlign: "center", marginTop: "24px", paddingTop: "14px", borderTop: "1px solid #eee" }}>
-          <p style={{ fontSize: "9px", color: "#bbb" }}>iGreen · Los Ríos 1774, CABA · Tel: +54 11 3577-2057 · www.igreen.com.ar</p>
+          <p style={{ fontSize: "9px", color: "#bbb" }}>iGreen · Las Heras 1774, Recoleta, CABA · +54 9 11 3129-1774</p>
         </div>
 
       </div>
