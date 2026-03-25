@@ -578,7 +578,7 @@ export default function VentasStockPage() {
   }
 
   return (
-    <div className="px-8 py-8 max-w-[1400px] mx-auto overflow-y-auto flex-1">
+    <div className="px-8 py-8 overflow-y-auto flex-1">
     <>
       {/* Top row: Filters left + KPIs right */}
       <div className="flex gap-4 mb-6 items-stretch">

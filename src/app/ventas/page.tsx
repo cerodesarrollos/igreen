@@ -110,7 +110,7 @@ export default function VentasResumenPage() {
   ];
 
   return (
-    <div className="px-8 py-8 max-w-[1400px] mx-auto overflow-y-auto flex-1">
+    <div className="px-8 py-8 overflow-y-auto flex-1">
     <div className="space-y-8">
 
       {/* Header */}

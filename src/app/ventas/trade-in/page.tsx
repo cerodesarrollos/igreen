@@ -237,7 +237,7 @@ export default function TradeInPage() {
   }
 
   return (
-    <div className="px-8 py-8 max-w-[1400px] mx-auto overflow-y-auto flex-1">
+    <div className="px-8 py-8 overflow-y-auto flex-1">
     <>
       {/* Action button */}
       <div className="flex justify-end mb-6">

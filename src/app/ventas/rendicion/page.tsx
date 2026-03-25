@@ -185,7 +185,7 @@ export default function RendicionPage() {
   ];
 
   return (
-    <div className="px-8 py-8 max-w-[1400px] mx-auto overflow-y-auto flex-1">
+    <div className="px-8 py-8 overflow-y-auto flex-1">
     <>
       {/* ── Chip Filters ── */}
       <div className="flex flex-wrap items-center gap-2 mb-6">
