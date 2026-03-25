@@ -40,8 +40,22 @@ export default function InboxPage() {
   const [replyText, setReplyText] = useState('');
   const [sending, setSending] = useState(false);
   const [attachments, setAttachments] = useState<File[]>([]);
+  const [convLabel, setConvLabel] = useState<string>('');
+  const [labelMenuOpen, setLabelMenuOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const labelMenuRef = useRef<HTMLDivElement>(null);
+
+  const CONV_LABELS = [
+    { key: 'consulta',         label: 'Consulta',              color: 'text-white/55',         bg: 'bg-white/[0.07]',       icon: 'help' },
+    { key: 'turno_reservado',  label: 'Turno reservado',       color: 'text-blue-400/80',      bg: 'bg-blue-500/[0.12]',    icon: 'calendar_month' },
+    { key: 'no_asistio',       label: 'No asistió',            color: 'text-amber-400/80',     bg: 'bg-amber-500/[0.12]',   icon: 'event_busy' },
+    { key: 'venta_concretada', label: 'Venta concretada',      color: 'text-[#3eff8e]/80',     bg: 'bg-[#3eff8e]/[0.10]',  icon: 'check_circle' },
+    { key: 'sin_modelo',       label: 'Sin el modelo',         color: 'text-orange-400/80',    bg: 'bg-orange-500/[0.12]',  icon: 'inventory_2' },
+    { key: 'garantia',         label: 'Garantía',              color: 'text-purple-400/80',    bg: 'bg-purple-500/[0.12]',  icon: 'shield' },
+    { key: 'trade_in',         label: 'Trade-in',              color: 'text-cyan-400/80',      bg: 'bg-cyan-500/[0.12]',    icon: 'swap_horiz' },
+    { key: 'no_interesado',    label: 'No interesado',         color: 'text-red-400/70',       bg: 'bg-red-500/[0.10]',     icon: 'thumb_down' },
+  ];
 
   const channels = [
     { key: 'instagram', label: 'Instagram', icon: 'photo_camera' },
@@ -130,6 +144,7 @@ export default function InboxPage() {
 
   async function selectConversation(conv: Conversation) {
     setSelected(conv);
+    loadConvLabel(conv.conversation_id);
     const unreadIds = conv.messages.filter(m => m.status === 'unread' && m.direction === 'inbound').map(m => m.id);
     if (unreadIds.length > 0) {
       await supabase.from('ig_messages').update({ status: 'read' }).in('id', unreadIds);
@@ -141,6 +156,28 @@ export default function InboxPage() {
     await supabase.from('ig_messages').update({ assigned_to: 'human' }).eq('conversation_id', conv.conversation_id);
     fetchConversations();
   }
+
+  // Load label when selecting a conversation
+  async function loadConvLabel(convId: string) {
+    const { data } = await supabase.from('ig_conv_labels').select('label').eq('conversation_id', convId).single();
+    setConvLabel(data?.label || 'consulta');
+  }
+
+  async function saveConvLabel(key: string) {
+    if (!selected) return;
+    setConvLabel(key);
+    setLabelMenuOpen(false);
+    await supabase.from('ig_conv_labels').upsert({ conversation_id: selected.conversation_id, label: key, updated_at: new Date().toISOString() }, { onConflict: 'conversation_id' });
+  }
+
+  // Close label menu on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (labelMenuRef.current && !labelMenuRef.current.contains(e.target as Node)) setLabelMenuOpen(false);
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
 
   async function sendReply() {
     if (!selected || (!replyText.trim() && attachments.length === 0) || sending) return;
@@ -299,9 +336,43 @@ export default function InboxPage() {
                 <p className="text-sm font-semibold text-white/80">{selected.sender_name || selected.sender_username || 'Usuario'}</p>
                 {selected.sender_username && <p className="text-[10px] text-white/55">@{selected.sender_username}</p>}
               </div>
-              <span className={`text-[10px] px-2 py-0.5 rounded-md font-medium ${selected.status === 'agent' ? 'bg-white/[0.06] text-white/40' : 'bg-white/[0.06] text-white/40'}`}>
+              <span className="text-[10px] px-2 py-0.5 rounded-md font-medium bg-white/[0.06] text-white/40">
                 {selected.status === 'agent' ? 'Agente IA' : 'Humano'}
               </span>
+
+              {/* Conversation label badge + dropdown */}
+              {(() => {
+                const lbl = CONV_LABELS.find(l => l.key === convLabel) || CONV_LABELS[0];
+                return (
+                  <div className="relative" ref={labelMenuRef}>
+                    <button
+                      onClick={() => setLabelMenuOpen(v => !v)}
+                      className={`flex items-center gap-1.5 text-[10px] px-2.5 py-1 rounded-md font-medium border border-white/[0.08] transition-colors hover:border-white/[0.14] ${lbl.color} ${lbl.bg}`}
+                    >
+                      <span className="material-symbols-outlined text-[12px]">{lbl.icon}</span>
+                      {lbl.label}
+                      <span className="material-symbols-outlined text-[11px] text-white/30">expand_more</span>
+                    </button>
+
+                    {labelMenuOpen && (
+                      <div className="absolute top-full left-0 mt-1.5 z-50 bg-[#1a1a22] border border-white/[0.1] rounded-xl shadow-2xl overflow-hidden w-52">
+                        <p className="px-3 pt-2.5 pb-1.5 text-[9px] uppercase tracking-[0.12em] text-white/30 font-semibold">Estado de conversación</p>
+                        {CONV_LABELS.map(l => (
+                          <button
+                            key={l.key}
+                            onClick={() => saveConvLabel(l.key)}
+                            className={`w-full flex items-center gap-2.5 px-3 py-2 text-xs transition-colors hover:bg-white/[0.05] ${convLabel === l.key ? 'bg-white/[0.06]' : ''}`}
+                          >
+                            <span className={`material-symbols-outlined text-[15px] ${l.color}`}>{l.icon}</span>
+                            <span className={convLabel === l.key ? 'text-white/80 font-medium' : 'text-white/55'}>{l.label}</span>
+                            {convLabel === l.key && <span className="material-symbols-outlined text-[13px] text-[#3eff8e]/70 ml-auto">check</span>}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
             {selected.status === 'agent' && (
               <button onClick={() => assignToHuman(selected)}
