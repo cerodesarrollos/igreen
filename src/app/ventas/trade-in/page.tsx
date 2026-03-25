@@ -1,7 +1,41 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { supabase } from "@/lib/supabase";
+
+/* ── DarkSelect ── */
+function DarkSelect({ value, onChange, options }: {
+  value: string; onChange: (v: string) => void;
+  options: { value: string; label: string }[];
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const current = options.find(o => o.value === value);
+  useEffect(() => {
+    function h(e: MouseEvent) { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); }
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, []);
+  return (
+    <div ref={ref} className="relative">
+      <button type="button" onClick={() => setOpen(v => !v)}
+        className="w-full flex items-center justify-between px-3 py-2.5 bg-white/[0.03] border border-white/[0.08] rounded-xl text-sm text-white/70 focus:outline-none hover:border-white/[0.15] transition-colors">
+        <span>{current?.label || "Seleccionar"}</span>
+        <span className="material-symbols-outlined text-[16px] text-white/35">{open ? "expand_less" : "expand_more"}</span>
+      </button>
+      {open && (
+        <div className="absolute z-50 w-full mt-1 bg-[#1e1e22] border border-white/[0.1] rounded-xl shadow-2xl overflow-hidden max-h-56 overflow-y-auto">
+          {options.map(opt => (
+            <button key={opt.value} type="button" onClick={() => { onChange(opt.value); setOpen(false); }}
+              className={`w-full text-left px-3 py-2 text-sm transition-colors hover:bg-white/[0.06] ${value === opt.value ? "text-[#3eff8e] font-semibold" : "text-white/65"}`}>
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 interface TradeInPrice {
   id: string;
@@ -290,15 +324,11 @@ export default function TradeInPage() {
               {/* Model selector */}
               <div>
                 <label className="text-[10px] uppercase tracking-widest font-bold text-white/45 block mb-1.5">Modelo</label>
-                <select
+                <DarkSelect
                   value={quoterModel}
-                  onChange={(e) => setQuoterModel(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm font-medium focus:ring-1 focus:ring-[#3eff8e]/30 focus:outline-none"
-                >
-                  {tradeInModels.map((m) => (
-                    <option key={m} value={m}>{m}</option>
-                  ))}
-                </select>
+                  onChange={setQuoterModel}
+                  options={tradeInModels.map(m => ({ value: m, label: m }))}
+                />
               </div>
 
               {/* Condition chips */}
@@ -666,12 +696,17 @@ export default function TradeInPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-[10px] font-bold text-white/45 uppercase tracking-widest">Condición</label>
-                  <select value={form.condition} onChange={(e) => setForm({ ...form, condition: e.target.value })}
-                    className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-[#3eff8e]/30 focus:outline-none">
-                    <option value="A">A — Impecable</option>
-                    <option value="B">B — Detalles</option>
-                    <option value="C">C — Uso visible</option>
-                  </select>
+                  <div className="mt-1">
+                    <DarkSelect
+                      value={form.condition}
+                      onChange={v => setForm({ ...form, condition: v })}
+                      options={[
+                        { value: "A", label: "A — Impecable" },
+                        { value: "B", label: "B — Detalles" },
+                        { value: "C", label: "C — Uso visible" },
+                      ]}
+                    />
+                  </div>
                 </div>
                 <div>
                   <label className="text-[10px] font-bold text-white/45 uppercase tracking-widest">Batería %</label>
