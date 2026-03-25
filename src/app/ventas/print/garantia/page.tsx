@@ -201,7 +201,7 @@ function GarantiaContent() {
           <h3 className="text-xs font-black uppercase tracking-[0.2em] text-[#34C759] mb-4 pb-2 border-b border-slate-200">
             Cliente
           </h3>
-          {(sale.client_name || sale.client_phone || sale.client_dni) ? (
+          {(sale.client_name || sale.client_phone) ? (
             <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
               {sale.client_name && (
                 <div className="flex"><span className="text-slate-500 w-48 flex-shrink-0">Nombre:</span><span className="font-bold">{sale.client_name}</span></div>
