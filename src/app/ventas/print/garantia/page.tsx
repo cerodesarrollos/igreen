@@ -207,13 +207,18 @@ function GarantiaContent() {
         {/* Cliente */}
         <Section title="Cliente">
           {(sale.client_name || sale.client_phone || sale.client_dni) ? (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 24px" }}>
-              {(sale.client_name || sale.client_last_name) && (
-                <Row label="Nombre y apellido" value={[sale.client_name, sale.client_last_name].filter(Boolean).join(" ")} />
-              )}
-              {sale.client_dni && <Row label="DNI" value={sale.client_dni} />}
-              {sale.client_phone && <Row label="Teléfono" value={sale.client_phone} />}
-              {sale.client_email && <Row label="Email" value={sale.client_email} />}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "0" }}>
+              {[
+                (sale.client_name || sale.client_last_name) && { label: "Nombre y apellido", value: [sale.client_name, sale.client_last_name].filter(Boolean).join(" ") },
+                sale.client_dni && { label: "DNI", value: sale.client_dni },
+                sale.client_phone && { label: "Teléfono", value: sale.client_phone },
+                sale.client_email && { label: "Email", value: sale.client_email },
+              ].filter(Boolean).map((item, i) => (
+                <div key={i} style={{ width: "50%", paddingRight: "16px", marginBottom: "8px", boxSizing: "border-box" as const }}>
+                  <p style={{ fontSize: "9px", fontWeight: "700", textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "#aaa", marginBottom: "2px" }}>{(item as {label:string;value:string}).label}</p>
+                  <p style={{ fontSize: "12px", fontWeight: "600", color: "#111", wordBreak: "break-word" as const }}>{(item as {label:string;value:string}).value}</p>
+                </div>
+              ))}
             </div>
           ) : (
             <p style={{ fontSize: "11px", color: "#aaa", fontStyle: "italic" }}>Venta sin datos de cliente registrados</p>
