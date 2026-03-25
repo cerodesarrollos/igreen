@@ -32,11 +32,6 @@ type RoleFilter = "todos" | "comprador" | "vendedor" | "ambos";
 function roleLabel(r: string) {
   return r === "comprador" ? "Comprador" : r === "vendedor" ? "Vendedor" : "Ambos";
 }
-function roleBadgeClasses(r: string) {
-  if (r === "comprador") return "bg-blue-500/15 text-blue-400 border border-blue-200";
-  if (r === "vendedor") return "bg-amber-500/15 text-amber-400 border border-amber-200";
-  return "bg-emerald-500/15 text-emerald-400 border border-emerald-200";
-}
 
 function timeAgo(d: string) {
   const diff = Date.now() - new Date(d).getTime();
@@ -142,7 +137,6 @@ export default function ClientesPage() {
     setForm(emptyForm);
     await fetchData();
     setSaving(false);
-    // Update selected if editing same
     if (editingClient && selectedClient?.id === editingClient.id) {
       setSelectedClient({ ...editingClient, ...payload } as Client);
     }
@@ -152,236 +146,245 @@ export default function ClientesPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-32">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#3eff8e]" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white/30" />
         <span className="ml-3 text-sm text-white/45">Cargando clientes...</span>
       </div>
     );
   }
 
-  const kpiCards: { label: string; value: number; icon: string; bg: string; color: string }[] = [
-    { label: "Total Clientes", value: kpis.total, icon: "groups", bg: "bg-blue-500/15", color: "text-blue-400" },
-    { label: "Nuevos Este Mes", value: kpis.newThisMonth, icon: "person_add", bg: "bg-emerald-500/15", color: "text-emerald-600" },
-    { label: "Compradores", value: kpis.compradores, icon: "shopping_bag", bg: "bg-[#3eff8e]/15", color: "text-[#3eff8e]" },
-    { label: "Vendedores", value: kpis.vendedores, icon: "storefront", bg: "bg-amber-500/15", color: "text-amber-400" },
+  const kpiCards = [
+    { label: "Total Clientes",  value: kpis.total,        icon: "groups"        },
+    { label: "Nuevos Este Mes", value: kpis.newThisMonth,  icon: "person_add"    },
+    { label: "Compradores",     value: kpis.compradores,   icon: "shopping_bag"  },
+    { label: "Vendedores",      value: kpis.vendedores,    icon: "storefront"    },
   ];
 
   const roleChips: { key: RoleFilter; label: string }[] = [
-    { key: "todos", label: "Todos" },
+    { key: "todos",     label: "Todos"     },
     { key: "comprador", label: "Comprador" },
-    { key: "vendedor", label: "Vendedor" },
-    { key: "ambos", label: "Ambos" },
+    { key: "vendedor",  label: "Vendedor"  },
+    { key: "ambos",     label: "Ambos"     },
   ];
 
   return (
     <div className="px-8 py-8 overflow-y-auto flex-1">
-    <>
-      {/* Action button */}
-      <div className="flex justify-end mb-6">
-        <button
-          onClick={openAdd}
-          className="flex items-center gap-2 px-6 py-3 bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e] rounded-full font-bold text-sm  hover:brightness-95 transition-all"
-        >
-          <span className="material-symbols-outlined text-lg">person_add</span> Nuevo Cliente
-        </button>
-      </div>
-
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      {/* ── KPI Cards ── */}
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {kpiCards.map((k) => (
-          <div key={k.label} className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 p-5 flex items-center gap-4">
-            <div className={`w-10 h-10 rounded-xl ${k.bg} flex items-center justify-center flex-shrink-0`}>
-              <span className={`material-symbols-outlined text-xl ${k.color}`}>{k.icon}</span>
-            </div>
-            <div>
-              <p className="text-[10px] uppercase tracking-widest font-bold text-white/45">{k.label}</p>
-              <p className="text-2xl font-bold">{k.value}</p>
+          <div key={k.label} className="rounded-[18px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d]">
+            <div className="rounded-[17px] bg-[#161619] px-5 py-4 h-full shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/35">{k.label}</p>
+                <span className="material-symbols-outlined text-[16px] text-white/15">{k.icon}</span>
+              </div>
+              <div className="mt-3">
+                <p className="text-[28px] font-medium leading-none tracking-tight text-white/90">{k.value}</p>
+              </div>
             </div>
           </div>
         ))}
-      </div>
+      </section>
 
-      {/* Search + Chips */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        <div className="relative flex-1 max-w-md">
-          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-white/45">search</span>
-          <input
-            className="w-full pl-12 pr-6 py-3 bg-[#1a1a1d] border border-white/[0.08] rounded-xl border border-white/[0.08] focus:ring-1 focus:ring-[#3eff8e]/30 text-sm"
-            placeholder="Buscar por nombre, teléfono o email..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          {roleChips.map((chip) => (
-            <button
-              key={chip.key}
-              onClick={() => setRoleFilter(chip.key)}
-              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
-                roleFilter === chip.key
-                  ? "bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e]"
-                  : "bg-white/[0.06] text-white/55 hover:bg-white/[0.08]"
-              }`}
-            >
-              {chip.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Main content: Table + Detail Panel */}
+      {/* ── Table card ── */}
       <div className="flex gap-6">
-        {/* Table */}
-        <div className={`rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 overflow-hidden transition-all ${selectedClient ? "flex-1 min-w-0" : "w-full"}`}>
-          {filtered.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-white/45">
-              <span className="material-symbols-outlined text-4xl mb-3">people</span>
-              <p className="text-sm font-medium">No hay clientes para mostrar</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-white/[0.03]">
-                    <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45">Nombre</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45">Teléfono</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45 hidden lg:table-cell">Email</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45">Rol</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45 hidden md:table-cell">Operaciones</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45 hidden md:table-cell">Última Actividad</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((c, i) => (
-                    <tr
-                      key={c.id}
-                      onClick={() => setSelectedClient(selectedClient?.id === c.id ? null : c)}
-                      className={`cursor-pointer transition-colors ${
-                        selectedClient?.id === c.id
-                          ? "bg-[#3eff8e]/10 border-l-2 border-l-[#3eff8e]"
-                          : i % 2 === 0
-                          ? "bg-white hover:bg-white/[0.03]"
-                          : "bg-white/[0.02] hover:bg-white/[0.03]"
+        <div className={`rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] transition-all ${selectedClient ? "flex-1 min-w-0" : "w-full"}`}>
+          <div className="rounded-[19px] bg-[#161619] shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_8px_32px_-8px_rgba(0,0,0,0.6)] overflow-hidden">
+
+            {/* Header */}
+            <div className="p-6 border-b border-white/[0.06]">
+              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                {/* Search */}
+                <div className="relative flex-1 max-w-sm">
+                  <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-white/35 text-[18px]">search</span>
+                  <input
+                    className="w-full pl-11 pr-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-white/20 placeholder:text-white/30"
+                    placeholder="Buscar por nombre, teléfono o email..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+                </div>
+                {/* Chips + Add */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  {roleChips.map((chip) => (
+                    <button
+                      key={chip.key}
+                      onClick={() => setRoleFilter(chip.key)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+                        roleFilter === chip.key
+                          ? "bg-white/[0.12] border border-white/[0.18] text-white/90"
+                          : "bg-white/[0.06] text-white/45 hover:bg-white/[0.08]"
                       }`}
                     >
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-[#3eff8e]/15 flex items-center justify-center flex-shrink-0">
-                            <span className="text-xs font-bold text-[#3eff8e]">{c.name.charAt(0).toUpperCase()}</span>
-                          </div>
-                          <div>
-                            <p className="text-sm font-bold">{c.name}</p>
-                            {c.instagram && <p className="text-[11px] text-white/45">@{c.instagram}</p>}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 text-sm">{c.phone || "—"}</td>
-                      <td className="px-4 py-4 text-sm text-white/50 hidden lg:table-cell">{c.email || "—"}</td>
-                      <td className="px-4 py-4">
-                        <span className={`inline-block px-2.5 py-1 rounded-full text-[11px] font-bold ${roleBadgeClasses(c.role)}`}>
-                          {roleLabel(c.role)}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 text-sm text-white/45 hidden md:table-cell">0</td>
-                      <td className="px-4 py-4 text-xs text-white/45 hidden md:table-cell">{timeAgo(c.updated_at)}</td>
-                    </tr>
+                      {chip.label}
+                    </button>
                   ))}
-                </tbody>
-              </table>
+                  <button
+                    onClick={openAdd}
+                    className="flex items-center gap-1.5 px-4 py-1.5 bg-white/[0.08] border border-white/[0.12] text-white/75 rounded-full font-bold text-xs hover:bg-white/[0.12] transition-all ml-2"
+                  >
+                    <span className="material-symbols-outlined text-sm">person_add</span> Nuevo Cliente
+                  </button>
+                </div>
+              </div>
             </div>
-          )}
-          <div className="p-4 bg-white/[0.03] text-xs font-medium text-white/45 border-t border-white/[0.06]">
-            {filtered.length} cliente{filtered.length !== 1 ? "s" : ""}
-            {roleFilter !== "todos" && <span className="ml-1">· filtro: {roleFilter}</span>}
+
+            {/* Table */}
+            {filtered.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 text-white/45">
+                <span className="material-symbols-outlined text-4xl mb-3">people</span>
+                <p className="text-sm font-medium">No hay clientes para mostrar</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-white/[0.03]">
+                      <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45">Nombre</th>
+                      <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45">Teléfono</th>
+                      <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45 hidden lg:table-cell">Email</th>
+                      <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45">Rol</th>
+                      <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45 hidden md:table-cell">Operaciones</th>
+                      <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45 hidden md:table-cell">Última Actividad</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.map((c, i) => (
+                      <tr
+                        key={c.id}
+                        onClick={() => setSelectedClient(selectedClient?.id === c.id ? null : c)}
+                        className={`cursor-pointer transition-colors border-b border-white/[0.04] last:border-0 ${
+                          selectedClient?.id === c.id
+                            ? "bg-white/[0.06]"
+                            : i % 2 === 0
+                            ? "bg-transparent hover:bg-white/[0.03]"
+                            : "bg-white/[0.02] hover:bg-white/[0.03]"
+                        }`}
+                      >
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-full bg-white/[0.07] flex items-center justify-center flex-shrink-0">
+                              <span className="text-xs font-bold text-white/60">{c.name.charAt(0).toUpperCase()}</span>
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold">{c.name}</p>
+                              {c.instagram && <p className="text-[11px] text-white/45">@{c.instagram}</p>}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-4 text-sm text-white/70">{c.phone || "—"}</td>
+                        <td className="px-4 py-4 text-sm text-white/50 hidden lg:table-cell">{c.email || "—"}</td>
+                        <td className="px-4 py-4">
+                          <span className="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-white/[0.07] text-white/60 border border-white/[0.08]">
+                            {roleLabel(c.role)}
+                          </span>
+                        </td>
+                        <td className="px-4 py-4 text-sm text-white/45 hidden md:table-cell">0</td>
+                        <td className="px-4 py-4 text-xs text-white/45 hidden md:table-cell">{timeAgo(c.updated_at)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Footer */}
+            <div className="px-6 py-3 bg-white/[0.02] text-xs font-medium text-white/35 border-t border-white/[0.06]">
+              {filtered.length} cliente{filtered.length !== 1 ? "s" : ""}
+              {roleFilter !== "todos" && <span className="ml-1">· filtro: {roleFilter}</span>}
+            </div>
           </div>
         </div>
 
         {/* Detail Panel */}
         {selectedClient && (
-          <div className="w-[360px] flex-shrink-0 hidden lg:block space-y-4">
+          <div className="w-[340px] flex-shrink-0 hidden lg:flex flex-col gap-4">
             {/* Client Card */}
-            <div className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-[#3eff8e]/15 flex items-center justify-center">
-                    <span className="text-lg font-bold text-[#3eff8e]">{selectedClient.name.charAt(0).toUpperCase()}</span>
+            <div className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d]">
+              <div className="rounded-[19px] bg-[#161619] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] p-6">
+                <div className="flex items-start justify-between mb-5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-white/[0.07] flex items-center justify-center">
+                      <span className="text-lg font-bold text-white/60">{selectedClient.name.charAt(0).toUpperCase()}</span>
+                    </div>
+                    <div>
+                      <h3 className="text-base font-bold">{selectedClient.name}</h3>
+                      <span className="inline-block mt-0.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/[0.07] text-white/55 border border-white/[0.08]">
+                        {roleLabel(selectedClient.role)}
+                      </span>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-base font-bold">{selectedClient.name}</h3>
-                    <span className={`inline-block mt-0.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${roleBadgeClasses(selectedClient.role)}`}>
-                      {roleLabel(selectedClient.role)}
+                  <button onClick={() => setSelectedClient(null)} className="text-white/35 hover:text-white/70 transition-colors">
+                    <span className="material-symbols-outlined text-lg">close</span>
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {selectedClient.phone && (
+                    <div className="flex items-center gap-3">
+                      <span className="material-symbols-outlined text-base text-white/35">phone</span>
+                      <span className="text-sm text-white/75">{selectedClient.phone}</span>
+                    </div>
+                  )}
+                  {selectedClient.email && (
+                    <div className="flex items-center gap-3">
+                      <span className="material-symbols-outlined text-base text-white/35">mail</span>
+                      <span className="text-sm text-white/75">{selectedClient.email}</span>
+                    </div>
+                  )}
+                  {selectedClient.instagram && (
+                    <div className="flex items-center gap-3">
+                      <span className="material-symbols-outlined text-base text-white/35">photo_camera</span>
+                      <span className="text-sm text-white/75">@{selectedClient.instagram}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-3">
+                    <span className="material-symbols-outlined text-base text-white/35">calendar_today</span>
+                    <span className="text-sm text-white/45">
+                      Desde {new Date(selectedClient.created_at).toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric" })}
                     </span>
                   </div>
                 </div>
+
                 <button
-                  onClick={() => setSelectedClient(null)}
-                  className="text-white/45 hover:text-white/80 transition-colors"
+                  onClick={() => openEdit(selectedClient)}
+                  className="w-full mt-5 py-2.5 bg-white/[0.06] rounded-xl text-sm font-bold text-white/60 hover:bg-white/[0.09] transition-colors flex items-center justify-center gap-2 border border-white/[0.08]"
                 >
-                  <span className="material-symbols-outlined text-lg">close</span>
+                  <span className="material-symbols-outlined text-base">edit</span> Editar
                 </button>
               </div>
-
-              <div className="space-y-3">
-                {selectedClient.phone && (
-                  <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-base text-white/45">phone</span>
-                    <span className="text-sm">{selectedClient.phone}</span>
-                  </div>
-                )}
-                {selectedClient.email && (
-                  <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-base text-white/45">mail</span>
-                    <span className="text-sm">{selectedClient.email}</span>
-                  </div>
-                )}
-                {selectedClient.instagram && (
-                  <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-base text-white/45">photo_camera</span>
-                    <span className="text-sm">@{selectedClient.instagram}</span>
-                  </div>
-                )}
-                <div className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-base text-white/45">calendar_today</span>
-                  <span className="text-sm text-white/45">
-                    Desde {new Date(selectedClient.created_at).toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric" })}
-                  </span>
-                </div>
-              </div>
-
-              <button
-                onClick={() => openEdit(selectedClient)}
-                className="w-full mt-5 py-2.5 bg-white/[0.06] rounded-xl text-sm font-bold text-white/70 hover:bg-white/[0.08] transition-colors flex items-center justify-center gap-2"
-              >
-                <span className="material-symbols-outlined text-base">edit</span> Editar
-              </button>
             </div>
 
             {/* Notes Card */}
-            <div className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 p-6">
-              <p className="text-[10px] uppercase tracking-widest font-bold text-white/45 mb-3">Notas</p>
-              <p className="text-sm text-white/50 leading-relaxed">
-                {selectedClient.notes || "Sin notas"}
-              </p>
+            <div className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d]">
+              <div className="rounded-[19px] bg-[#161619] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] p-6">
+                <p className="text-[10px] uppercase tracking-widest font-bold text-white/35 mb-3">Notas</p>
+                <p className="text-sm text-white/50 leading-relaxed">
+                  {selectedClient.notes || "Sin notas"}
+                </p>
+              </div>
             </div>
 
-            {/* Operation History (placeholder) */}
-            <div className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 p-6">
-              <p className="text-[10px] uppercase tracking-widest font-bold text-white/45 mb-3">Historial de Operaciones</p>
-              <div className="flex flex-col items-center py-6 text-white/45">
-                <span className="material-symbols-outlined text-3xl mb-2">receipt_long</span>
-                <p className="text-xs">Sin operaciones registradas</p>
+            {/* Operation History */}
+            <div className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d]">
+              <div className="rounded-[19px] bg-[#161619] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] p-6">
+                <p className="text-[10px] uppercase tracking-widest font-bold text-white/35 mb-3">Historial de Operaciones</p>
+                <div className="flex flex-col items-center py-6 text-white/30">
+                  <span className="material-symbols-outlined text-3xl mb-2">receipt_long</span>
+                  <p className="text-xs">Sin operaciones registradas</p>
+                </div>
               </div>
             </div>
           </div>
         )}
       </div>
 
-      {/* Add / Edit Modal */}
+      {/* ── Modal ── */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setShowModal(false)}>
-          <div className="bg-[#1a1a1d] border border-white/[0.10] rounded-2xl shadow-2xl w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-[#161619] border border-white/[0.10] rounded-2xl shadow-2xl w-full max-w-md" onClick={(e) => e.stopPropagation()}>
             <div className="p-6 border-b border-white/[0.06] flex items-center justify-between">
               <h3 className="text-lg font-bold">{editingClient ? "Editar Cliente" : "Nuevo Cliente"}</h3>
-              <button onClick={() => setShowModal(false)} className="text-white/45 hover:text-white/80 transition-colors">
+              <button onClick={() => setShowModal(false)} className="text-white/35 hover:text-white/70 transition-colors">
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
@@ -392,7 +395,7 @@ export default function ClientesPage() {
                   required
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-[#3eff8e]/30"
+                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] rounded-xl border border-white/[0.08] text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
                 />
               </div>
               <div>
@@ -400,7 +403,7 @@ export default function ClientesPage() {
                 <input
                   value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-[#3eff8e]/30"
+                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] rounded-xl border border-white/[0.08] text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
                   placeholder="+54 11 ..."
                 />
               </div>
@@ -410,7 +413,7 @@ export default function ClientesPage() {
                   type="email"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-[#3eff8e]/30"
+                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] rounded-xl border border-white/[0.08] text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
                 />
               </div>
               <div>
@@ -418,7 +421,7 @@ export default function ClientesPage() {
                 <input
                   value={form.instagram}
                   onChange={(e) => setForm({ ...form, instagram: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-[#3eff8e]/30"
+                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] rounded-xl border border-white/[0.08] text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
                   placeholder="usuario (sin @)"
                 />
               </div>
@@ -432,8 +435,8 @@ export default function ClientesPage() {
                       onClick={() => setForm({ ...form, role: r })}
                       className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
                         form.role === r
-                          ? "bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e]"
-                          : "bg-white/[0.06] text-white/55 hover:bg-white/[0.08]"
+                          ? "bg-white/[0.12] border border-white/[0.18] text-white/90"
+                          : "bg-white/[0.06] text-white/45 hover:bg-white/[0.08]"
                       }`}
                     >
                       {roleLabel(r)}
@@ -446,7 +449,7 @@ export default function ClientesPage() {
                 <textarea
                   value={form.notes}
                   onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-[#3eff8e]/30 resize-none"
+                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] rounded-xl border border-white/[0.08] text-sm focus:outline-none focus:ring-1 focus:ring-white/20 resize-none"
                   rows={2}
                 />
               </div>
@@ -454,14 +457,14 @@ export default function ClientesPage() {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="flex-1 py-3 bg-white/[0.08] rounded-full text-sm font-bold hover:bg-white/[0.10] transition-colors"
+                  className="flex-1 py-3 bg-white/[0.06] rounded-full text-sm font-bold text-white/60 hover:bg-white/[0.09] transition-colors border border-white/[0.08]"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex-1 py-3 bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e] rounded-full text-sm font-bold  hover:brightness-95 transition-all disabled:opacity-50"
+                  className="flex-1 py-3 bg-white/[0.10] border border-white/[0.16] text-white/85 rounded-full text-sm font-bold hover:bg-white/[0.13] transition-all disabled:opacity-50"
                 >
                   {saving ? "Guardando..." : editingClient ? "Guardar Cambios" : "Crear Cliente"}
                 </button>
@@ -470,7 +473,6 @@ export default function ClientesPage() {
           </div>
         </div>
       )}
-    </>
     </div>
   );
 }
