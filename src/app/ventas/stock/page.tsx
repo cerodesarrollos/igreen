@@ -109,7 +109,7 @@ function InlinePhotoUploader({ photos, onChange }: { photos: string[]; onChange:
       setUploadProgress(`Subiendo ${i + 1}/${arr.length}...`);
 
       // Detect extension — HEIC support
-      let ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
       let contentType = file.type;
       if (!contentType || contentType === "application/octet-stream") {
         // iPhone HEIC sin content-type
