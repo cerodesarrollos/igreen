@@ -224,7 +224,7 @@ function GarantiaContent() {
           <div className="grid grid-cols-3 gap-x-8 gap-y-2 text-sm mb-5">
             <div className="flex">
               <span className="text-slate-500 w-24 flex-shrink-0">Vigencia:</span>
-              <span className="font-bold">{warrantyDays} días{sale.extended_warranty ? " (extendida)" : ""}</span>
+              <span className="font-bold">{warrantyDays} días{warrantyDays > 90 ? " (extendida)" : ""}</span>
             </div>
             <div className="flex">
               <span className="text-slate-500 w-24 flex-shrink-0">Desde:</span>

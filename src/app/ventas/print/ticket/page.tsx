@@ -191,7 +191,7 @@ function TicketContent() {
         <p className="text-center text-slate-400">─────────────────────</p>
 
         <div className="my-2">
-          <p>Garantía: <span className="font-bold">{warrantyDays} días{sale.extended_warranty ? " (extendida)" : ""}</span></p>
+          <p>Garantía: <span className="font-bold">{warrantyDays} días{warrantyDays > 90 ? " (extendida)" : ""}</span></p>
           <p>Vence: <span className="font-bold">{formatDate(warrantyUntil)}</span></p>
         </div>
 
