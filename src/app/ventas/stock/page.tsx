@@ -706,7 +706,7 @@ export default function VentasStockPage() {
     const condLabel = p.condition === 'A' ? 'Grado A — Excelente' : p.condition === 'B' ? 'Grado B — Muy bueno' : 'Grado C — Bueno';
     w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Etiqueta ${p.product_code || p.id}</title>
 <style>
-  @page { size: 62mm 29mm; margin: 1mm; }
+  @page { size: 62mm 29mm landscape; margin: 1mm; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { width: 62mm; height: 29mm; overflow: hidden; }
   body { font-family: Arial, Helvetica, sans-serif; background: #fff; color: #000; }
