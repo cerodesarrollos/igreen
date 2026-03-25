@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 
 interface Appointment {
@@ -13,202 +13,127 @@ interface Appointment {
   product_id: string | null;
 }
 
+interface IgClient {
+  id: string;
+  name: string;
+  phone: string | null;
+  email: string | null;
+}
+
 type ViewMode = "lista" | "calendario" | "kanban";
 
 const STATUS_COLORS: Record<string, string> = {
   confirmado: "bg-emerald-500/15 text-emerald-400",
-  pendiente: "bg-amber-500/15 text-amber-400",
+  pendiente:  "bg-amber-500/15 text-amber-400",
   completado: "bg-blue-500/15 text-blue-400",
-  no_show: "bg-red-500/15 text-red-400",
-  cancelado: "bg-white/[0.08] text-white/55",
+  no_show:    "bg-red-500/15 text-red-400",
+  cancelado:  "bg-white/[0.08] text-white/55",
 };
-
 const STATUS_LABELS: Record<string, string> = {
-  confirmado: "CONFIRMADO",
-  pendiente: "PENDIENTE",
-  completado: "COMPLETADO",
-  no_show: "NO SHOW",
-  cancelado: "CANCELADO",
+  confirmado: "Confirmado", pendiente: "Pendiente",
+  completado: "Completado", no_show: "No Show", cancelado: "Cancelado",
 };
-
-const STATUS_BORDER_COLORS: Record<string, string> = {
-  pendiente: "border-l-amber-400",
-  confirmado: "border-l-green-400",
-  completado: "border-l-blue-400",
-  no_show: "border-l-red-400",
-  cancelado: "border-l-slate-400",
+const STATUS_BORDER: Record<string, string> = {
+  pendiente: "border-l-amber-400", confirmado: "border-l-emerald-400",
+  completado: "border-l-blue-400", no_show: "border-l-red-400", cancelado: "border-l-white/20",
 };
-
-const STATUS_DOT_COLORS: Record<string, string> = {
-  confirmado: "bg-green-400",
-  pendiente: "bg-amber-400",
-  completado: "bg-blue-400",
-  no_show: "bg-red-400",
-  cancelado: "bg-slate-400",
+const STATUS_DOT: Record<string, string> = {
+  confirmado: "bg-emerald-400", pendiente: "bg-amber-400",
+  completado: "bg-blue-400", no_show: "bg-red-400", cancelado: "bg-white/30",
 };
+const KANBAN_COLS = ["pendiente", "confirmado", "completado", "no_show", "cancelado"] as const;
+const MONTH_NAMES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+const DAY_NAMES = ["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
 
-const KANBAN_COLUMNS = ["pendiente", "confirmado", "completado", "no_show", "cancelado"] as const;
-
-function appointmentStatusBadge(s: string) {
+function Badge({ status }: { status: string }) {
   return (
-    <span className={`px-2.5 py-0.5 ${STATUS_COLORS[s] || "bg-white/[0.06] text-white/55"} text-[10px] font-bold rounded-full whitespace-nowrap`}>
-      {STATUS_LABELS[s] || s.toUpperCase()}
+    <span className={`px-2 py-0.5 ${STATUS_COLORS[status] || "bg-white/[0.06] text-white/55"} text-[10px] font-bold rounded-full whitespace-nowrap uppercase tracking-wide`}>
+      {STATUS_LABELS[status] || status}
     </span>
   );
 }
 
-const emptyForm = {
-  client_name: "",
-  client_phone: "",
-  scheduled_at: "",
-  status: "pendiente",
-  notes: "",
-  product_id: "",
-};
-
-/* ── Action Buttons Component ── */
-function AppointmentActions({
-  appointment,
-  onStatusChange,
-  onEdit,
-  onDelete,
-  compact = false,
-}: {
-  appointment: Appointment;
-  onStatusChange: (id: string, status: string) => void;
-  onEdit: (a: Appointment) => void;
-  onDelete: (id: string) => void;
-  compact?: boolean;
+/* ── DarkSelect ── */
+function DarkSelect({ value, onChange, options }: {
+  value: string; onChange: (v: string) => void;
+  options: { value: string; label: string }[];
 }) {
-  const [confirmDelete, setConfirmDelete] = useState(false);
-  const canChangeStatus = appointment.status === "pendiente" || appointment.status === "confirmado";
-  const canDelete = appointment.status !== "completado";
-  const isPendiente = appointment.status === "pendiente";
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const current = options.find(o => o.value === value);
+  useEffect(() => {
+    function h(e: MouseEvent) { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); }
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, []);
+  return (
+    <div ref={ref} className="relative">
+      <button type="button" onClick={() => setOpen(v => !v)}
+        className="w-full flex items-center justify-between px-3 py-2.5 bg-white/[0.03] border border-white/[0.08] rounded-xl text-sm text-white/70 focus:outline-none hover:border-white/[0.15] transition-colors">
+        <span>{current?.label || "Seleccionar"}</span>
+        <span className="material-symbols-outlined text-[16px] text-white/35">{open ? "expand_less" : "expand_more"}</span>
+      </button>
+      {open && (
+        <div className="absolute z-50 w-full mt-1 bg-[#1e1e22] border border-white/[0.1] rounded-xl shadow-2xl overflow-hidden max-h-56 overflow-y-auto">
+          {options.map(opt => (
+            <button key={opt.value} type="button" onClick={() => { onChange(opt.value); setOpen(false); }}
+              className={`w-full text-left px-3 py-2 text-sm transition-colors hover:bg-white/[0.06] ${value === opt.value ? "text-[#3eff8e] font-semibold" : "text-white/65"}`}>
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
-  const btnBase = compact
+/* ── AppointmentActions ── */
+function AppointmentActions({ a, onStatus, onEdit, onDelete, compact = false }: {
+  a: Appointment; onStatus: (id: string, s: string) => void;
+  onEdit: (a: Appointment) => void; onDelete: (id: string) => void; compact?: boolean;
+}) {
+  const [confirmDel, setConfirmDel] = useState(false);
+  const isPendiente = a.status === "pendiente";
+  const canChange = a.status === "pendiente" || a.status === "confirmado";
+  const canDel = a.status !== "completado";
+  const base = compact
     ? "flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-colors"
-    : "flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-colors";
-
+    : "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-colors";
   return (
     <div className="flex flex-wrap gap-1.5">
-      {/* Confirmar — only for pendiente */}
-      {isPendiente && (
-        <button
-          onClick={() => onStatusChange(appointment.id, "confirmado")}
-          className={`${btnBase} bg-blue-500/15 text-blue-400 hover:bg-blue-500/15`}
-          title="Confirmar turno"
-        >
-          <span className="material-symbols-outlined text-xs">check_circle</span>
-          {!compact && "Confirmar"}
-        </button>
-      )}
-      {/* Completar */}
-      {canChangeStatus && (
-        <button
-          onClick={() => onStatusChange(appointment.id, "completado")}
-          className={`${btnBase} bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/15`}
-          title="Marcar como completado"
-        >
-          <span className="material-symbols-outlined text-xs">task_alt</span>
-          {!compact && "Completar"}
-        </button>
-      )}
-      {/* No Show */}
-      {canChangeStatus && (
-        <button
-          onClick={() => onStatusChange(appointment.id, "no_show")}
-          className={`${btnBase} bg-red-500/15 text-red-400 hover:bg-red-500/15`}
-          title="Marcar como No Show"
-        >
-          <span className="material-symbols-outlined text-xs">person_off</span>
-          {!compact && "No Show"}
-        </button>
-      )}
-      {/* Cancelar */}
-      {canChangeStatus && (
-        <button
-          onClick={() => onStatusChange(appointment.id, "cancelado")}
-          className={`${btnBase} bg-white/[0.06] text-white/55 hover:bg-white/[0.08]`}
-          title="Cancelar turno"
-        >
-          <span className="material-symbols-outlined text-xs">cancel</span>
-          {!compact && "Cancelar"}
-        </button>
-      )}
-      {/* Editar */}
-      <button
-        onClick={() => onEdit(appointment)}
-        className={`${btnBase} bg-white/[0.03] text-white/55 hover:bg-white/[0.06]`}
-        title="Editar turno"
-      >
-        <span className="material-symbols-outlined text-xs">edit</span>
-        {!compact && "Editar"}
-      </button>
-      {/* Eliminar — not for completado */}
-      {canDelete && (
-        <>
-          {confirmDelete ? (
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => { onDelete(appointment.id); setConfirmDelete(false); }}
-                className={`${btnBase} bg-red-600 text-white hover:bg-red-700`}
-              >
-                <span className="material-symbols-outlined text-xs">delete_forever</span> Sí, eliminar
-              </button>
-              <button
-                onClick={() => setConfirmDelete(false)}
-                className={`${btnBase} bg-white/[0.06] text-white/55 hover:bg-white/[0.08]`}
-              >
-                No
-              </button>
+      {isPendiente && <button onClick={() => onStatus(a.id, "confirmado")} className={`${base} bg-blue-500/15 text-blue-400 hover:bg-blue-500/25`}><span className="material-symbols-outlined text-xs">check_circle</span>{!compact && "Confirmar"}</button>}
+      {canChange && <button onClick={() => onStatus(a.id, "completado")} className={`${base} bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25`}><span className="material-symbols-outlined text-xs">task_alt</span>{!compact && "Completar"}</button>}
+      {canChange && <button onClick={() => onStatus(a.id, "no_show")} className={`${base} bg-red-500/15 text-red-400 hover:bg-red-500/25`}><span className="material-symbols-outlined text-xs">person_off</span>{!compact && "No Show"}</button>}
+      {canChange && <button onClick={() => onStatus(a.id, "cancelado")} className={`${base} bg-white/[0.06] text-white/50 hover:bg-white/[0.1]`}><span className="material-symbols-outlined text-xs">cancel</span>{!compact && "Cancelar"}</button>}
+      <button onClick={() => onEdit(a)} className={`${base} bg-white/[0.04] text-white/50 hover:bg-white/[0.08]`}><span className="material-symbols-outlined text-xs">edit</span>{!compact && "Editar"}</button>
+      {canDel && (
+        confirmDel
+          ? <div className="flex items-center gap-1">
+              <button onClick={() => { onDelete(a.id); setConfirmDel(false); }} className={`${base} bg-red-600 text-white hover:bg-red-700`}><span className="material-symbols-outlined text-xs">delete_forever</span> Sí</button>
+              <button onClick={() => setConfirmDel(false)} className={`${base} bg-white/[0.06] text-white/50`}>No</button>
             </div>
-          ) : (
-            <button
-              onClick={() => setConfirmDelete(true)}
-              className={`${btnBase} bg-red-500/15 text-red-400 hover:bg-red-500/15`}
-              title="Eliminar turno"
-            >
-              <span className="material-symbols-outlined text-xs">delete</span>
-            </button>
-          )}
-        </>
+          : <button onClick={() => setConfirmDel(true)} className={`${base} bg-red-500/10 text-red-400 hover:bg-red-500/20`}><span className="material-symbols-outlined text-xs">delete</span></button>
       )}
     </div>
   );
 }
 
 /* ── Calendar helpers ── */
-function getDaysInMonth(year: number, month: number) {
-  return new Date(year, month + 1, 0).getDate();
-}
+function getDaysInMonth(y: number, m: number) { return new Date(y, m + 1, 0).getDate(); }
+function getFirstDayOfWeek(y: number, m: number) { const d = new Date(y, m, 1).getDay(); return d === 0 ? 6 : d - 1; }
 
-function getFirstDayOfWeek(year: number, month: number) {
-  const d = new Date(year, month, 1).getDay();
-  return d === 0 ? 6 : d - 1; // Monday = 0
-}
-
-const MONTH_NAMES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-const DAY_NAMES = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
-
-/* ── Calendar View ── */
-function CalendarView({
-  appointments,
-  onDayClick,
-  onStatusChange,
-  onEdit,
-  onDelete,
-}: {
+/* ── CalendarView ── */
+function CalendarView({ appointments, onStatus, onEdit, onDelete }: {
   appointments: Appointment[];
-  onDayClick?: (date: string) => void;
-  onStatusChange: (id: string, status: string) => void;
+  onStatus: (id: string, s: string) => void;
   onEdit: (a: Appointment) => void;
   onDelete: (id: string) => void;
 }) {
   const today = new Date();
   const [calYear, setCalYear] = useState(today.getFullYear());
   const [calMonth, setCalMonth] = useState(today.getMonth());
-  const todayISO = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-  const [selectedDay, setSelectedDay] = useState<string>(todayISO);
+  const todayISO = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}-${String(today.getDate()).padStart(2,"0")}`;
+  const [selectedDay, setSelectedDay] = useState(todayISO);
 
   const daysInMonth = getDaysInMonth(calYear, calMonth);
   const firstDay = getFirstDayOfWeek(calYear, calMonth);
@@ -217,184 +142,118 @@ function CalendarView({
   const byDate = useMemo(() => {
     const map: Record<string, Appointment[]> = {};
     for (const a of appointments) {
-      const key = a.scheduled_at.slice(0, 10);
-      if (!map[key]) map[key] = [];
-      map[key].push(a);
+      const k = a.scheduled_at.slice(0, 10);
+      if (!map[k]) map[k] = [];
+      map[k].push(a);
     }
     return map;
   }, [appointments]);
-
-  function prevMonth() {
-    if (calMonth === 0) { setCalYear(calYear - 1); setCalMonth(11); }
-    else setCalMonth(calMonth - 1);
-  }
-  function nextMonth() {
-    if (calMonth === 11) { setCalYear(calYear + 1); setCalMonth(0); }
-    else setCalMonth(calMonth + 1);
-  }
 
   const cells: { day: number; inMonth: boolean; dateStr: string; isWeekend: boolean }[] = [];
   for (let i = 0; i < firstDay; i++) {
     const d = prevMonthDays - firstDay + 1 + i;
     const m = calMonth === 0 ? 12 : calMonth;
     const y = calMonth === 0 ? calYear - 1 : calYear;
-    const colIdx = i % 7;
-    cells.push({ day: d, inMonth: false, dateStr: `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`, isWeekend: colIdx >= 5 });
+    cells.push({ day: d, inMonth: false, dateStr: `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`, isWeekend: i % 7 >= 5 });
   }
   for (let d = 1; d <= daysInMonth; d++) {
-    const colIdx = (firstDay + d - 1) % 7;
-    cells.push({ day: d, inMonth: true, dateStr: `${calYear}-${String(calMonth + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`, isWeekend: colIdx >= 5 });
+    const col = (firstDay + d - 1) % 7;
+    cells.push({ day: d, inMonth: true, dateStr: `${calYear}-${String(calMonth+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`, isWeekend: col >= 5 });
   }
-  const remaining = 7 - (cells.length % 7);
-  if (remaining < 7) {
-    for (let d = 1; d <= remaining; d++) {
-      const m = calMonth === 11 ? 1 : calMonth + 2;
-      const y = calMonth === 11 ? calYear + 1 : calYear;
-      const colIdx = (cells.length) % 7;
-      cells.push({ day: d, inMonth: false, dateStr: `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`, isWeekend: colIdx >= 5 });
-    }
+  const rem = 7 - (cells.length % 7);
+  if (rem < 7) for (let d = 1; d <= rem; d++) {
+    const m = calMonth === 11 ? 1 : calMonth + 2;
+    const y = calMonth === 11 ? calYear + 1 : calYear;
+    cells.push({ day: d, inMonth: false, dateStr: `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`, isWeekend: cells.length % 7 >= 5 });
   }
 
-  const selectedAppts = byDate[selectedDay] || [];
-  const selectedDate = new Date(selectedDay + "T12:00:00");
-  const selectedLabel = selectedDay === todayISO ? "Hoy" : selectedDate.toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" });
+  const selAppts = byDate[selectedDay] || [];
+  const selDate = new Date(selectedDay + "T12:00:00");
+  const selLabel = selectedDay === todayISO ? "Hoy" : selDate.toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" });
 
-  function handleDayClick(dateStr: string) {
-    setSelectedDay(dateStr);
-    if (onDayClick) onDayClick(dateStr);
-  }
+  function prevMonth() { if (calMonth === 0) { setCalYear(y => y-1); setCalMonth(11); } else setCalMonth(m => m-1); }
+  function nextMonth() { if (calMonth === 11) { setCalYear(y => y+1); setCalMonth(0); } else setCalMonth(m => m+1); }
 
   return (
     <div className="grid grid-cols-12 gap-5">
-      {/* Calendario — izquierda */}
-      <div className="col-span-8 rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 overflow-hidden">
-        {/* Nav header */}
-        <div className="flex items-center justify-between px-6 py-4">
-          <button onClick={prevMonth} className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-white/[0.06] transition-colors">
+      {/* Calendar grid */}
+      <div className="col-span-8 rounded-[20px] bg-white/[0.03] border border-white/[0.06] overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.06]">
+          <button onClick={prevMonth} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/[0.06] transition-colors">
             <span className="material-symbols-outlined text-lg text-white/50">chevron_left</span>
           </button>
-          <h3 className="text-base font-bold tracking-tight">{MONTH_NAMES[calMonth]} {calYear}</h3>
-          <button onClick={nextMonth} className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-white/[0.06] transition-colors">
+          <h3 className="text-sm font-bold">{MONTH_NAMES[calMonth]} {calYear}</h3>
+          <button onClick={nextMonth} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/[0.06] transition-colors">
             <span className="material-symbols-outlined text-lg text-white/50">chevron_right</span>
           </button>
         </div>
-        {/* Day names */}
-        <div className="grid grid-cols-7 px-2">
+        <div className="grid grid-cols-7 border-b border-white/[0.04] px-2">
           {DAY_NAMES.map((d, i) => (
-            <div key={d} className={`py-2 text-center text-[10px] font-semibold uppercase tracking-wider ${i >= 5 ? "text-white/35" : "text-white/45"}`}>{d}</div>
+            <div key={d} className={`py-2 text-center text-[10px] font-semibold uppercase tracking-wider ${i >= 5 ? "text-white/30" : "text-white/40"}`}>{d}</div>
           ))}
         </div>
-        {/* Day cells */}
         <div className="grid grid-cols-7 px-2 pb-2">
           {cells.map((cell, idx) => {
             const isToday = cell.dateStr === todayISO;
             const isSelected = cell.dateStr === selectedDay && cell.inMonth;
-            const dayAppts = byDate[cell.dateStr] || [];
-            const hasAppts = dayAppts.length > 0;
+            const appts = byDate[cell.dateStr] || [];
             return (
-              <div
-                key={idx}
-                onClick={() => cell.inMonth && handleDayClick(cell.dateStr)}
-                className={`min-h-[72px] m-0.5 p-2 rounded-xl transition-all ${
-                  cell.inMonth ? "cursor-pointer hover:bg-white/[0.03]" : ""
-                } ${cell.isWeekend && cell.inMonth ? "bg-white/[0.02]" : ""
-                } ${isSelected && !isToday ? "ring-2 ring-[#3eff8e]/40 bg-[#3eff8e]/10" : ""}`}
-              >
-                <div className="flex items-center gap-1">
-                  {isToday ? (
-                    <span className={`w-7 h-7 flex items-center justify-center rounded-full bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e] text-xs font-bold ${isSelected ? "ring-2 ring-[#3eff8e]/30 ring-offset-1" : ""}`}>
-                      {cell.day}
-                    </span>
-                  ) : (
-                    <span className={`text-sm font-semibold pl-1 ${cell.inMonth ? "text-white/70" : "text-white/20"}`}>
-                      {cell.day}
-                    </span>
-                  )}
-                  {hasAppts && (
-                    <div className="flex gap-0.5 ml-auto">
-                      {dayAppts.slice(0, 4).map((a) => (
-                        <span key={a.id} className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT_COLORS[a.status] || "bg-slate-300"}`} />
-                      ))}
-                    </div>
-                  )}
+              <div key={idx} onClick={() => cell.inMonth && setSelectedDay(cell.dateStr)}
+                className={`min-h-[68px] m-0.5 p-1.5 rounded-xl transition-all ${cell.inMonth ? "cursor-pointer hover:bg-white/[0.04]" : "opacity-30"} ${isSelected && !isToday ? "ring-1 ring-[#3eff8e]/40 bg-[#3eff8e]/[0.06]" : ""}`}>
+                <div className="flex items-center justify-between mb-1">
+                  {isToday
+                    ? <span className="w-6 h-6 flex items-center justify-center rounded-full bg-[#3eff8e] text-black text-xs font-bold">{cell.day}</span>
+                    : <span className={`text-xs font-semibold ${cell.inMonth ? "text-white/65" : "text-white/20"}`}>{cell.day}</span>
+                  }
                 </div>
+                {appts.length > 0 && (
+                  <div className="flex gap-0.5 flex-wrap">
+                    {appts.slice(0, 5).map(a => (
+                      <span key={a.id} className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT[a.status] || "bg-white/30"}`} />
+                    ))}
+                  </div>
+                )}
               </div>
             );
           })}
         </div>
       </div>
 
-      {/* Detalle del día — derecha */}
-      <div className="col-span-4">
-        <div className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 overflow-hidden sticky top-4">
-          {/* Header */}
+      {/* Day detail */}
+      <div className="col-span-4 sticky top-4">
+        <div className="rounded-[20px] bg-white/[0.03] border border-white/[0.06] overflow-hidden">
           <div className="px-5 py-4 border-b border-white/[0.06]">
-            <h3 className="text-sm font-bold capitalize">{selectedLabel}</h3>
-            <p className="text-[10px] text-white/45 mt-0.5">
-              {selectedAppts.length} turno{selectedAppts.length !== 1 ? "s" : ""}
-            </p>
+            <h3 className="text-sm font-bold capitalize">{selLabel}</h3>
+            <p className="text-[10px] text-white/40 mt-0.5">{selAppts.length} turno{selAppts.length !== 1 ? "s" : ""}</p>
           </div>
-
-          {/* Turnos del día */}
-          <div className="p-4 space-y-3 max-h-[520px] overflow-y-auto">
-            {selectedAppts.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-white/45">
-                <span className="material-symbols-outlined text-3xl mb-2">event_available</span>
-                <p className="text-xs font-medium">Sin turnos este día</p>
-              </div>
-            ) : (
-              selectedAppts.map((a) => {
+          <div className="p-3 space-y-2.5 max-h-[500px] overflow-y-auto">
+            {selAppts.length === 0
+              ? <div className="flex flex-col items-center justify-center py-12 text-white/35"><span className="material-symbols-outlined text-3xl mb-2">event_available</span><p className="text-xs">Sin turnos</p></div>
+              : selAppts.map(a => {
                 const t = new Date(a.scheduled_at);
-                const borderColor = STATUS_BORDER_COLORS[a.status] || "border-l-slate-300";
                 return (
-                  <div key={a.id} className={`border border-white/[0.06] border-l-4 ${borderColor} rounded-xl p-4  transition-shadow`}>
-                    {/* Hora + Estado */}
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-sm text-white/45">schedule</span>
-                        <span className="text-sm font-bold">
-                          {t.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })} hs
-                        </span>
-                      </div>
-                      {appointmentStatusBadge(a.status)}
+                  <div key={a.id} className={`border border-white/[0.06] border-l-4 ${STATUS_BORDER[a.status] || "border-l-white/20"} rounded-xl p-3.5`}>
+                    <div className="flex items-center justify-between mb-2.5">
+                      <span className="text-sm font-bold">{t.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })} hs</span>
+                      <Badge status={a.status} />
                     </div>
-                    {/* Cliente */}
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-[#3eff8e]/15 flex items-center justify-center flex-shrink-0">
-                          <span className="text-xs font-bold text-[#3eff8e]">
-                            {a.client_name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
-                          </span>
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold">{a.client_name}</p>
-                          <div className="flex items-center gap-1 text-[11px] text-white/50">
-                            <span className="material-symbols-outlined text-xs">phone</span>
-                            {a.client_phone}
-                          </div>
-                        </div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-7 h-7 rounded-full bg-[#3eff8e]/15 flex items-center justify-center shrink-0">
+                        <span className="text-[10px] font-bold text-[#3eff8e]">{a.client_name.split(" ").map(n => n[0]).join("").slice(0,2).toUpperCase()}</span>
                       </div>
-                      {a.notes && (
-                        <div className="flex items-start gap-1.5 bg-white/[0.03] rounded-lg px-3 py-2 mt-1">
-                          <span className="material-symbols-outlined text-xs text-white/45 mt-0.5">notes</span>
-                          <p className="text-[11px] text-white/55">{a.notes}</p>
-                        </div>
-                      )}
+                      <div>
+                        <p className="text-xs font-semibold">{a.client_name}</p>
+                        <p className="text-[10px] text-white/45">{a.client_phone}</p>
+                      </div>
                     </div>
-                    {/* Acciones rápidas */}
-                    <div className="mt-3 pt-3 border-t border-white/[0.06]">
-                      <AppointmentActions
-                        appointment={a}
-                        onStatusChange={onStatusChange}
-                        onEdit={onEdit}
-                        onDelete={onDelete}
-                        compact
-                      />
+                    {a.notes && <p className="text-[10px] text-white/45 bg-white/[0.03] rounded-lg px-2.5 py-1.5 mb-2">{a.notes}</p>}
+                    <div className="pt-2 border-t border-white/[0.05]">
+                      <AppointmentActions a={a} onStatus={onStatus} onEdit={onEdit} onDelete={onDelete} compact />
                     </div>
                   </div>
                 );
               })
-            )}
+            }
           </div>
         </div>
       </div>
@@ -402,60 +261,59 @@ function CalendarView({
   );
 }
 
-/* ── Kanban View ── */
-function KanbanView({ appointments }: { appointments: Appointment[] }) {
+/* ── KanbanView ── */
+function KanbanView({ appointments, onStatus, onEdit, onDelete }: {
+  appointments: Appointment[];
+  onStatus: (id: string, s: string) => void;
+  onEdit: (a: Appointment) => void;
+  onDelete: (id: string) => void;
+}) {
   const grouped = useMemo(() => {
     const map: Record<string, Appointment[]> = {};
-    for (const col of KANBAN_COLUMNS) map[col] = [];
-    for (const a of appointments) {
-      if (map[a.status]) map[a.status].push(a);
-    }
+    for (const col of KANBAN_COLS) map[col] = [];
+    for (const a of appointments) { if (map[a.status]) map[a.status].push(a); }
     return map;
   }, [appointments]);
 
   return (
-    <div className="flex gap-4 overflow-x-auto pb-4">
-      {KANBAN_COLUMNS.map((col) => {
+    <div className="flex gap-4 overflow-x-auto pb-4 h-full">
+      {KANBAN_COLS.map(col => {
         const items = grouped[col] || [];
         return (
-          <div key={col} className="flex-shrink-0 w-72 bg-white/[0.03] rounded-xl">
-            {/* Column header */}
-            <div className="px-4 py-3 border-b border-white/[0.08] flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-widest text-white/45">{STATUS_LABELS[col]}</span>
-              <span className="px-2 py-0.5 bg-white/[0.08] text-white/55 text-[10px] font-bold rounded-full">{items.length}</span>
+          <div key={col} className="shrink-0 w-72 flex flex-col bg-white/[0.02] border border-white/[0.05] rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-white/[0.06] flex items-center gap-2">
+              <span className={`w-2 h-2 rounded-full ${STATUS_DOT[col] || "bg-white/30"}`} />
+              <span className="text-xs font-bold uppercase tracking-widest text-white/50 flex-1">{STATUS_LABELS[col]}</span>
+              <span className="text-[10px] font-bold text-white/35 bg-white/[0.06] px-2 py-0.5 rounded-full">{items.length}</span>
             </div>
-            {/* Cards */}
-            <div className="p-3 space-y-3 min-h-[200px]">
-              {items.length === 0 && (
-                <p className="text-xs text-white/45 text-center py-8">Sin turnos</p>
-              )}
-              {items.map((a) => {
-                const d = new Date(a.scheduled_at);
-                return (
-                  <div
-                    key={a.id}
-                    className={`rounded-xl p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 border-l-4 ${STATUS_BORDER_COLORS[a.status] || "border-l-slate-300"} p-4  transition-shadow`}
-                  >
-                    <p className="text-sm font-bold truncate">{a.client_name}</p>
-                    <div className="mt-2 space-y-1">
-                      <div className="flex items-center gap-1.5 text-xs text-white/50">
-                        <span className="material-symbols-outlined text-sm">schedule</span>
-                        {d.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })}
-                      </div>
-                      <div className="flex items-center gap-1.5 text-xs text-white/50">
-                        <span className="material-symbols-outlined text-sm">calendar_today</span>
-                        {d.toLocaleDateString("es-AR", { day: "2-digit", month: "short" })}
-                      </div>
-                      {a.client_phone && (
-                        <div className="flex items-center gap-1.5 text-xs text-white/50">
-                          <span className="material-symbols-outlined text-sm">phone</span>
-                          {a.client_phone}
+            <div className="p-3 space-y-2.5 overflow-y-auto flex-1 min-h-[200px]">
+              {items.length === 0
+                ? <p className="text-xs text-white/30 text-center py-10">Sin turnos</p>
+                : items.map(a => {
+                  const d = new Date(a.scheduled_at);
+                  return (
+                    <div key={a.id} className={`border border-white/[0.06] border-l-4 ${STATUS_BORDER[a.status]} rounded-xl p-3`}>
+                      <p className="text-xs font-bold truncate mb-1.5">{a.client_name}</p>
+                      <div className="space-y-0.5 mb-3">
+                        <div className="flex items-center gap-1.5 text-[10px] text-white/45">
+                          <span className="material-symbols-outlined text-xs">schedule</span>
+                          {d.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })} · {d.toLocaleDateString("es-AR", { day: "2-digit", month: "short" })}
                         </div>
-                      )}
+                        {a.client_phone && (
+                          <div className="flex items-center gap-1.5 text-[10px] text-white/40">
+                            <span className="material-symbols-outlined text-xs">phone</span>
+                            {a.client_phone}
+                          </div>
+                        )}
+                        {a.notes && <p className="text-[10px] text-white/35 truncate pt-0.5">{a.notes}</p>}
+                      </div>
+                      <div className="pt-2 border-t border-white/[0.05]">
+                        <AppointmentActions a={a} onStatus={onStatus} onEdit={onEdit} onDelete={onDelete} compact />
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              }
             </div>
           </div>
         );
@@ -464,24 +322,31 @@ function KanbanView({ appointments }: { appointments: Appointment[] }) {
   );
 }
 
-/* ── Helper: convert ISO datetime to datetime-local input value ── */
-function isoToLocalInput(iso: string): string {
+function isoToLocalInput(iso: string) {
   const d = new Date(iso);
   const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-/* ── Main Page ── */
+const emptyForm = { client_name: "", client_phone: "", scheduled_at: "", status: "pendiente", notes: "", product_id: "" };
+
+/* ── Main ── */
 export default function TurnosPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<ViewMode>("lista");
   const [statusFilter, setStatusFilter] = useState("todos");
   const [dateFilter, setDateFilter] = useState("");
+  const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+
+  // Client autocomplete
+  const [clientResults, setClientResults] = useState<IgClient[]>([]);
+  const [clientSearch, setClientSearch] = useState("");
+  const clientSearchRef = useRef<HTMLDivElement>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -492,312 +357,327 @@ export default function TurnosPage() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  // For lista & calendario: apply both filters. For kanban: only date filter.
-  const filtered = appointments.filter((a) => {
+  // Client search
+  useEffect(() => {
+    if (clientSearch.length < 2) { setClientResults([]); return; }
+    const timer = setTimeout(async () => {
+      const { data } = await supabase.from("ig_clients").select("id,name,phone,email")
+        .or(`name.ilike.%${clientSearch}%,phone.ilike.%${clientSearch}%`).limit(6);
+      setClientResults((data || []) as IgClient[]);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [clientSearch]);
+
+  // Close client dropdown on outside click
+  useEffect(() => {
+    function h(e: MouseEvent) { if (clientSearchRef.current && !clientSearchRef.current.contains(e.target as Node)) setClientResults([]); }
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, []);
+
+  // KPIs
+  const today = new Date();
+  const todayStr = today.toISOString().slice(0, 10);
+  const weekStart = new Date(today); weekStart.setDate(today.getDate() - today.getDay() + 1);
+  const weekStartStr = weekStart.toISOString().slice(0, 10);
+  const monthStr = today.toISOString().slice(0, 7);
+
+  const kpis = useMemo(() => {
+    const pendientesHoy = appointments.filter(a => a.scheduled_at.startsWith(todayStr) && a.status === "pendiente").length;
+    const confirmadosHoy = appointments.filter(a => a.scheduled_at.startsWith(todayStr) && a.status === "confirmado").length;
+    const estaSemana = appointments.filter(a => a.scheduled_at.slice(0,10) >= weekStartStr && (a.status === "pendiente" || a.status === "confirmado")).length;
+    const noShowsMes = appointments.filter(a => a.scheduled_at.startsWith(monthStr) && a.status === "no_show").length;
+    return { pendientesHoy, confirmadosHoy, estaSemana, noShowsMes };
+  }, [appointments, todayStr, weekStartStr, monthStr]);
+
+  // Filter logic
+  const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
+  const tomorrowStr = tomorrow.toISOString().slice(0, 10);
+
+  const filtered = appointments.filter(a => {
     if (view !== "kanban" && statusFilter !== "todos" && a.status !== statusFilter) return false;
     if (dateFilter && !a.scheduled_at.startsWith(dateFilter)) return false;
+    if (search && !a.client_name.toLowerCase().includes(search.toLowerCase()) &&
+        !a.client_phone.includes(search)) return false;
     return true;
   });
 
-  /* ── Open modal for add ── */
-  function openAddModal() {
+  function openAdd(prefillDate?: string) {
     setEditingId(null);
-    setForm(emptyForm);
+    setForm({ ...emptyForm, scheduled_at: prefillDate ? prefillDate + "T10:00" : "" });
+    setClientSearch("");
+    setClientResults([]);
     setShowModal(true);
   }
 
-  /* ── Open modal for edit ── */
-  function openEditModal(a: Appointment) {
+  function openEdit(a: Appointment) {
     setEditingId(a.id);
-    setForm({
-      client_name: a.client_name,
-      client_phone: a.client_phone,
-      scheduled_at: isoToLocalInput(a.scheduled_at),
-      status: a.status,
-      notes: a.notes || "",
-      product_id: a.product_id || "",
-    });
+    setForm({ client_name: a.client_name, client_phone: a.client_phone, scheduled_at: isoToLocalInput(a.scheduled_at), status: a.status, notes: a.notes || "", product_id: a.product_id || "" });
+    setClientSearch(a.client_name);
+    setClientResults([]);
     setShowModal(true);
   }
 
-  /* ── Save (add or update) ── */
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
-    const payload = {
-      client_name: form.client_name,
-      client_phone: form.client_phone,
-      scheduled_at: new Date(form.scheduled_at).toISOString(),
-      status: form.status,
-      notes: form.notes || null,
-      product_id: form.product_id || null,
-    };
-
+    const payload = { client_name: form.client_name, client_phone: form.client_phone, scheduled_at: new Date(form.scheduled_at).toISOString(), status: form.status, notes: form.notes || null, product_id: form.product_id || null };
     let error;
-    if (editingId) {
-      ({ error } = await supabase.from("ig_appointments").update(payload).eq("id", editingId));
-    } else {
-      ({ error } = await supabase.from("ig_appointments").insert(payload));
-    }
-
-    if (!error) {
-      setShowModal(false);
-      setForm(emptyForm);
-      setEditingId(null);
-      await fetchData();
-    } else {
-      alert("Error: " + error.message);
-    }
+    if (editingId) { ({ error } = await supabase.from("ig_appointments").update(payload).eq("id", editingId)); }
+    else { ({ error } = await supabase.from("ig_appointments").insert(payload)); }
+    if (!error) { setShowModal(false); setForm(emptyForm); setEditingId(null); await fetchData(); }
+    else alert("Error: " + error.message);
     setSaving(false);
   }
 
-  /* ── Quick status change ── */
-  async function handleStatusChange(id: string, newStatus: string) {
-    const { error } = await supabase.from("ig_appointments").update({ status: newStatus }).eq("id", id);
-    if (!error) {
-      await fetchData();
-    } else {
-      alert("Error al cambiar estado: " + error.message);
-    }
+  async function handleStatus(id: string, newStatus: string) {
+    await supabase.from("ig_appointments").update({ status: newStatus }).eq("id", id);
+    await fetchData();
   }
 
-  /* ── Delete ── */
   async function handleDelete(id: string) {
-    const { error } = await supabase.from("ig_appointments").delete().eq("id", id);
-    if (!error) {
-      await fetchData();
-    } else {
-      alert("Error al eliminar: " + error.message);
-    }
+    await supabase.from("ig_appointments").delete().eq("id", id);
+    await fetchData();
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-32">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#3eff8e]"></div>
-        <span className="ml-3 text-sm text-white/45">Cargando turnos...</span>
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="flex items-center justify-center py-32">
+      <div className="animate-spin rounded-full h-8 w-8 border-2 border-white/10 border-t-[#3eff8e]" />
+      <span className="ml-3 text-sm text-white/40">Cargando turnos...</span>
+    </div>
+  );
 
-  const viewOptions: { value: ViewMode; label: string; icon: string }[] = [
+  const viewOpts: { value: ViewMode; label: string; icon: string }[] = [
     { value: "lista", label: "Lista", icon: "view_list" },
     { value: "calendario", label: "Calendario", icon: "calendar_month" },
     { value: "kanban", label: "Kanban", icon: "view_kanban" },
   ];
 
+  const dateOpts = [
+    { value: "", label: "Todos" },
+    { value: todayStr, label: "Hoy" },
+    { value: tomorrowStr, label: "Mañana" },
+  ];
+
   return (
     <div className="px-8 py-8 overflow-y-auto flex-1">
-    <>
-      <div className="flex justify-between items-end mb-8">
-        <div className="flex items-center gap-4">
-          {/* View toggle chips */}
-          <div className="flex items-center gap-1.5 ml-2">
-            {viewOptions.map((opt) => (
-              <button
-                key={opt.value}
-                onClick={() => setView(opt.value)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
-                  view === opt.value
-                    ? "bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e]"
-                    : "bg-white/[0.06] text-white/55 hover:bg-white/[0.08]"
-                }`}
-              >
-                <span className="material-symbols-outlined text-sm">{opt.icon}</span>
-                {opt.label}
-              </button>
-            ))}
+      {/* KPIs */}
+      <div className="grid grid-cols-4 gap-4 mb-7">
+        {[
+          { label: "Pendientes hoy",   value: kpis.pendientesHoy,  icon: "pending_actions", color: "text-amber-400" },
+          { label: "Confirmados hoy",  value: kpis.confirmadosHoy, icon: "event_available",  color: "text-emerald-400" },
+          { label: "Esta semana",      value: kpis.estaSemana,     icon: "calendar_view_week", color: "text-blue-400" },
+          { label: "No shows (mes)",   value: kpis.noShowsMes,     icon: "person_off",        color: "text-red-400" },
+        ].map(kpi => (
+          <div key={kpi.label} className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[10px] uppercase tracking-[0.12em] text-white/40 font-semibold">{kpi.label}</span>
+              <span className={`material-symbols-outlined text-[18px] ${kpi.color} opacity-60`}>{kpi.icon}</span>
+            </div>
+            <p className={`text-[32px] font-semibold leading-none ${kpi.value > 0 ? kpi.color : "text-white/25"}`}>{kpi.value}</p>
           </div>
-        </div>
-        <button
-          onClick={openAddModal}
-          className="flex items-center gap-2 px-6 py-3 bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e] rounded-full font-bold text-sm "
-        >
-          <span className="material-symbols-outlined text-lg">add</span> Nuevo Turno
-        </button>
+        ))}
       </div>
 
-      {/* Filters — Chips */}
-      <div className="space-y-3 mb-6">
-        {/* Status filter: hidden in kanban view */}
+      {/* Toolbar */}
+      <div className="flex items-center gap-3 mb-5 flex-wrap">
+        {/* View toggle */}
+        <div className="flex items-center gap-1 bg-white/[0.04] border border-white/[0.06] rounded-xl p-1">
+          {viewOpts.map(opt => (
+            <button key={opt.value} onClick={() => setView(opt.value)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${view === opt.value ? "bg-white/[0.1] text-white/80" : "text-white/40 hover:text-white/60"}`}>
+              <span className="material-symbols-outlined text-[14px]">{opt.icon}</span>
+              {opt.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Search */}
+        <div className="flex items-center gap-2 bg-white/[0.03] border border-white/[0.07] rounded-xl px-3 py-2 flex-1 min-w-[180px] max-w-[260px]">
+          <span className="material-symbols-outlined text-white/35 text-base">search</span>
+          <input type="text" placeholder="Buscar cliente..." value={search} onChange={e => setSearch(e.target.value)}
+            className="bg-transparent text-sm text-white/70 placeholder:text-white/35 outline-none w-full" />
+        </div>
+
+        {/* Status filter (not kanban) */}
         {view !== "kanban" && (
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[10px] font-bold text-white/45 uppercase tracking-widest mr-1">Estado</span>
-            {[
-              { value: "todos", label: "Todos" },
-              { value: "pendiente", label: "Pendiente" },
-              { value: "confirmado", label: "Confirmado" },
-              { value: "completado", label: "Completado" },
-              { value: "no_show", label: "No Show" },
-              { value: "cancelado", label: "Cancelado" },
-            ].map((opt) => (
-              <button
-                key={opt.value}
-                onClick={() => setStatusFilter(opt.value)}
-                className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
-                  statusFilter === opt.value
-                    ? "bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e]"
-                    : "bg-white/[0.06] text-white/55 hover:bg-white/[0.08]"
-                }`}
-              >
-                {opt.label}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {["todos","pendiente","confirmado","completado","no_show","cancelado"].map(s => (
+              <button key={s} onClick={() => setStatusFilter(s)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${statusFilter === s ? "bg-[#3eff8e]/15 border border-[#3eff8e]/25 text-[#3eff8e]" : "bg-white/[0.04] text-white/45 hover:bg-white/[0.07] hover:text-white/65"}`}>
+                {STATUS_LABELS[s] || "Todos"}
               </button>
             ))}
           </div>
         )}
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[10px] font-bold text-white/45 uppercase tracking-widest mr-1">Fecha</span>
-          {[
-            { value: "", label: "Todos" },
-            { value: new Date().toISOString().slice(0, 10), label: "Hoy" },
-          ].map((opt) => (
-            <button
-              key={opt.value || "all"}
-              onClick={() => setDateFilter(opt.value)}
-              className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
-                dateFilter === opt.value
-                  ? "bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e]"
-                  : "bg-white/[0.06] text-white/55 hover:bg-white/[0.08]"
-              }`}
-            >
+
+        {/* Date filter */}
+        <div className="flex items-center gap-1.5">
+          {dateOpts.map(opt => (
+            <button key={opt.value || "all"} onClick={() => setDateFilter(opt.value)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${dateFilter === opt.value ? "bg-white/[0.1] text-white/80" : "bg-white/[0.04] text-white/40 hover:text-white/60"}`}>
               {opt.label}
             </button>
           ))}
-          <div className="flex items-center gap-1 ml-1">
-            <input type="date" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)}
-              className="px-2.5 py-1 bg-[#1a1a1d] rounded-full border border-white/[0.08] text-xs focus:ring-1 focus:ring-[#3eff8e]/30" />
-          </div>
+          <input type="date" value={dateFilter} onChange={e => setDateFilter(e.target.value)}
+            className="px-2.5 py-1.5 bg-white/[0.04] border border-white/[0.07] rounded-xl text-xs text-white/50 focus:outline-none focus:border-white/[0.15] transition-colors" />
+        </div>
+
+        <div className="ml-auto">
+          <button onClick={() => openAdd()}
+            className="flex items-center gap-2 px-5 py-2.5 bg-[#3eff8e]/15 border border-[#3eff8e]/25 text-[#3eff8e] rounded-xl font-bold text-sm hover:bg-[#3eff8e]/25 transition-colors">
+            <span className="material-symbols-outlined text-lg">add</span> Nuevo Turno
+          </button>
         </div>
       </div>
 
-      {/* ── Vista: Lista ── */}
+      {/* Views */}
       {view === "lista" && (
-        <div className="rounded-xl p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 overflow-hidden">
-          {filtered.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-white/45">
-              <span className="material-symbols-outlined text-4xl mb-3">calendar_month</span>
-              <p className="text-sm font-medium">No hay turnos para mostrar</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
+        <div className="rounded-2xl bg-white/[0.03] border border-white/[0.06] overflow-hidden">
+          {filtered.length === 0
+            ? <div className="flex flex-col items-center justify-center py-20 text-white/35"><span className="material-symbols-outlined text-4xl mb-2">calendar_month</span><p className="text-sm">Sin turnos para mostrar</p></div>
+            : (
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-white/[0.03]">
-                    <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45">Fecha / Hora</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45">Cliente</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45">Teléfono</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45">Estado</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45">Notas</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45">Acciones</th>
+                    {["Fecha / Hora","Cliente","Teléfono","Estado","Notas","Acciones"].map(h => (
+                      <th key={h} className="px-5 py-3.5 text-[10px] uppercase tracking-widest font-bold text-white/40">{h}</th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/[0.04]">
-                  {filtered.map((a) => {
+                  {filtered.map(a => {
                     const d = new Date(a.scheduled_at);
+                    const isToday = a.scheduled_at.startsWith(todayStr);
+                    const isPast = new Date(a.scheduled_at) < new Date() && !["completado","cancelado","no_show"].includes(a.status);
                     return (
-                      <tr key={a.id} className="hover:bg-white/[0.03] transition-colors">
-                        <td className="px-6 py-4">
-                          <p className="text-sm font-bold">{d.toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric" })}</p>
-                          <p className="text-[10px] text-white/45">{d.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })}</p>
+                      <tr key={a.id} className={`hover:bg-white/[0.025] transition-colors ${isPast ? "opacity-60" : ""}`}>
+                        <td className="px-5 py-4">
+                          <p className={`text-sm font-bold ${isToday ? "text-[#3eff8e]" : ""}`}>{d.toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric" })}</p>
+                          <p className="text-[10px] text-white/40">{d.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })} hs</p>
                         </td>
-                        <td className="px-4 py-4 text-sm font-medium">{a.client_name}</td>
-                        <td className="px-4 py-4 text-sm text-white/50">{a.client_phone}</td>
-                        <td className="px-4 py-4">{appointmentStatusBadge(a.status)}</td>
-                        <td className="px-4 py-4 text-xs text-white/50 max-w-[200px] truncate">{a.notes || "—"}</td>
-                        <td className="px-4 py-4">
-                          <AppointmentActions
-                            appointment={a}
-                            onStatusChange={handleStatusChange}
-                            onEdit={openEditModal}
-                            onDelete={handleDelete}
-                          />
+                        <td className="px-5 py-4">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-7 h-7 rounded-full bg-white/[0.07] flex items-center justify-center shrink-0">
+                              <span className="text-[10px] font-bold text-white/50">{a.client_name.slice(0,2).toUpperCase()}</span>
+                            </div>
+                            <span className="text-sm font-medium text-white/75">{a.client_name}</span>
+                          </div>
+                        </td>
+                        <td className="px-5 py-4 text-sm text-white/50">{a.client_phone}</td>
+                        <td className="px-5 py-4"><Badge status={a.status} /></td>
+                        <td className="px-5 py-4 text-xs text-white/45 max-w-[180px] truncate">{a.notes || "—"}</td>
+                        <td className="px-5 py-4">
+                          <AppointmentActions a={a} onStatus={handleStatus} onEdit={openEdit} onDelete={handleDelete} />
                         </td>
                       </tr>
                     );
                   })}
                 </tbody>
               </table>
-            </div>
-          )}
-          <div className="p-4 bg-white/[0.03] text-xs font-medium text-white/45 border-t border-white/[0.06]">
+            )
+          }
+          <div className="px-5 py-3 bg-white/[0.02] border-t border-white/[0.05] text-[11px] text-white/35 font-medium">
             {filtered.length} turno{filtered.length !== 1 ? "s" : ""}
           </div>
         </div>
       )}
 
-      {/* ── Vista: Calendario ── */}
       {view === "calendario" && (
-        <CalendarView
-          appointments={filtered}
-          onDayClick={(date) => { setDateFilter(date); setView("lista"); }}
-          onStatusChange={handleStatusChange}
-          onEdit={openEditModal}
-          onDelete={handleDelete}
-        />
+        <CalendarView appointments={filtered} onStatus={handleStatus} onEdit={openEdit} onDelete={handleDelete} />
       )}
 
-      {/* ── Vista: Kanban ── */}
-      {view === "kanban" && <KanbanView appointments={filtered} />}
+      {view === "kanban" && (
+        <div className="h-[calc(100vh-340px)]">
+          <KanbanView appointments={filtered} onStatus={handleStatus} onEdit={openEdit} onDelete={handleDelete} />
+        </div>
+      )}
 
-      {/* Add/Edit Modal */}
+      {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setShowModal(false)}>
-          <div className="bg-[#1a1a1d] border border-white/[0.10] rounded-2xl shadow-2xl w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-[#1a1a1d] border border-white/[0.1] rounded-2xl shadow-2xl w-full max-w-md" onClick={e => e.stopPropagation()}>
             <div className="p-6 border-b border-white/[0.06] flex items-center justify-between">
-              <h3 className="text-lg font-bold">{editingId ? "Editar Turno" : "Nuevo Turno"}</h3>
-              <button onClick={() => setShowModal(false)} className="text-white/45 hover:text-white/80">
+              <h3 className="text-base font-bold">{editingId ? "Editar Turno" : "Nuevo Turno"}</h3>
+              <button onClick={() => setShowModal(false)} className="text-white/40 hover:text-white/70 transition-colors">
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
-            <form onSubmit={handleSave} className="p-6 space-y-4">
-              <div>
-                <label className="text-xs font-bold text-white/45 uppercase tracking-widest">Nombre del Cliente *</label>
-                <input required value={form.client_name} onChange={(e) => setForm({ ...form, client_name: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-[#3eff8e]/30" />
+            <form onSubmit={handleSave} className="p-6 space-y-4 overflow-y-auto max-h-[70vh]">
+              {/* Client autocomplete */}
+              <div ref={clientSearchRef} className="relative">
+                <label className="text-[10px] uppercase tracking-widest font-bold text-white/40 block mb-1.5">Cliente</label>
+                <input type="text" placeholder="Buscar cliente o escribir nombre..."
+                  value={clientSearch}
+                  onChange={e => { setClientSearch(e.target.value); setForm(f => ({ ...f, client_name: e.target.value })); }}
+                  className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-white/70 placeholder:text-white/30 outline-none focus:border-white/[0.2] transition-colors" />
+                {clientResults.length > 0 && (
+                  <div className="absolute z-50 w-full mt-1 bg-[#1e1e22] border border-white/[0.1] rounded-xl shadow-2xl overflow-hidden">
+                    {clientResults.map(c => (
+                      <button key={c.id} type="button"
+                        onClick={() => { setForm(f => ({ ...f, client_name: c.name, client_phone: c.phone || f.client_phone })); setClientSearch(c.name); setClientResults([]); }}
+                        className="w-full text-left px-3 py-2.5 hover:bg-white/[0.06] transition-colors flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-full bg-white/[0.08] flex items-center justify-center shrink-0">
+                          <span className="text-[10px] font-bold text-white/50">{c.name.slice(0,2).toUpperCase()}</span>
+                        </div>
+                        <div>
+                          <p className="text-sm text-white/75 font-medium">{c.name}</p>
+                          {c.phone && <p className="text-[10px] text-white/40">{c.phone}</p>}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
+
               <div>
-                <label className="text-xs font-bold text-white/45 uppercase tracking-widest">Teléfono *</label>
-                <input required value={form.client_phone} onChange={(e) => setForm({ ...form, client_phone: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-[#3eff8e]/30"
-                  placeholder="+54 11 ..." />
+                <label className="text-[10px] uppercase tracking-widest font-bold text-white/40 block mb-1.5">Teléfono *</label>
+                <input required value={form.client_phone} onChange={e => setForm(f => ({ ...f, client_phone: e.target.value }))}
+                  className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-white/70 placeholder:text-white/30 outline-none focus:border-white/[0.2] transition-colors"
+                  placeholder="+54 11..." />
               </div>
+
               <div>
-                <label className="text-xs font-bold text-white/45 uppercase tracking-widest">Fecha y Hora *</label>
-                <input type="datetime-local" required value={form.scheduled_at} onChange={(e) => setForm({ ...form, scheduled_at: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-[#3eff8e]/30" />
+                <label className="text-[10px] uppercase tracking-widest font-bold text-white/40 block mb-1.5">Fecha y Hora *</label>
+                <input type="datetime-local" required value={form.scheduled_at} onChange={e => setForm(f => ({ ...f, scheduled_at: e.target.value }))}
+                  className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors" />
               </div>
+
               <div>
-                <label className="text-xs font-bold text-white/45 uppercase tracking-widest">Estado</label>
-                <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-[#3eff8e]/30">
-                  <option value="pendiente">Pendiente</option>
-                  <option value="confirmado">Confirmado</option>
-                  {editingId && <option value="completado">Completado</option>}
-                  {editingId && <option value="no_show">No Show</option>}
-                  {editingId && <option value="cancelado">Cancelado</option>}
-                </select>
+                <label className="text-[10px] uppercase tracking-widest font-bold text-white/40 block mb-1.5">Estado</label>
+                <DarkSelect value={form.status} onChange={v => setForm(f => ({ ...f, status: v }))}
+                  options={[
+                    { value: "pendiente", label: "Pendiente" },
+                    { value: "confirmado", label: "Confirmado" },
+                    ...(editingId ? [
+                      { value: "completado", label: "Completado" },
+                      { value: "no_show", label: "No Show" },
+                      { value: "cancelado", label: "Cancelado" },
+                    ] : []),
+                  ]} />
               </div>
+
               <div>
-                <label className="text-xs font-bold text-white/45 uppercase tracking-widest">Notas</label>
-                <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.03] rounded-xl border border-white/[0.08] text-sm focus:ring-1 focus:ring-[#3eff8e]/30 resize-none"
-                  rows={2} placeholder="Detalles del turno..." />
+                <label className="text-[10px] uppercase tracking-widest font-bold text-white/40 block mb-1.5">Notas</label>
+                <textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={2}
+                  className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-white/70 placeholder:text-white/30 outline-none focus:border-white/[0.2] resize-none transition-colors"
+                  placeholder="Detalles del turno..." />
               </div>
+
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setShowModal(false)}
-                  className="flex-1 py-3 bg-white/[0.08] rounded-full text-sm font-bold hover:bg-white/[0.10] transition-colors">
+                  className="flex-1 py-3 bg-white/[0.06] hover:bg-white/[0.1] rounded-xl text-sm font-bold transition-colors">
                   Cancelar
                 </button>
                 <button type="submit" disabled={saving}
-                  className="flex-1 py-3 bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e] rounded-full text-sm font-bold  hover:brightness-95 transition-all disabled:opacity-50">
-                  {saving ? "Guardando..." : editingId ? "Guardar Cambios" : "Crear Turno"}
+                  className="flex-1 py-3 bg-[#3eff8e]/15 border border-[#3eff8e]/25 text-[#3eff8e] rounded-xl text-sm font-bold hover:bg-[#3eff8e]/25 transition-colors disabled:opacity-40">
+                  {saving ? "Guardando..." : editingId ? "Guardar" : "Crear Turno"}
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
-    </>
     </div>
   );
 }
