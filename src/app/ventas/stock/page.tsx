@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 
 /* ───── types ───── */
@@ -83,7 +83,76 @@ const emptyProductForm = {
   defects: "",
   notes: "",
   is_new: false,
+  photos: [] as string[],
 };
+
+const BUCKET = "product-photos";
+const SUPABASE_URL = "https://iglfukxthrmprnqergbz.supabase.co";
+
+/* ───── Inline Photo Uploader (no productId needed) ───── */
+function InlinePhotoUploader({ photos, onChange }: { photos: string[]; onChange: (p: string[]) => void }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+
+  async function uploadFiles(files: FileList | File[]) {
+    const arr = Array.from(files).filter((f) => f.type.startsWith("image/"));
+    if (!arr.length) return;
+    setUploading(true);
+    const newUrls: string[] = [];
+    for (const file of arr) {
+      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const path = `tmp/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error } = await supabase.storage.from(BUCKET).upload(path, file, { contentType: file.type, upsert: false });
+      if (!error) newUrls.push(`${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path}`);
+    }
+    onChange([...photos, ...newUrls]);
+    setUploading(false);
+  }
+
+  function removePhoto(url: string) {
+    const path = url.split(`/public/${BUCKET}/`)[1];
+    if (path) supabase.storage.from(BUCKET).remove([path]);
+    onChange(photos.filter((p) => p !== url));
+  }
+
+  return (
+    <div className="space-y-3">
+      <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50">Fotos del Equipo</label>
+      {photos.length > 0 && (
+        <div className="grid grid-cols-3 gap-2">
+          {photos.map((url, i) => (
+            <div key={url} className="relative group aspect-square">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={url} alt={`Foto ${i + 1}`} className="w-full h-full object-cover rounded-xl border border-white/[0.07]" />
+              {i === 0 && <span className="absolute top-1.5 left-1.5 text-[9px] font-bold bg-white/20 text-white/80 px-1.5 py-0.5 rounded-full">Principal</span>}
+              <button onClick={() => removePhoto(url)} type="button" className="absolute top-1.5 right-1.5 w-6 h-6 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80">
+                <span className="material-symbols-outlined text-[12px] text-white/70">close</span>
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+      <div
+        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={(e) => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files) uploadFiles(e.dataTransfer.files); }}
+        onClick={() => inputRef.current?.click()}
+        className={`flex flex-col items-center justify-center gap-2 p-5 rounded-xl border-2 border-dashed cursor-pointer transition-all ${dragOver ? "border-white/30 bg-white/[0.06]" : "border-white/[0.10] bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/[0.16]"}`}
+      >
+        {uploading ? (
+          <><div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white/30" /><p className="text-xs text-white/45">Subiendo...</p></>
+        ) : (
+          <><span className="material-symbols-outlined text-2xl text-white/25">add_photo_alternate</span>
+          <p className="text-xs text-white/50 text-center"><span className="font-bold text-white/65">Click</span> o arrastrá las fotos · múltiples a la vez</p>
+          <p className="text-[10px] text-white/30">JPG, PNG, WEBP · máx 10MB c/u</p></>
+        )}
+        <input ref={inputRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => e.target.files && uploadFiles(e.target.files)} />
+      </div>
+      {photos.length > 0 && <p className="text-[10px] text-white/30 text-center">La primera foto es la principal · Hover para eliminar</p>}
+    </div>
+  );
+}
 
 /* ───── helpers ───── */
 
@@ -265,6 +334,8 @@ function ProductFormModal({
               className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors resize-none"
               rows={2} placeholder="Notas adicionales..." />
           </div>
+          {/* Photos */}
+          <InlinePhotoUploader photos={form.photos} onChange={(p) => setForm({ ...form, photos: p })} />
           {/* Submit */}
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose}
@@ -504,6 +575,7 @@ export default function VentasStockPage() {
       defects: addForm.defects || null,
       notes: addForm.notes || null,
       is_new: addForm.is_new,
+      photos: addForm.photos.length > 0 ? addForm.photos : null,
       status: "disponible",
       loaded_at: new Date().toISOString(),
     };
@@ -535,6 +607,7 @@ export default function VentasStockPage() {
       defects: product.defects || "",
       notes: product.notes || "",
       is_new: product.is_new ?? false,
+      photos: product.photos || [],
     });
     setShowEditModal(true);
   }
@@ -557,6 +630,7 @@ export default function VentasStockPage() {
       defects: editForm.defects || null,
       notes: editForm.notes || null,
       is_new: editForm.is_new,
+      photos: editForm.photos.length > 0 ? editForm.photos : null,
     };
     const { error } = await supabase.from("ig_products").update(payload).eq("id", editingProduct.id);
     if (!error) {
