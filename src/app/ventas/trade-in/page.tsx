@@ -219,12 +219,12 @@ export default function TradeInPage() {
   const conditionChipClass = (c: "A" | "B" | "C", active: boolean) => {
     if (!active) return "bg-white/[0.06] text-white/55 hover:bg-white/[0.08]";
     if (c === "A") return "bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 shadow-green-200";
-    if (c === "B") return "bg-amber-500 text-white shadow-amber-200";
-    return "bg-red-500 text-white shadow-red-200";
+    if (c === "B") return "bg-amber-500/100 text-white shadow-amber-200";
+    return "bg-red-500/100 text-white shadow-red-200";
   };
 
   function BatteryBar({ value, size = "normal" }: { value: number; size?: "normal" | "mini" }) {
-    const color = value > 85 ? "bg-green-500" : value >= 80 ? "bg-amber-500" : "bg-red-500";
+    const color = value > 85 ? "bg-emerald-500/100" : value >= 80 ? "bg-amber-500/100" : "bg-red-500/100";
     const h = size === "mini" ? "h-1.5" : "h-2";
     return (
       <div className="flex items-center gap-2">
@@ -238,7 +238,6 @@ export default function TradeInPage() {
 
   return (
     <div className="px-8 py-8 overflow-y-auto flex-1">
-    <>
       {/* Action button */}
       <div className="flex justify-end mb-6">
         <button
@@ -253,9 +252,9 @@ export default function TradeInPage() {
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[
           { label: "Trade-ins del Mes", value: String(kpiCount), icon: "swap_horiz", iconBg: "bg-[#3eff8e]/15", iconColor: "text-[#3eff8e]" },
-          { label: "Pendientes", value: String(kpiPending), icon: "pending_actions", iconBg: "bg-amber-50", iconColor: "text-amber-400" },
-          { label: "Modelo Top", value: kpiTopModel, icon: "phone_iphone", iconBg: "bg-blue-50", iconColor: "text-blue-400", small: true },
-          { label: "Valor Promedio", value: kpiAvgPrice > 0 ? `$${kpiAvgPrice} USD` : "—", icon: "attach_money", iconBg: "bg-green-50", iconColor: "text-emerald-400" },
+          { label: "Pendientes", value: String(kpiPending), icon: "pending_actions", iconBg: "bg-amber-500/10", iconColor: "text-amber-400" },
+          { label: "Modelo Top", value: kpiTopModel, icon: "phone_iphone", iconBg: "bg-blue-500/10", iconColor: "text-blue-400", small: true },
+          { label: "Valor Promedio", value: kpiAvgPrice > 0 ? `$${kpiAvgPrice} USD` : "—", icon: "attach_money", iconBg: "bg-emerald-500/10", iconColor: "text-emerald-400" },
         ].map((kpi) => (
           <div key={kpi.label} className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 px-5 py-4 flex items-center gap-4">
             <div className={`w-10 h-10 ${kpi.iconBg} rounded-xl flex items-center justify-center shrink-0`}>
@@ -342,9 +341,9 @@ export default function TradeInPage() {
                   </div>
                 </div>
                 {batteryBelowMin && (
-                  <div className="mt-2 flex items-center gap-2 bg-red-50 border border-red-100 rounded-xl px-3 py-2">
+                  <div className="mt-2 flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-2">
                     <span className="material-symbols-outlined text-red-500 text-base">warning</span>
-                    <span className="text-xs text-red-700 font-medium">Batería por debajo del mínimo ({quoterMinBattery}%)</span>
+                    <span className="text-xs text-red-400 font-medium">Batería por debajo del mínimo ({quoterMinBattery}%)</span>
                   </div>
                 )}
               </div>
@@ -381,7 +380,7 @@ export default function TradeInPage() {
       <section className="mb-6">
         <div className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 p-6">
           <div className="flex items-center gap-3 mb-5">
-            <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center">
               <span className="material-symbols-outlined text-xl text-emerald-400">swap_horiz</span>
             </div>
             <div>
@@ -401,26 +400,26 @@ export default function TradeInPage() {
                 <thead>
                   <tr>
                     <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45 bg-white/[0.03]">Modelo</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-green-700 bg-green-50">Estado A — Impecable</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-amber-700 bg-amber-50">Estado B — Detalles</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-red-700 bg-red-50">Estado C — Uso visible</th>
+                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-emerald-400 bg-emerald-500/[0.08]">Estado A — Impecable</th>
+                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-amber-400 bg-amber-500/[0.08]">Estado B — Detalles</th>
+                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-red-400 bg-red-500/[0.08]">Estado C — Uso visible</th>
                     <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45 bg-white/[0.03]">Batería mín.</th>
                   </tr>
                 </thead>
                 <tbody>
                   {tradeInTable.map((row, i) => (
-                    <tr key={row.model} className={`hover:bg-blue-50/40 transition-colors border-t border-white/[0.06] ${i % 2 === 1 ? "bg-white/[0.02]" : "bg-[#1a1a1d]"}`}>
+                    <tr key={row.model} className={`hover:bg-blue-500/10/40 transition-colors border-t border-white/[0.06] ${i % 2 === 1 ? "bg-white/[0.02]" : "bg-[#1a1a1d]"}`}>
                       <td className="px-6 py-4 text-sm font-bold">{row.model}</td>
                       <td className="px-4 py-4">
-                        <span className="text-base font-black text-green-700">${row.a}</span>
+                        <span className="text-base font-black text-emerald-400">${row.a}</span>
                         <span className="text-[10px] text-white/45 ml-1">USD</span>
                       </td>
                       <td className="px-4 py-4">
-                        <span className="text-base font-black text-amber-700">${row.b}</span>
+                        <span className="text-base font-black text-amber-400">${row.b}</span>
                         <span className="text-[10px] text-white/45 ml-1">USD</span>
                       </td>
                       <td className="px-4 py-4">
-                        <span className="text-base font-black text-red-600">${row.c}</span>
+                        <span className="text-base font-black text-red-400">${row.c}</span>
                         <span className="text-[10px] text-white/45 ml-1">USD</span>
                       </td>
                       <td className="px-4 py-4 w-36">
@@ -433,9 +432,9 @@ export default function TradeInPage() {
             </div>
           )}
 
-          <div className="mt-5 flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
-            <span className="material-symbols-outlined text-blue-400 text-lg mt-0.5">smart_toy</span>
-            <p className="text-xs text-blue-800 leading-relaxed">
+          <div className="mt-5 flex items-start gap-3 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3">
+            <span className="material-symbols-outlined text-[#3eff8e]/70 text-lg mt-0.5">smart_toy</span>
+            <p className="text-xs text-white/50 leading-relaxed">
               El agente IA usa esta tabla para cotizar equipos automáticamente. Cuando un cliente envía fotos, GPT Vision analiza el estado y cotiza según estos valores de referencia.
             </p>
           </div>
@@ -507,7 +506,7 @@ export default function TradeInPage() {
                     <>
                       <tr
                         key={t.id}
-                        className={`hover:bg-blue-50/40 transition-colors border-t border-white/[0.06] cursor-pointer ${i % 2 === 1 ? "bg-white/[0.02]" : ""}`}
+                        className={`hover:bg-blue-500/10/40 transition-colors border-t border-white/[0.06] cursor-pointer ${i % 2 === 1 ? "bg-white/[0.02]" : ""}`}
                         onClick={() => setExpandedId(expandedId === t.id ? null : t.id)}
                       >
                         <td className="px-3 py-4 text-center">
@@ -525,7 +524,7 @@ export default function TradeInPage() {
                         <td className="px-4 py-4 text-sm font-bold">{t.model_received}</td>
                         <td className="px-4 py-4">
                           <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-black ${
-                            t.condition === "A" ? "bg-emerald-500/15 text-emerald-400" : t.condition === "B" ? "bg-amber-500/15 text-amber-400" : "bg-red-500/15 text-red-400"
+                            t.condition === "A" ? "bg-emerald-500/15 text-emerald-400" : t.condition === "B" ? "bg-amber-500/100/15 text-amber-400" : "bg-red-500/100/15 text-red-400"
                           }`}>{t.condition}</span>
                         </td>
                         <td className="px-4 py-4 w-28">
@@ -537,8 +536,8 @@ export default function TradeInPage() {
                             t.status === "completado"
                               ? "bg-emerald-500/15 text-emerald-400"
                               : t.status === "cancelado"
-                              ? "bg-red-500/15 text-red-400"
-                              : "bg-amber-500/15 text-amber-400"
+                              ? "bg-red-500/100/15 text-red-400"
+                              : "bg-amber-500/100/15 text-amber-400"
                           }`}>
                             {t.status.toUpperCase()}
                           </span>
@@ -559,14 +558,14 @@ export default function TradeInPage() {
                               <>
                                 <button
                                   onClick={() => handleStatusChange(t.id, "completado")}
-                                  className="p-1.5 rounded-lg hover:bg-green-50 text-white/45 hover:text-emerald-400 transition-colors"
+                                  className="p-1.5 rounded-lg hover:bg-emerald-500/10 text-white/45 hover:text-emerald-400 transition-colors"
                                   title="Completar (equipo recibido)"
                                 >
                                   <span className="material-symbols-outlined text-base">check_circle</span>
                                 </button>
                                 <button
                                   onClick={() => handleStatusChange(t.id, "cancelado")}
-                                  className="p-1.5 rounded-lg hover:bg-red-50 text-white/45 hover:text-red-600 transition-colors"
+                                  className="p-1.5 rounded-lg hover:bg-red-500/10 text-white/45 hover:text-red-400 transition-colors"
                                   title="Cancelar"
                                 >
                                   <span className="material-symbols-outlined text-base">cancel</span>
@@ -578,7 +577,7 @@ export default function TradeInPage() {
                             {(t.status === "pendiente" || t.status === "cancelado") && (
                               <button
                                 onClick={() => setDeleteConfirmId(t.id)}
-                                className="p-1.5 rounded-lg hover:bg-red-50 text-white/45 hover:text-red-600 transition-colors"
+                                className="p-1.5 rounded-lg hover:bg-red-500/10 text-white/45 hover:text-red-400 transition-colors"
                                 title="Eliminar"
                               >
                                 <span className="material-symbols-outlined text-base">delete</span>
@@ -707,7 +706,7 @@ export default function TradeInPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setDeleteConfirmId(null)}>
           <div className="bg-[#1a1a1d] border border-white/[0.10] rounded-2xl shadow-2xl w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
             <div className="p-6 text-center">
-              <div className="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-14 h-14 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="material-symbols-outlined text-2xl text-red-500">delete_forever</span>
               </div>
               <h3 className="text-lg font-bold mb-2">¿Eliminar trade-in?</h3>
@@ -721,7 +720,7 @@ export default function TradeInPage() {
                 </button>
                 <button
                   onClick={() => handleDelete(deleteConfirmId)}
-                  className="flex-1 py-3 bg-red-500 text-white rounded-full text-sm font-bold hover:bg-red-600 transition-colors"
+                  className="flex-1 py-3 bg-red-500/100 text-white rounded-full text-sm font-bold hover:bg-red-600 transition-colors"
                 >
                   Eliminar
                 </button>
@@ -730,7 +729,6 @@ export default function TradeInPage() {
           </div>
         </div>
       )}
-    </>
     </div>
   );
 }
