@@ -706,21 +706,21 @@ export default function VentasStockPage() {
     const condLabel = p.condition === 'A' ? 'Grado A — Excelente' : p.condition === 'B' ? 'Grado B — Muy bueno' : 'Grado C — Bueno';
     w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Etiqueta ${p.product_code || p.id}</title>
 <style>
-  @page { size: 90mm 29mm; margin: 0; }
+  @page { size: 62mm 50mm; margin: 0; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { width: 90mm; height: 29mm; overflow: hidden; }
+  html, body { width: 62mm; height: 50mm; overflow: hidden; }
   body { font-family: Arial, Helvetica, sans-serif; background: #fff; color: #000; }
-  .label { width: 90mm; height: 29mm; padding: 2mm 3mm; display: flex; flex-direction: column; justify-content: space-between; }
+  .label { width: 62mm; height: 50mm; padding: 3mm 4mm; display: flex; flex-direction: column; justify-content: space-between; }
   .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 2mm; }
-  .model { font-size: 9pt; font-weight: 700; color: #000; line-height: 1.2; }
-  .sub { font-weight: 400; font-size: 6.5pt; color: #333; }
-  .code { font-size: 8pt; font-weight: 900; color: #000; font-family: monospace; white-space: nowrap; }
-  .mid { font-size: 6pt; color: #444; line-height: 1.4; }
+  .model { font-size: 10pt; font-weight: 700; color: #000; line-height: 1.2; }
+  .sub { font-weight: 400; font-size: 7pt; color: #333; }
+  .code { font-size: 8.5pt; font-weight: 900; color: #000; font-family: monospace; white-space: nowrap; }
+  .mid { font-size: 7pt; color: #444; line-height: 1.5; }
   .bottom { display: flex; justify-content: space-between; align-items: flex-end; }
-  .store { font-size: 5.5pt; color: #777; letter-spacing: 0.3px; text-transform: uppercase; }
-  .price { font-size: 11pt; font-weight: 900; color: #000; }
+  .store { font-size: 6pt; color: #777; letter-spacing: 0.3px; text-transform: uppercase; }
+  .price { font-size: 13pt; font-weight: 900; color: #000; }
   @media print {
-    html, body { width: 90mm; height: 29mm; }
+    html, body { width: 62mm; height: 50mm; }
     body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   }
 </style></head><body>
