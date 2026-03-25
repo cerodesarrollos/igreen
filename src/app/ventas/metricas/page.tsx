@@ -71,33 +71,20 @@ function getRange(period: PeriodKey): { from: Date; to: Date } {
   let from: Date;
   switch (period) {
     case "7d":
-      from = new Date(now);
-      from.setDate(from.getDate() - 7);
-      from.setHours(0, 0, 0, 0);
-      break;
+      from = new Date(now); from.setDate(from.getDate() - 7); from.setHours(0, 0, 0, 0); break;
     case "30d":
-      from = new Date(now);
-      from.setDate(from.getDate() - 30);
-      from.setHours(0, 0, 0, 0);
-      break;
+      from = new Date(now); from.setDate(from.getDate() - 30); from.setHours(0, 0, 0, 0); break;
     case "90d":
-      from = new Date(now);
-      from.setDate(from.getDate() - 90);
-      from.setHours(0, 0, 0, 0);
-      break;
+      from = new Date(now); from.setDate(from.getDate() - 90); from.setHours(0, 0, 0, 0); break;
     case "year":
-      from = new Date(now.getFullYear(), 0, 1, 0, 0, 0, 0);
-      break;
+      from = new Date(now.getFullYear(), 0, 1, 0, 0, 0, 0); break;
     default:
-      from = new Date(now);
-      from.setDate(from.getDate() - 30);
-      from.setHours(0, 0, 0, 0);
+      from = new Date(now); from.setDate(from.getDate() - 30); from.setHours(0, 0, 0, 0);
   }
   return { from, to };
 }
 
 const EXPENSE_CATEGORIES = ["Publicidad", "Empleados", "Sistema", "Comisiones", "Otros"];
-
 const emptyExpenseForm = {
   category: "Otros",
   description: "" as string | null,
@@ -107,18 +94,23 @@ const emptyExpenseForm = {
   recurring_period: null as string | null,
 };
 
-/* ───── Component ───── */
 /* ───── Instagram Insights Types ───── */
 interface IgInsights {
   profile: { followers_count: number; media_count: number };
-  metrics: {
-    impressions?: number;
-    reach: number;
-    profile_views: number;
-    website_clicks: number;
-  };
+  metrics: { impressions?: number; reach: number; profile_views: number; website_clicks: number };
   media: { id: string; caption?: string; media_type: string; media_url?: string; thumbnail_url?: string; timestamp: string; like_count: number; comments_count: number }[];
   error?: { message: string } | null;
+}
+
+/* ───── Card wrapper ───── */
+function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div className={`rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] ${className}`}>
+      <div className="rounded-[19px] bg-[#161619] shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_8px_32px_-8px_rgba(0,0,0,0.6)] overflow-hidden h-full">
+        {children}
+      </div>
+    </div>
+  );
 }
 
 export default function MetricasPage() {
@@ -129,7 +121,6 @@ export default function MetricasPage() {
   const [loading, setLoading] = useState(true);
   const [igInsights, setIgInsights] = useState<IgInsights | null>(null);
   const [igLoading, setIgLoading] = useState(false);
-
   const [period, setPeriod] = useState<PeriodKey>("30d");
 
   /* Expense CRUD */
@@ -178,7 +169,6 @@ export default function MetricasPage() {
 
   const filteredSales = sales.filter((s) => inRange(s.sold_at));
   const filteredExpenses = expenses.filter((e) => inRange(e.date));
-
   const productMap = new Map(products.map((p) => [p.id, p]));
 
   /* ── KPIs ── */
@@ -187,64 +177,36 @@ export default function MetricasPage() {
   const grossProfit = filteredSales.reduce((s, x) => s + (x.sale_price - x.cost_price), 0);
   const avgTicket = totalSalesCount > 0 ? totalSalesAmount / totalSalesCount : 0;
   const avgMargin = totalSalesAmount > 0 ? (grossProfit / totalSalesAmount) * 100 : 0;
+  const now2 = new Date();
+  const activeWarranties = products.filter((p) => p.warranty_until && new Date(p.warranty_until) > now2).length;
 
-  /* Active warranties — products with warranty_until in the future */
-  const now = new Date();
-  const activeWarranties = products.filter(
-    (p) => p.warranty_until && new Date(p.warranty_until) > now
-  ).length;
-
-  /* ── Revenue Chart (CSS bar chart) ── */
+  /* ── Chart ── */
   function buildChartBuckets() {
     const buckets: { label: string; revenue: number }[] = [];
     const diffDays = daysBetween(from, to);
-
     if (diffDays <= 14) {
-      // Daily
       const d = new Date(from);
       while (d <= to) {
         const key = d.toISOString().slice(0, 10);
-        const rev = filteredSales
-          .filter((s) => s.sold_at.slice(0, 10) === key)
-          .reduce((s, x) => s + x.sale_price, 0);
-        buckets.push({
-          label: d.toLocaleDateString("es-AR", { day: "2-digit", month: "short" }),
-          revenue: rev,
-        });
+        const rev = filteredSales.filter((s) => s.sold_at.slice(0, 10) === key).reduce((s, x) => s + x.sale_price, 0);
+        buckets.push({ label: d.toLocaleDateString("es-AR", { day: "2-digit", month: "short" }), revenue: rev });
         d.setDate(d.getDate() + 1);
       }
     } else if (diffDays <= 120) {
-      // Weekly
       const d = new Date(from);
-      let weekNum = 1;
+      let w = 1;
       while (d <= to) {
-        const weekEnd = new Date(d);
-        weekEnd.setDate(weekEnd.getDate() + 6);
-        const wStart = d.toISOString();
-        const wEnd = weekEnd.toISOString();
-        const rev = filteredSales
-          .filter((s) => s.sold_at >= wStart && s.sold_at <= wEnd)
-          .reduce((s, x) => s + x.sale_price, 0);
-        buckets.push({ label: `S${weekNum}`, revenue: rev });
-        d.setDate(d.getDate() + 7);
-        weekNum++;
+        const wEnd = new Date(d); wEnd.setDate(wEnd.getDate() + 6);
+        const rev = filteredSales.filter((s) => s.sold_at >= d.toISOString() && s.sold_at <= wEnd.toISOString()).reduce((s, x) => s + x.sale_price, 0);
+        buckets.push({ label: `S${w}`, revenue: rev });
+        d.setDate(d.getDate() + 7); w++;
       }
     } else {
-      // Monthly
       const d = new Date(from.getFullYear(), from.getMonth(), 1);
       while (d <= to) {
-        const y = d.getFullYear();
-        const m = d.getMonth();
-        const rev = filteredSales
-          .filter((s) => {
-            const sd = new Date(s.sold_at);
-            return sd.getFullYear() === y && sd.getMonth() === m;
-          })
-          .reduce((s, x) => s + x.sale_price, 0);
-        buckets.push({
-          label: d.toLocaleDateString("es-AR", { month: "short" }),
-          revenue: rev,
-        });
+        const y = d.getFullYear(); const m = d.getMonth();
+        const rev = filteredSales.filter((s) => { const sd = new Date(s.sold_at); return sd.getFullYear() === y && sd.getMonth() === m; }).reduce((s, x) => s + x.sale_price, 0);
+        buckets.push({ label: d.toLocaleDateString("es-AR", { month: "short" }), revenue: rev });
         d.setMonth(d.getMonth() + 1);
       }
     }
@@ -259,35 +221,23 @@ export default function MetricasPage() {
     const p = productMap.get(s.product_id);
     const model = p?.model || "Desconocido";
     const cur = modelStats.get(model) || { revenue: 0, cost: 0, count: 0 };
-    cur.revenue += s.sale_price;
-    cur.cost += s.cost_price;
-    cur.count += 1;
+    cur.revenue += s.sale_price; cur.cost += s.cost_price; cur.count += 1;
     modelStats.set(model, cur);
   });
   const topModels = Array.from(modelStats.entries())
-    .map(([model, d]) => ({
-      model,
-      units: d.count,
-      revenue: d.revenue,
-      margin: d.revenue > 0 ? ((d.revenue - d.cost) / d.revenue) * 100 : 0,
-    }))
-    .sort((a, b) => b.units - a.units)
-    .slice(0, 10);
+    .map(([model, d]) => ({ model, units: d.count, revenue: d.revenue, margin: d.revenue > 0 ? ((d.revenue - d.cost) / d.revenue) * 100 : 0 }))
+    .sort((a, b) => b.units - a.units).slice(0, 10);
 
-  /* ── Warranty Section ── */
+  /* ── Warranties ── */
   const filteredWarranties = warranties.filter((w) => inRange(w.reported_at));
   const failureRate = totalSalesCount > 0 ? (filteredWarranties.length / totalSalesCount) * 100 : 0;
-
   const failsByModel = new Map<string, number>();
   filteredWarranties.forEach((w) => {
     const p = w.product_id ? productMap.get(w.product_id) : null;
     const model = p?.model || "Desconocido";
     failsByModel.set(model, (failsByModel.get(model) || 0) + 1);
   });
-  const topFailModels = Array.from(failsByModel.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 3);
-
+  const topFailModels = Array.from(failsByModel.entries()).sort((a, b) => b[1] - a[1]).slice(0, 3);
   const avgDaysToFail = filteredWarranties.length > 0
     ? filteredWarranties.reduce((s, w) => {
         const sale = w.sale_id ? sales.find((sl) => sl.id === w.sale_id) : null;
@@ -296,7 +246,7 @@ export default function MetricasPage() {
       }, 0) / filteredWarranties.length
     : 0;
 
-  /* ── Expense CRUD ── */
+  /* ── Expenses ── */
   const totalExpensesAmount = filteredExpenses.reduce((s, x) => s + x.amount, 0);
 
   async function saveExpense() {
@@ -327,23 +277,15 @@ export default function MetricasPage() {
   }
 
   function editExpense(e: Expense) {
-    setExpenseForm({
-      category: e.category,
-      description: e.description,
-      amount: e.amount,
-      date: e.date,
-      recurring: e.recurring,
-      recurring_period: e.recurring_period,
-    });
+    setExpenseForm({ category: e.category, description: e.description, amount: e.amount, date: e.date, recurring: e.recurring, recurring_period: e.recurring_period });
     setEditingExpenseId(e.id);
     setShowExpenseForm(true);
   }
 
-  /* ── Loading ── */
   if (loading) {
     return (
       <div className="flex items-center justify-center py-32">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#3eff8e]" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white/30" />
         <span className="ml-3 text-sm text-white/45">Cargando métricas...</span>
       </div>
     );
@@ -357,18 +299,18 @@ export default function MetricasPage() {
   ];
 
   return (
-    <div className="px-8 py-8 overflow-y-auto flex-1">
-    <>
-      {/* ── Chip Filters ── */}
-      <div className="flex flex-wrap items-center gap-2 mb-6">
+    <div className="px-8 py-8 overflow-y-auto flex-1 space-y-6">
+
+      {/* ── Period chips ── */}
+      <div className="flex flex-wrap items-center gap-2">
         {periods.map((p) => (
           <button
             key={p.key}
             onClick={() => setPeriod(p.key)}
             className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
               period === p.key
-                ? "bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e]"
-                : "bg-white/[0.06] text-white/55 hover:bg-white/[0.08]"
+                ? "bg-white/[0.12] border border-white/[0.18] text-white/90"
+                : "bg-white/[0.06] text-white/45 hover:bg-white/[0.08]"
             }`}
           >
             {p.label}
@@ -377,64 +319,68 @@ export default function MetricasPage() {
       </div>
 
       {/* ── KPI Cards ── */}
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Ventas del Mes", value: `${totalSalesCount} — ${formatPrice(totalSalesAmount)}`, icon: "sell", bg: "bg-blue-500/15", color: "text-blue-400" },
-          { label: "Ticket Promedio", value: formatPrice(avgTicket), icon: "confirmation_number", bg: "bg-emerald-500/15", color: "text-emerald-400" },
-          { label: "Margen Promedio %", value: `${avgMargin.toFixed(1)}%`, icon: "percent", bg: "bg-orange-100", color: "text-orange-600" },
-          { label: "Garantías Activas", value: activeWarranties.toString(), icon: "verified_user", bg: "bg-[#3eff8e]/15", color: "text-[#3eff8e]" },
+          { label: "Ventas del Período", value: `${totalSalesCount} — ${formatPrice(totalSalesAmount)}`, icon: "sell", small: true },
+          { label: "Ticket Promedio",    value: formatPrice(avgTicket),         icon: "confirmation_number" },
+          { label: "Margen Promedio %",  value: `${avgMargin.toFixed(1)}%`,     icon: "percent"             },
+          { label: "Garantías Activas",  value: activeWarranties.toString(),    icon: "verified_user"       },
         ].map((kpi) => (
-          <div key={kpi.label} className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 p-5">
-            <div className="flex items-center gap-3 mb-3">
-              <div className={`w-10 h-10 rounded-xl ${kpi.bg} flex items-center justify-center`}>
-                <span className={`material-symbols-outlined text-xl ${kpi.color}`}>{kpi.icon}</span>
+          <div key={kpi.label} className="rounded-[18px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d]">
+            <div className="rounded-[17px] bg-[#161619] px-5 py-4 h-full shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/35">{kpi.label}</p>
+                <span className="material-symbols-outlined text-[16px] text-white/15">{kpi.icon}</span>
+              </div>
+              <div className="mt-3">
+                <p className={`font-medium leading-none tracking-tight text-white/90 ${kpi.small ? "text-[18px]" : "text-[26px]"}`}>{kpi.value}</p>
               </div>
             </div>
-            <p className="text-[10px] uppercase tracking-widest font-bold text-white/45 mb-1">{kpi.label}</p>
-            <p className="text-xl font-bold tracking-tight">{kpi.value}</p>
           </div>
         ))}
       </section>
 
       {/* ── Revenue Chart ── */}
-      <section className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 p-6 mb-8">
-        <p className="text-[10px] uppercase tracking-widest font-bold text-white/45 mb-4">Ingresos por período</p>
-        {chartData.every((b) => b.revenue === 0) ? (
-          <div className="flex flex-col items-center justify-center py-12 text-white/45">
-            <span className="material-symbols-outlined text-4xl mb-3">bar_chart</span>
-            <p className="text-sm font-medium">Sin datos de ventas para este período</p>
-          </div>
-        ) : (
-          <>
-            <div className="flex items-end gap-1 h-48">
-              {chartData.map((b, i) => (
-                <div key={i} className="flex-1 min-w-[18px] flex flex-col items-center justify-end h-full gap-1">
-                  <div
-                    className="w-full bg-primary/80 hover:bg-primary rounded-t-md transition-colors"
-                    style={{ height: `${(b.revenue / maxChart) * 100}%`, minHeight: b.revenue > 0 ? "4px" : "0" }}
-                    title={formatPrice(b.revenue)}
-                  />
-                  <span className="text-[8px] text-white/45 whitespace-nowrap">{b.label}</span>
-                </div>
-              ))}
+      <Card>
+        <div className="p-6">
+          <p className="text-[10px] uppercase tracking-widest font-bold text-white/45 mb-5">Ingresos por período</p>
+          {chartData.every((b) => b.revenue === 0) ? (
+            <div className="flex flex-col items-center justify-center py-12 text-white/35">
+              <span className="material-symbols-outlined text-4xl mb-3">bar_chart</span>
+              <p className="text-sm font-medium">Sin datos de ventas para este período</p>
             </div>
-            <div className="flex gap-4 mt-3">
-              <span className="flex items-center gap-1 text-xs text-white/45">
-                <span className="w-3 h-3 rounded-sm bg-primary/80 inline-block" />
-                Ingresos
-              </span>
-            </div>
-          </>
-        )}
-      </section>
+          ) : (
+            <>
+              <div className="flex items-end gap-1 h-48">
+                {chartData.map((b, i) => (
+                  <div key={i} className="flex-1 min-w-[18px] flex flex-col items-center justify-end h-full gap-1">
+                    <div
+                      className="w-full bg-white/20 hover:bg-white/30 rounded-t-md transition-colors"
+                      style={{ height: `${(b.revenue / maxChart) * 100}%`, minHeight: b.revenue > 0 ? "4px" : "0" }}
+                      title={formatPrice(b.revenue)}
+                    />
+                    <span className="text-[8px] text-white/35 whitespace-nowrap">{b.label}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-4 mt-3">
+                <span className="flex items-center gap-1.5 text-xs text-white/35">
+                  <span className="w-3 h-3 rounded-sm bg-white/20 inline-block" />
+                  Ingresos
+                </span>
+              </div>
+            </>
+          )}
+        </div>
+      </Card>
 
       {/* ── Top Models Table ── */}
-      <section className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 overflow-hidden mb-8">
+      <Card>
         <div className="px-6 py-4 border-b border-white/[0.06]">
           <p className="text-[10px] uppercase tracking-widest font-bold text-white/45">Top Modelos</p>
         </div>
         {topModels.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-white/45">
+          <div className="flex flex-col items-center justify-center py-12 text-white/35">
             <span className="material-symbols-outlined text-4xl mb-3">phone_iphone</span>
             <p className="text-sm font-medium">Sin ventas en este período</p>
           </div>
@@ -451,277 +397,253 @@ export default function MetricasPage() {
               </thead>
               <tbody>
                 {topModels.map((m, i) => (
-                  <tr
-                    key={m.model}
-                    className={`hover:bg-white/[0.03] transition-colors ${i % 2 === 1 ? "bg-white/[0.02]" : ""}`}
-                  >
-                    <td className="px-6 py-3 text-sm font-medium">{m.model}</td>
-                    <td className="px-4 py-3 text-sm">{m.units}</td>
-                    <td className="px-4 py-3 text-sm">{formatPrice(m.revenue)}</td>
-                    <td className="px-4 py-3 text-sm">{m.margin.toFixed(1)}%</td>
+                  <tr key={m.model} className={`border-b border-white/[0.04] last:border-0 hover:bg-white/[0.03] transition-colors ${i % 2 === 1 ? "bg-white/[0.02]" : ""}`}>
+                    <td className="px-6 py-3 text-sm font-medium text-white/80">{m.model}</td>
+                    <td className="px-4 py-3 text-sm text-white/70">{m.units}</td>
+                    <td className="px-4 py-3 text-sm text-white/70">{formatPrice(m.revenue)}</td>
+                    <td className="px-4 py-3 text-sm text-white/70">{m.margin.toFixed(1)}%</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         )}
-      </section>
+      </Card>
 
       {/* ── Warranty Section ── */}
-      <section className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 p-6 mb-8">
-        <p className="text-[10px] uppercase tracking-widest font-bold text-white/45 mb-4">Garantías</p>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white/[0.03] rounded-xl p-4">
-            <p className="text-[10px] uppercase tracking-widest font-bold text-white/45 mb-1">Activas</p>
-            <p className="text-xl font-bold">{activeWarranties}</p>
-          </div>
-          <div className="bg-white/[0.03] rounded-xl p-4">
-            <p className="text-[10px] uppercase tracking-widest font-bold text-white/45 mb-1">Tasa Falla</p>
-            <p className="text-xl font-bold">{failureRate.toFixed(1)}%</p>
-          </div>
-          <div className="bg-white/[0.03] rounded-xl p-4">
-            <p className="text-[10px] uppercase tracking-widest font-bold text-white/45 mb-1">Prom. Días a Falla</p>
-            <p className="text-xl font-bold">{Math.round(avgDaysToFail)}d</p>
-          </div>
-          <div className="bg-white/[0.03] rounded-xl p-4">
-            <p className="text-[10px] uppercase tracking-widest font-bold text-white/45 mb-1">Reclamos Período</p>
-            <p className="text-xl font-bold">{filteredWarranties.length}</p>
-          </div>
+      <Card>
+        <div className="px-6 py-4 border-b border-white/[0.06]">
+          <p className="text-[10px] uppercase tracking-widest font-bold text-white/45">Garantías</p>
         </div>
-        {topFailModels.length > 0 && (
-          <div>
-            <p className="text-[10px] uppercase tracking-widest font-bold text-white/45 mb-2">Top Modelos con Falla</p>
-            <div className="space-y-2">
-              {topFailModels.map(([model, count]) => (
-                <div key={model} className="flex items-center justify-between p-3 bg-red-50 rounded-xl">
-                  <span className="text-sm font-medium text-red-700">{model}</span>
-                  <span className="px-2.5 py-0.5 bg-red-500/15 text-red-400 text-[10px] font-bold rounded-full">
-                    {count} falla{count > 1 ? "s" : ""}
-                  </span>
-                </div>
-              ))}
-            </div>
+        <div className="p-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+            {[
+              { label: "Activas",          value: activeWarranties.toString()         },
+              { label: "Tasa Falla",        value: `${failureRate.toFixed(1)}%`        },
+              { label: "Prom. Días a Falla",value: `${Math.round(avgDaysToFail)}d`    },
+              { label: "Reclamos Período",  value: filteredWarranties.length.toString() },
+            ].map((s) => (
+              <div key={s.label} className="bg-white/[0.04] border border-white/[0.06] rounded-xl px-4 py-3">
+                <p className="text-[10px] uppercase tracking-widest font-bold text-white/35 mb-1">{s.label}</p>
+                <p className="text-xl font-bold text-white/85">{s.value}</p>
+              </div>
+            ))}
           </div>
-        )}
-      </section>
+          {topFailModels.length > 0 && (
+            <div>
+              <p className="text-[10px] uppercase tracking-widest font-bold text-white/35 mb-2">Top Modelos con Falla</p>
+              <div className="space-y-2">
+                {topFailModels.map(([model, count]) => (
+                  <div key={model} className="flex items-center justify-between p-3 bg-white/[0.04] border border-white/[0.06] rounded-xl">
+                    <span className="text-sm font-medium text-white/70">{model}</span>
+                    <span className="px-2.5 py-0.5 bg-white/[0.07] text-white/55 text-[10px] font-bold rounded-full border border-white/[0.08]">
+                      {count} falla{count > 1 ? "s" : ""}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </Card>
 
       {/* ── Expenses Section ── */}
-      <section className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 p-6 mb-8">
-        <div className="flex justify-between items-center mb-4">
+      <Card>
+        <div className="px-6 py-4 border-b border-white/[0.06] flex justify-between items-center">
           <p className="text-[10px] uppercase tracking-widest font-bold text-white/45">Gastos Operativos</p>
           <button
-            onClick={() => {
-              setExpenseForm({ ...emptyExpenseForm, date: new Date().toISOString().slice(0, 10) });
-              setEditingExpenseId(null);
-              setShowExpenseForm(!showExpenseForm);
-            }}
-            className="flex items-center gap-1 px-3 py-1.5 bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e] rounded-full text-xs font-bold hover:brightness-95 transition-all"
+            onClick={() => { setExpenseForm({ ...emptyExpenseForm, date: new Date().toISOString().slice(0, 10) }); setEditingExpenseId(null); setShowExpenseForm(!showExpenseForm); }}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.08] border border-white/[0.12] text-white/70 rounded-full text-xs font-bold hover:bg-white/[0.11] transition-all"
           >
-            <span className="material-symbols-outlined text-sm">add</span>
-            Agregar
+            <span className="material-symbols-outlined text-sm">add</span> Agregar
           </button>
         </div>
 
-        {/* Inline form */}
-        {showExpenseForm && (
-          <div className="bg-white/[0.03] rounded-xl p-4 mb-4 space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <select
-                value={expenseForm.category}
-                onChange={(e) => setExpenseForm({ ...expenseForm, category: e.target.value })}
-                className="border border-white/[0.08] rounded-xl px-3 py-2 text-sm bg-[#1a1a1d]"
-              >
-                {EXPENSE_CATEGORIES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-              <input
-                type="text"
-                placeholder="Descripción"
-                value={expenseForm.description || ""}
-                onChange={(e) => setExpenseForm({ ...expenseForm, description: e.target.value })}
-                className="border border-white/[0.08] rounded-xl px-3 py-2 text-sm"
-              />
-              <input
-                type="number"
-                placeholder="Monto USD"
-                value={expenseForm.amount || ""}
-                onChange={(e) => setExpenseForm({ ...expenseForm, amount: Number(e.target.value) })}
-                className="border border-white/[0.08] rounded-xl px-3 py-2 text-sm"
-              />
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <input
-                type="date"
-                value={expenseForm.date}
-                onChange={(e) => setExpenseForm({ ...expenseForm, date: e.target.value })}
-                className="border border-white/[0.08] rounded-xl px-3 py-2 text-sm"
-              />
-              <label className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={expenseForm.recurring}
-                  onChange={(e) => setExpenseForm({ ...expenseForm, recurring: e.target.checked })}
-                  className="rounded"
-                />
-                Recurrente
-              </label>
-              {expenseForm.recurring && (
+        <div className="p-6">
+          {/* Inline form */}
+          {showExpenseForm && (
+            <div className="bg-white/[0.04] border border-white/[0.07] rounded-xl p-4 mb-5 space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <select
-                  value={expenseForm.recurring_period || ""}
-                  onChange={(e) => setExpenseForm({ ...expenseForm, recurring_period: e.target.value })}
-                  className="border border-white/[0.08] rounded-xl px-3 py-2 text-sm bg-[#1a1a1d]"
+                  value={expenseForm.category}
+                  onChange={(e) => setExpenseForm({ ...expenseForm, category: e.target.value })}
+                  className="bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2 text-sm focus:outline-none"
                 >
-                  <option value="">Período</option>
-                  <option value="semanal">Semanal</option>
-                  <option value="mensual">Mensual</option>
-                  <option value="anual">Anual</option>
+                  {EXPENSE_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
-              )}
+                <input
+                  type="text" placeholder="Descripción"
+                  value={expenseForm.description || ""}
+                  onChange={(e) => setExpenseForm({ ...expenseForm, description: e.target.value })}
+                  className="bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2 text-sm focus:outline-none placeholder:text-white/30"
+                />
+                <input
+                  type="number" placeholder="Monto USD"
+                  value={expenseForm.amount || ""}
+                  onChange={(e) => setExpenseForm({ ...expenseForm, amount: Number(e.target.value) })}
+                  className="bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2 text-sm focus:outline-none placeholder:text-white/30"
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
+                <input
+                  type="date" value={expenseForm.date}
+                  onChange={(e) => setExpenseForm({ ...expenseForm, date: e.target.value })}
+                  className="bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2 text-sm focus:outline-none"
+                />
+                <label className="flex items-center gap-2 text-sm text-white/60">
+                  <input type="checkbox" checked={expenseForm.recurring} onChange={(e) => setExpenseForm({ ...expenseForm, recurring: e.target.checked })} className="rounded" />
+                  Recurrente
+                </label>
+                {expenseForm.recurring && (
+                  <select
+                    value={expenseForm.recurring_period || ""}
+                    onChange={(e) => setExpenseForm({ ...expenseForm, recurring_period: e.target.value })}
+                    className="bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2 text-sm focus:outline-none"
+                  >
+                    <option value="">Período</option>
+                    <option value="semanal">Semanal</option>
+                    <option value="mensual">Mensual</option>
+                    <option value="anual">Anual</option>
+                  </select>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={saveExpense} disabled={savingExpense || !expenseForm.amount}
+                  className="px-4 py-2 bg-white/[0.10] border border-white/[0.16] text-white/85 rounded-xl text-sm font-bold hover:bg-white/[0.13] transition-all disabled:opacity-50"
+                >
+                  {savingExpense ? "Guardando..." : editingExpenseId ? "Actualizar" : "Guardar"}
+                </button>
+                <button
+                  onClick={() => { setShowExpenseForm(false); setEditingExpenseId(null); }}
+                  className="px-4 py-2 bg-white/[0.06] border border-white/[0.08] text-white/50 rounded-xl text-sm font-bold hover:bg-white/[0.09] transition-all"
+                >
+                  Cancelar
+                </button>
+              </div>
             </div>
-            <div className="flex gap-2">
-              <button
-                onClick={saveExpense}
-                disabled={savingExpense || !expenseForm.amount}
-                className="px-4 py-2 bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e] rounded-xl text-sm font-bold hover:brightness-95 transition-all disabled:opacity-50"
-              >
-                {savingExpense ? "Guardando..." : editingExpenseId ? "Actualizar" : "Guardar"}
-              </button>
-              <button
-                onClick={() => { setShowExpenseForm(false); setEditingExpenseId(null); }}
-                className="px-4 py-2 bg-white/[0.08] text-white/55 rounded-xl text-sm font-bold hover:bg-white/[0.10] transition-all"
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
-        )}
+          )}
 
-        {filteredExpenses.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-white/45">
-            <span className="material-symbols-outlined text-4xl mb-3">receipt_long</span>
-            <p className="text-sm font-medium">Sin gastos registrados para este período</p>
-          </div>
-        ) : (
-          <>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-white/[0.03]">
-                    <th className="px-6 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Categoría</th>
-                    <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Descripción</th>
-                    <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Monto</th>
-                    <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Fecha</th>
-                    <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredExpenses.map((e, i) => (
-                    <tr key={e.id} className={`hover:bg-white/[0.03] transition-colors ${i % 2 === 1 ? "bg-white/[0.02]" : ""}`}>
-                      <td className="px-6 py-3 text-sm">
-                        <span className="px-2.5 py-0.5 bg-white/[0.06] text-white/55 text-[10px] font-bold rounded-full">{e.category}</span>
-                        {e.recurring && (
-                          <span className="ml-1.5 px-2 py-0.5 bg-blue-500/15 text-blue-400 text-[10px] font-bold rounded-full">↻ Recurrente</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-white/50">{e.description || "—"}</td>
-                      <td className="px-4 py-3 text-sm font-medium">{formatPrice(e.amount)}</td>
-                      <td className="px-4 py-3 text-sm text-white/50">{new Date(e.date).toLocaleDateString("es-AR")}</td>
-                      <td className="px-4 py-3 text-sm">
-                        <div className="flex gap-1">
-                          <button onClick={() => editExpense(e)} className="p-1 hover:bg-white/[0.06] rounded-lg transition-colors">
-                            <span className="material-symbols-outlined text-sm text-white/45">edit</span>
-                          </button>
-                          <button onClick={() => deleteExpense(e.id)} className="p-1 hover:bg-red-50 rounded-lg transition-colors">
-                            <span className="material-symbols-outlined text-sm text-red-400">delete</span>
-                          </button>
-                        </div>
-                      </td>
+          {filteredExpenses.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-white/35">
+              <span className="material-symbols-outlined text-4xl mb-3">receipt_long</span>
+              <p className="text-sm font-medium">Sin gastos registrados para este período</p>
+            </div>
+          ) : (
+            <>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-white/[0.03]">
+                      <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Categoría</th>
+                      <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Descripción</th>
+                      <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Monto</th>
+                      <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Fecha</th>
+                      <th className="px-4 py-3" />
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="mt-4 pt-4 border-t border-white/[0.06] flex justify-between items-center">
-              <span className="text-sm text-white/50 font-medium">Total del período</span>
-              <span className="text-lg font-bold">{formatPrice(totalExpensesAmount)}</span>
-            </div>
-          </>
-        )}
-      </section>
+                  </thead>
+                  <tbody>
+                    {filteredExpenses.map((e, i) => (
+                      <tr key={e.id} className={`border-b border-white/[0.04] last:border-0 hover:bg-white/[0.03] transition-colors ${i % 2 === 1 ? "bg-white/[0.02]" : ""}`}>
+                        <td className="px-4 py-3 text-sm">
+                          <span className="px-2.5 py-0.5 bg-white/[0.07] text-white/55 text-[10px] font-bold rounded-full border border-white/[0.08]">{e.category}</span>
+                          {e.recurring && <span className="ml-1.5 px-2 py-0.5 bg-white/[0.06] text-white/40 text-[10px] font-bold rounded-full">↻</span>}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-white/50">{e.description || "—"}</td>
+                        <td className="px-4 py-3 text-sm font-medium text-white/75">{formatPrice(e.amount)}</td>
+                        <td className="px-4 py-3 text-sm text-white/45">{new Date(e.date).toLocaleDateString("es-AR")}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex gap-1">
+                            <button onClick={() => editExpense(e)} className="p-1 hover:bg-white/[0.07] rounded-lg transition-colors">
+                              <span className="material-symbols-outlined text-sm text-white/40">edit</span>
+                            </button>
+                            <button onClick={() => deleteExpense(e.id)} className="p-1 hover:bg-white/[0.07] rounded-lg transition-colors">
+                              <span className="material-symbols-outlined text-sm text-white/35">delete</span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-4 pt-4 border-t border-white/[0.06] flex justify-between items-center">
+                <span className="text-sm text-white/45 font-medium">Total del período</span>
+                <span className="text-lg font-bold text-white/85">{formatPrice(totalExpensesAmount)}</span>
+              </div>
+            </>
+          )}
+        </div>
+      </Card>
 
       {/* ── Instagram Insights ── */}
-      <section className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 p-6">
-        <div className="flex items-center gap-2 mb-5">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 flex items-center justify-center">
-            <span className="text-white text-xs font-bold">IG</span>
+      <Card>
+        <div className="px-6 py-4 border-b border-white/[0.06] flex items-center gap-3">
+          <div className="w-7 h-7 rounded-lg bg-white/[0.07] flex items-center justify-center">
+            <span className="material-symbols-outlined text-sm text-white/45">photo_camera</span>
           </div>
-          <h2 className="text-[10px] uppercase tracking-widest font-bold text-white/45">Instagram Insights — Últimos 30 días</h2>
+          <p className="text-[10px] uppercase tracking-widest font-bold text-white/45">Instagram Insights — Últimos 30 días</p>
         </div>
 
-        {igLoading ? (
-          <div className="flex items-center gap-3 py-8 justify-center text-white/45">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-pink-400" />
-            <span className="text-sm">Cargando datos de Instagram...</span>
-          </div>
-        ) : igInsights?.error ? (
-          <div className="flex items-center gap-3 p-4 bg-red-50 rounded-xl text-red-600 text-sm">
-            <span className="material-symbols-outlined text-lg">error</span>
-            Error al cargar insights: {igInsights.error.message}
-          </div>
-        ) : igInsights ? (
-          <>
-            {/* KPI row */}
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-              {[
-                { label: "Seguidores", value: (igInsights.profile.followers_count ?? 0).toLocaleString("es-AR"), icon: "group", color: "text-[#3eff8e]", bg: "bg-[#3eff8e]/15" },
-                { label: "Alcance 30d", value: (igInsights.metrics.reach ?? 0).toLocaleString("es-AR"), icon: "radar", color: "text-emerald-400", bg: "bg-emerald-500/15" },
-                { label: "Visitas al perfil", value: (igInsights.metrics.profile_views ?? 0).toLocaleString("es-AR"), icon: "person_search", color: "text-pink-600", bg: "bg-pink-100" },
-                { label: "Clicks al sitio", value: (igInsights.metrics.website_clicks ?? 0).toLocaleString("es-AR"), icon: "link", color: "text-orange-600", bg: "bg-orange-100" },
-              ].map((kpi) => (
-                <div key={kpi.label} className="bg-white/[0.03] rounded-xl p-4">
-                  <div className={`w-8 h-8 rounded-lg ${kpi.bg} flex items-center justify-center mb-2`}>
-                    <span className={`material-symbols-outlined text-sm ${kpi.color}`}>{kpi.icon}</span>
-                  </div>
-                  <p className="text-[10px] uppercase tracking-widest font-bold text-white/45">{kpi.label}</p>
-                  <p className="text-xl font-bold mt-0.5">{kpi.value}</p>
-                </div>
-              ))}
+        <div className="p-6">
+          {igLoading ? (
+            <div className="flex items-center gap-3 py-8 justify-center text-white/35">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white/30" />
+              <span className="text-sm">Cargando datos de Instagram...</span>
             </div>
-
-            {/* Últimos posts */}
-            {igInsights.media.length > 0 && (
-              <>
-                <p className="text-[10px] uppercase tracking-widest font-bold text-white/45 mb-3">Últimas Publicaciones</p>
-                <div className="grid grid-cols-3 lg:grid-cols-9 gap-2">
-                  {igInsights.media.slice(0, 9).map((post) => (
-                    <div key={post.id} className="relative group aspect-square rounded-xl overflow-hidden bg-white/[0.06]">
-                      {post.media_url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={post.thumbnail_url || post.media_url}
-                          alt={post.caption?.slice(0, 30) || "post"}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <span className="material-symbols-outlined text-white/35">image</span>
-                        </div>
-                      )}
-                      {/* Hover overlay */}
-                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1 p-1">
-                        <span className="text-white text-xs font-bold">❤️ {post.like_count}</span>
-                        <span className="text-white text-xs">💬 {post.comments_count}</span>
-                      </div>
+          ) : igInsights?.error ? (
+            <div className="flex items-center gap-3 p-4 bg-white/[0.04] border border-white/[0.08] rounded-xl text-white/50 text-sm">
+              <span className="material-symbols-outlined text-lg text-white/35">error</span>
+              Error al cargar insights: {igInsights.error.message}
+            </div>
+          ) : igInsights ? (
+            <>
+              {/* KPI row */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                {[
+                  { label: "Seguidores",       value: (igInsights.profile.followers_count ?? 0).toLocaleString("es-AR"), icon: "group"         },
+                  { label: "Alcance 30d",       value: (igInsights.metrics.reach ?? 0).toLocaleString("es-AR"),           icon: "radar"         },
+                  { label: "Visitas al perfil", value: (igInsights.metrics.profile_views ?? 0).toLocaleString("es-AR"),   icon: "person_search" },
+                  { label: "Clicks al sitio",   value: (igInsights.metrics.website_clicks ?? 0).toLocaleString("es-AR"),  icon: "link"          },
+                ].map((kpi) => (
+                  <div key={kpi.label} className="bg-white/[0.04] border border-white/[0.06] rounded-xl px-4 py-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-[10px] uppercase tracking-widest font-bold text-white/35">{kpi.label}</p>
+                      <span className="material-symbols-outlined text-[14px] text-white/15">{kpi.icon}</span>
                     </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </>
-        ) : null}
-      </section>
-    </>
+                    <p className="text-xl font-bold text-white/85">{kpi.value}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Últimos posts */}
+              {igInsights.media.length > 0 && (
+                <>
+                  <p className="text-[10px] uppercase tracking-widest font-bold text-white/35 mb-3">Últimas Publicaciones</p>
+                  <div className="grid grid-cols-3 lg:grid-cols-9 gap-2">
+                    {igInsights.media.slice(0, 9).map((post) => (
+                      <div key={post.id} className="relative group aspect-square rounded-xl overflow-hidden bg-white/[0.05]">
+                        {post.media_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={post.thumbnail_url || post.media_url} alt={post.caption?.slice(0, 30) || "post"} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <span className="material-symbols-outlined text-white/25">image</span>
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1 p-1">
+                          <span className="text-white text-xs font-bold">❤️ {post.like_count}</span>
+                          <span className="text-white text-xs">💬 {post.comments_count}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </>
+          ) : null}
+        </div>
+      </Card>
     </div>
   );
 }
