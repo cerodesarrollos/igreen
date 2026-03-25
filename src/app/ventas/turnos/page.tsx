@@ -328,7 +328,7 @@ function isoToLocalInput(iso: string) {
   return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-const emptyForm = { client_name: "", client_phone: "", scheduled_at: "", status: "pendiente", notes: "", product_id: "" };
+const emptyForm = { client_name: "", client_phone: "", sched_date: "", sched_time: "10:00", status: "pendiente", notes: "", product_id: "" };
 
 /* ── Main ── */
 export default function TurnosPage() {
@@ -340,7 +340,7 @@ export default function TurnosPage() {
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState(emptyForm);
+  const [form, setForm] = useState<typeof emptyForm>(emptyForm);
   const [saving, setSaving] = useState(false);
 
   // Client autocomplete
@@ -404,7 +404,7 @@ export default function TurnosPage() {
 
   function openAdd(prefillDate?: string) {
     setEditingId(null);
-    setForm({ ...emptyForm, scheduled_at: prefillDate ? prefillDate + "T10:00" : "" });
+    setForm({ ...emptyForm, sched_date: prefillDate || "", sched_time: "10:00" });
     setClientSearch("");
     setClientResults([]);
     setShowModal(true);
@@ -412,7 +412,8 @@ export default function TurnosPage() {
 
   function openEdit(a: Appointment) {
     setEditingId(a.id);
-    setForm({ client_name: a.client_name, client_phone: a.client_phone, scheduled_at: isoToLocalInput(a.scheduled_at), status: a.status, notes: a.notes || "", product_id: a.product_id || "" });
+    const local = isoToLocalInput(a.scheduled_at);
+    setForm({ client_name: a.client_name, client_phone: a.client_phone, sched_date: local.slice(0,10), sched_time: local.slice(11,16), status: a.status, notes: a.notes || "", product_id: a.product_id || "" });
     setClientSearch(a.client_name);
     setClientResults([]);
     setShowModal(true);
@@ -421,7 +422,8 @@ export default function TurnosPage() {
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
-    const payload = { client_name: form.client_name, client_phone: form.client_phone, scheduled_at: new Date(form.scheduled_at).toISOString(), status: form.status, notes: form.notes || null, product_id: form.product_id || null };
+    const scheduled_at = new Date(`${form.sched_date}T${form.sched_time}`).toISOString();
+    const payload = { client_name: form.client_name, client_phone: form.client_phone, scheduled_at, status: form.status, notes: form.notes || null, product_id: form.product_id || null };
     let error;
     if (editingId) { ({ error } = await supabase.from("ig_appointments").update(payload).eq("id", editingId)); }
     else { ({ error } = await supabase.from("ig_appointments").insert(payload)); }
@@ -639,8 +641,12 @@ export default function TurnosPage() {
 
               <div>
                 <label className="text-[10px] uppercase tracking-widest font-bold text-white/40 block mb-1.5">Fecha y Hora *</label>
-                <input type="datetime-local" required value={form.scheduled_at} onChange={e => setForm(f => ({ ...f, scheduled_at: e.target.value }))}
-                  className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors" />
+                <div className="flex gap-2">
+                  <input type="date" required value={form.sched_date} onChange={e => setForm(f => ({ ...f, sched_date: e.target.value }))}
+                    className="flex-1 px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors [color-scheme:dark]" />
+                  <input type="time" required value={form.sched_time} onChange={e => setForm(f => ({ ...f, sched_time: e.target.value }))}
+                    className="w-28 px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors [color-scheme:dark]" />
+                </div>
               </div>
 
               <div>
