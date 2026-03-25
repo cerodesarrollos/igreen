@@ -251,18 +251,20 @@ export default function TradeInPage() {
       {/* ============ 1. KPI Cards Row ============ */}
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[
-          { label: "Trade-ins del Mes", value: String(kpiCount), icon: "swap_horiz", iconBg: "bg-[#3eff8e]/15", iconColor: "text-[#3eff8e]" },
-          { label: "Pendientes", value: String(kpiPending), icon: "pending_actions", iconBg: "bg-amber-500/10", iconColor: "text-amber-400" },
-          { label: "Modelo Top", value: kpiTopModel, icon: "phone_iphone", iconBg: "bg-blue-500/10", iconColor: "text-blue-400", small: true },
-          { label: "Valor Promedio", value: kpiAvgPrice > 0 ? `$${kpiAvgPrice} USD` : "—", icon: "attach_money", iconBg: "bg-emerald-500/10", iconColor: "text-emerald-400" },
+          { label: "Trade-ins del Mes", value: String(kpiCount), icon: "swap_horiz", iconBg: "bg-[#3eff8e]/10", iconColor: "text-[#3eff8e]" },
+          { label: "Pendientes",        value: String(kpiPending), icon: "pending_actions", iconBg: "bg-amber-500/10", iconColor: "text-amber-400" },
+          { label: "Modelo Top",        value: kpiTopModel, icon: "phone_iphone", iconBg: "bg-blue-500/10", iconColor: "text-blue-400", small: true },
+          { label: "Valor Promedio",    value: kpiAvgPrice > 0 ? `$${kpiAvgPrice} USD` : "—", icon: "attach_money", iconBg: "bg-emerald-500/10", iconColor: "text-emerald-400" },
         ].map((kpi) => (
-          <div key={kpi.label} className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 px-5 py-4 flex items-center gap-4">
-            <div className={`w-10 h-10 ${kpi.iconBg} rounded-xl flex items-center justify-center shrink-0`}>
-              <span className={`material-symbols-outlined text-xl ${kpi.iconColor}`}>{kpi.icon}</span>
-            </div>
-            <div className="min-w-0">
-              <p className="text-[10px] uppercase tracking-widest font-bold text-white/45">{kpi.label}</p>
-              <p className={`font-bold mt-0.5 truncate ${kpi.small ? "text-sm" : "text-lg"}`}>{kpi.value}</p>
+          <div key={kpi.label} className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] hover:from-[#333338] hover:to-[#222225] transition-all">
+            <div className="rounded-[19px] bg-[#161619] h-full shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_8px_32px_-8px_rgba(0,0,0,0.6)] p-5">
+              <p className="text-[10px] uppercase tracking-[0.14em] font-semibold text-white/45 mb-3">{kpi.label}</p>
+              <div className="flex items-center gap-3">
+                <div className={`w-9 h-9 ${kpi.iconBg} rounded-xl flex items-center justify-center shrink-0`}>
+                  <span className={`material-symbols-outlined text-[18px] ${kpi.iconColor}`}>{kpi.icon}</span>
+                </div>
+                <p className={`font-medium leading-none ${kpi.small ? "text-[18px] text-white/80 truncate" : "text-[26px] text-white/90"}`}>{kpi.value}</p>
+              </div>
             </div>
           </div>
         ))}
@@ -270,7 +272,8 @@ export default function TradeInPage() {
 
       {/* ============ 2. Cotizador Rápido ============ */}
       <section className="mb-6">
-        <div className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 p-6">
+        <div className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] hover:from-[#333338] hover:to-[#222225] transition-all">
+          <div className="rounded-[19px] bg-[#161619] h-full shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_8px_32px_-8px_rgba(0,0,0,0.6)] p-6">
           <div className="flex items-center gap-3 mb-5">
             <div className="w-10 h-10 bg-[#3eff8e]/15 rounded-xl flex items-center justify-center">
               <span className="material-symbols-outlined text-xl text-[#3eff8e]">calculate</span>
@@ -374,11 +377,13 @@ export default function TradeInPage() {
             </div>
           </div>
         </div>
+        </div>
       </section>
 
       {/* ============ 3. Tabla de Cotización ============ */}
       <section className="mb-6">
-        <div className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 p-6">
+        <div className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] hover:from-[#333338] hover:to-[#222225] transition-all">
+          <div className="rounded-[19px] bg-[#161619] h-full shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_8px_32px_-8px_rgba(0,0,0,0.6)] p-6">
           <div className="flex items-center gap-3 mb-5">
             <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center">
               <span className="material-symbols-outlined text-xl text-emerald-400">swap_horiz</span>
@@ -438,6 +443,7 @@ export default function TradeInPage() {
               El agente IA usa esta tabla para cotizar equipos automáticamente. Cuando un cliente envía fotos, GPT Vision analiza el estado y cotiza según estos valores de referencia.
             </p>
           </div>
+        </div>
         </div>
       </section>
 
