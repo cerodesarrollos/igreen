@@ -521,11 +521,11 @@ export default function VentasStockPage() {
   // Sale modal
   const [showSaleModal, setShowSaleModal] = useState(false);
   const [saleProduct, setSaleProduct] = useState<Product | null>(null);
-  const [saleForm, setSaleForm] = useState({ payment_method: "efectivo", sale_price: "", notes: "", client_name: "", client_phone: "", client_id: "", client_dni: "", client_email: "", extended_warranty: false });
+  const [saleForm, setSaleForm] = useState({ payment_method: "efectivo", sale_price: "", notes: "", client_name: "", client_last_name: "", client_phone: "", client_id: "", client_dni: "", client_email: "", extended_warranty: false });
   const [savingSale, setSavingSale] = useState(false);
   const [saleConfirmation, setSaleConfirmation] = useState<{ product: Product; sale_price: number; payment_method: string } | null>(null);
   const [clientSearch, setClientSearch] = useState("");
-  const [clientResults, setClientResults] = useState<{id:string;name:string;phone:string;dni:string;email:string}[]>([]);
+  const [clientResults, setClientResults] = useState<{id:string;name:string;last_name:string|null;phone:string;dni:string;email:string}[]>([]);
   const [showClientDropdown, setShowClientDropdown] = useState(false);
 
   // Delete product
@@ -613,6 +613,7 @@ export default function VentasStockPage() {
       sale_price: product.sale_price?.toString() || "",
       notes: "",
       client_name: "",
+      client_last_name: "",
       client_phone: "",
       client_id: "",
       client_dni: "",
@@ -651,6 +652,7 @@ export default function VentasStockPage() {
         // Create new client
         const { data: newClient } = await supabase.from("ig_clients").insert({
           name: saleForm.client_name,
+          last_name: saleForm.client_last_name || null,
           phone: saleForm.client_phone || null,
           dni: saleForm.client_dni || null,
           email: saleForm.client_email || null,
@@ -666,7 +668,10 @@ export default function VentasStockPage() {
       payment_method: saleForm.payment_method,
       notes: saleForm.notes || null,
       client_name: saleForm.client_name || null,
+      client_last_name: saleForm.client_last_name || null,
       client_phone: saleForm.client_phone || null,
+      client_dni: saleForm.client_dni || null,
+      client_email: saleForm.client_email || null,
       client_id: clientId,
       sold_at: new Date().toISOString(),
     };
@@ -1269,8 +1274,8 @@ export default function VentasStockPage() {
                             setClientSearch(q);
                             setSaleForm(f => ({...f, client_id: ""}));
                             if (q.length >= 2) {
-                              const { data } = await supabase.from("ig_clients").select("id,name,phone,dni,email").or(`name.ilike.%${q}%,phone.ilike.%${q}%,dni.ilike.%${q}%`).limit(6);
-                              setClientResults((data || []) as {id:string;name:string;phone:string;dni:string;email:string}[]);
+                              const { data } = await supabase.from("ig_clients").select("id,name,last_name,phone,dni,email").or(`name.ilike.%${q}%,phone.ilike.%${q}%,dni.ilike.%${q}%`).limit(6);
+                              setClientResults((data || []) as {id:string;name:string;last_name:string|null;phone:string;dni:string;email:string}[]);
                               setShowClientDropdown(true);
                             } else {
                               setClientResults([]);
@@ -1286,7 +1291,7 @@ export default function VentasStockPage() {
                           {clientResults.map(c => (
                             <button key={c.id} type="button"
                               onClick={() => {
-                                setSaleForm(f => ({...f, client_id: c.id, client_name: c.name || "", client_phone: c.phone || "", client_dni: c.dni || "", client_email: c.email || ""}));
+                                setSaleForm(f => ({...f, client_id: c.id, client_name: c.name || "", client_last_name: c.last_name || "", client_phone: c.phone || "", client_dni: c.dni || "", client_email: c.email || ""}));
                                 setClientSearch(c.name || "");
                                 setShowClientDropdown(false);
                               }}
@@ -1316,13 +1321,13 @@ export default function VentasStockPage() {
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50 block mb-1">Nombre Cliente</label>
+                        <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50 block mb-1">Nombre</label>
                         <input type="text" value={saleForm.client_name} onChange={e => setSaleForm({...saleForm, client_name: e.target.value})} placeholder="Opcional"
                           className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors" />
                       </div>
                       <div>
-                        <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50 block mb-1">Teléfono</label>
-                        <input type="text" value={saleForm.client_phone} onChange={e => setSaleForm({...saleForm, client_phone: e.target.value})} placeholder="Opcional"
+                        <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50 block mb-1">Apellido</label>
+                        <input type="text" value={saleForm.client_last_name} onChange={e => setSaleForm({...saleForm, client_last_name: e.target.value})} placeholder="Opcional"
                           className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors" />
                       </div>
                       <div>
@@ -1331,6 +1336,11 @@ export default function VentasStockPage() {
                           className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors" />
                       </div>
                       <div>
+                        <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50 block mb-1">Teléfono</label>
+                        <input type="text" value={saleForm.client_phone} onChange={e => setSaleForm({...saleForm, client_phone: e.target.value})} placeholder="Opcional"
+                          className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors" />
+                      </div>
+                      <div className="col-span-2">
                         <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50 block mb-1">Email</label>
                         <input type="email" value={saleForm.client_email} onChange={e => setSaleForm({...saleForm, client_email: e.target.value})} placeholder="Opcional"
                           className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors" />

@@ -7,8 +7,10 @@ import { supabase } from "@/lib/supabase";
 interface Client {
   id: string;
   name: string;
+  last_name: string | null;
   phone: string | null;
   email: string | null;
+  dni: string | null;
   instagram: string | null;
   source: string | null;
   role: "comprador" | "vendedor" | "ambos";
@@ -19,8 +21,10 @@ interface Client {
 
 const emptyForm = {
   name: "",
+  last_name: "",
   phone: "",
   email: "",
+  dni: "",
   instagram: "",
   role: "comprador" as "comprador" | "vendedor" | "ambos",
   notes: "",
@@ -103,8 +107,10 @@ export default function ClientesPage() {
     setEditingClient(client);
     setForm({
       name: client.name,
+      last_name: client.last_name || "",
       phone: client.phone || "",
       email: client.email || "",
+      dni: client.dni || "",
       instagram: client.instagram || "",
       role: client.role || "comprador",
       notes: client.notes || "",
@@ -117,8 +123,10 @@ export default function ClientesPage() {
     setSaving(true);
     const payload = {
       name: form.name,
+      last_name: form.last_name || null,
       phone: form.phone || null,
       email: form.email || null,
+      dni: form.dni || null,
       instagram: form.instagram || null,
       role: form.role,
       notes: form.notes || null,
@@ -389,23 +397,44 @@ export default function ClientesPage() {
               </button>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div>
-                <label className="text-[10px] font-bold text-white/45 uppercase tracking-widest">Nombre *</label>
-                <input
-                  required
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] rounded-xl border border-white/[0.08] text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] font-bold text-white/45 uppercase tracking-widest">Nombre *</label>
+                  <input
+                    required
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] rounded-xl border border-white/[0.08] text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold text-white/45 uppercase tracking-widest">Apellido</label>
+                  <input
+                    value={form.last_name}
+                    onChange={(e) => setForm({ ...form, last_name: e.target.value })}
+                    className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] rounded-xl border border-white/[0.08] text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
+                  />
+                </div>
               </div>
-              <div>
-                <label className="text-[10px] font-bold text-white/45 uppercase tracking-widest">Teléfono</label>
-                <input
-                  value={form.phone}
-                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                  className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] rounded-xl border border-white/[0.08] text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
-                  placeholder="+54 11 ..."
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] font-bold text-white/45 uppercase tracking-widest">DNI</label>
+                  <input
+                    value={form.dni}
+                    onChange={(e) => setForm({ ...form, dni: e.target.value })}
+                    className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] rounded-xl border border-white/[0.08] text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
+                    placeholder="12.345.678"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold text-white/45 uppercase tracking-widest">Teléfono</label>
+                  <input
+                    value={form.phone}
+                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                    className="w-full mt-1 px-4 py-2.5 bg-white/[0.04] rounded-xl border border-white/[0.08] text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
+                    placeholder="+54 11 ..."
+                  />
+                </div>
               </div>
               <div>
                 <label className="text-[10px] font-bold text-white/45 uppercase tracking-widest">Email</label>

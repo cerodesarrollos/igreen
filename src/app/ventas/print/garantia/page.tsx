@@ -15,7 +15,10 @@ interface SaleData {
   payment_method: string;
   sold_at: string;
   client_name: string | null;
+  client_last_name: string | null;
   client_phone: string | null;
+  client_dni: string | null;
+  client_email: string | null;
   warranty_days: number;
   warranty_until: string | null;
   product: {
@@ -95,7 +98,7 @@ function GarantiaContent() {
         .from("ig_sales")
         .select(`
           id, sale_price, payment_method, sold_at,
-          client_name, client_phone,
+          client_name, client_last_name, client_phone, client_dni, client_email,
           warranty_days, warranty_until,
           product:ig_products(id, model, capacity, color, condition, battery_health, imei, product_code)
         `)
@@ -203,10 +206,14 @@ function GarantiaContent() {
 
         {/* Cliente */}
         <Section title="Cliente">
-          {(sale.client_name || sale.client_phone) ? (
+          {(sale.client_name || sale.client_phone || sale.client_dni) ? (
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 24px" }}>
-              {sale.client_name && <Row label="Nombre" value={sale.client_name} />}
+              {(sale.client_name || sale.client_last_name) && (
+                <Row label="Nombre y apellido" value={[sale.client_name, sale.client_last_name].filter(Boolean).join(" ")} />
+              )}
+              {sale.client_dni && <Row label="DNI" value={sale.client_dni} />}
               {sale.client_phone && <Row label="Teléfono" value={sale.client_phone} />}
+              {sale.client_email && <Row label="Email" value={sale.client_email} />}
             </div>
           ) : (
             <p style={{ fontSize: "11px", color: "#aaa", fontStyle: "italic" }}>Venta sin datos de cliente registrados</p>
