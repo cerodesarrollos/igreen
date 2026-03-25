@@ -42,9 +42,17 @@ export default function InboxPage() {
   const [attachments, setAttachments] = useState<File[]>([]);
   const [convLabel, setConvLabel] = useState<string>('');
   const [labelMenuOpen, setLabelMenuOpen] = useState(false);
+  const [noteText, setNoteText] = useState<string>('');
+  const [noteSaved, setNoteSaved] = useState<string>('');
+  const [noteVisible, setNoteVisible] = useState(false);
+  const [noteEditing, setNoteEditing] = useState(false);
+  const [notePos, setNotePos] = useState({ x: 24, y: 24 });
+  const [noteSaving, setNoteSaving] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const labelMenuRef = useRef<HTMLDivElement>(null);
+  const noteRef = useRef<HTMLDivElement>(null);
+  const dragState = useRef<{ dragging: boolean; startX: number; startY: number; origX: number; origY: number }>({ dragging: false, startX: 0, startY: 0, origX: 24, origY: 24 });
 
   const CONV_LABELS = [
     { key: 'consulta',         label: 'Consulta',              color: 'text-white/55',         bg: 'bg-white/[0.07]',       icon: 'help' },
@@ -157,10 +165,48 @@ export default function InboxPage() {
     fetchConversations();
   }
 
-  // Load label when selecting a conversation
+  // Load label + note when selecting a conversation
   async function loadConvLabel(convId: string) {
-    const { data } = await supabase.from('ig_conv_labels').select('label').eq('conversation_id', convId).single();
+    const { data } = await supabase.from('ig_conv_labels').select('label,notes').eq('conversation_id', convId).single();
     setConvLabel(data?.label || 'consulta');
+    const n = data?.notes || '';
+    setNoteSaved(n);
+    setNoteText(n);
+    setNoteVisible(!!n);
+    setNoteEditing(false);
+    setNotePos({ x: 24, y: 24 });
+  }
+
+  async function saveNote() {
+    if (!selected) return;
+    setNoteSaving(true);
+    await supabase.from('ig_conv_labels').upsert(
+      { conversation_id: selected.conversation_id, label: convLabel || 'consulta', notes: noteText, updated_at: new Date().toISOString() },
+      { onConflict: 'conversation_id' }
+    );
+    setNoteSaved(noteText);
+    setNoteSaving(false);
+    setNoteEditing(false);
+    if (!noteText.trim()) setNoteVisible(false);
+  }
+
+  function startDrag(e: React.MouseEvent) {
+    e.preventDefault();
+    dragState.current = { dragging: true, startX: e.clientX, startY: e.clientY, origX: notePos.x, origY: notePos.y };
+    const onMove = (ev: MouseEvent) => {
+      if (!dragState.current.dragging) return;
+      setNotePos({
+        x: Math.max(0, dragState.current.origX + ev.clientX - dragState.current.startX),
+        y: Math.max(0, dragState.current.origY + ev.clientY - dragState.current.startY),
+      });
+    };
+    const onUp = () => {
+      dragState.current.dragging = false;
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
   }
 
   async function saveConvLabel(key: string) {
@@ -374,17 +420,87 @@ export default function InboxPage() {
                 );
               })()}
             </div>
-            {selected.status === 'agent' && (
-              <button onClick={() => assignToHuman(selected)}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] text-white/60 text-xs font-medium rounded-lg transition-colors">
-                <span className="material-symbols-outlined text-[14px]">person_check</span>
-                Tomar conversación
+            <div className="flex items-center gap-2">
+              {/* Note button */}
+              <button
+                onClick={() => { setNoteVisible(true); setNoteEditing(true); }}
+                title="Agregar nota"
+                className={`flex items-center gap-1.5 px-3 py-1.5 border text-xs font-medium rounded-lg transition-colors ${
+                  noteVisible
+                    ? 'bg-[#3eff8e]/10 border-[#3eff8e]/20 text-[#3eff8e]/70'
+                    : 'bg-white/[0.06] hover:bg-white/[0.1] border-white/[0.08] text-white/55'
+                }`}>
+                <span className="material-symbols-outlined text-[14px]">sticky_note_2</span>
+                {noteSaved ? 'Ver nota' : 'Agregar nota'}
               </button>
-            )}
+
+              {selected.status === 'agent' && (
+                <button onClick={() => assignToHuman(selected)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] text-white/60 text-xs font-medium rounded-lg transition-colors">
+                  <span className="material-symbols-outlined text-[14px]">person_check</span>
+                  Tomar conversación
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-3 bg-[#0d0d0f]">
+          <div className="flex-1 relative overflow-y-auto p-6 space-y-3 bg-[#0d0d0f]">
+
+            {/* Floating note */}
+            {noteVisible && (
+              <div
+                ref={noteRef}
+                style={{ left: notePos.x, top: notePos.y }}
+                className="absolute z-20 w-56 rounded-xl border border-[#3eff8e]/20 bg-[#111c14]/80 backdrop-blur-md shadow-2xl"
+              >
+                {/* Drag handle */}
+                <div
+                  onMouseDown={startDrag}
+                  className="flex items-center justify-between px-3 py-2 cursor-grab active:cursor-grabbing border-b border-white/[0.07] select-none"
+                >
+                  <div className="flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[13px] text-[#3eff8e]/60">sticky_note_2</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[#3eff8e]/50">Nota</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => { setNoteEditing(v => !v); }} className="text-white/30 hover:text-white/60 transition-colors">
+                      <span className="material-symbols-outlined text-[13px]">{noteEditing ? 'check' : 'edit'}</span>
+                    </button>
+                    <button onClick={() => { setNoteText(''); setNoteVisible(false); saveNote(); }} className="text-white/20 hover:text-red-400/60 transition-colors">
+                      <span className="material-symbols-outlined text-[13px]">close</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Note content */}
+                <div className="p-3">
+                  {noteEditing ? (
+                    <textarea
+                      autoFocus
+                      value={noteText}
+                      onChange={e => setNoteText(e.target.value)}
+                      rows={4}
+                      className="w-full bg-transparent text-xs text-white/70 placeholder:text-white/25 outline-none resize-none leading-relaxed"
+                      placeholder="Escribí una nota…"
+                    />
+                  ) : (
+                    <p className="text-xs text-white/60 leading-relaxed whitespace-pre-wrap">{noteSaved || '(vacía)'}</p>
+                  )}
+                </div>
+
+                {/* Save button when editing */}
+                {noteEditing && (
+                  <div className="px-3 pb-2.5 flex justify-end">
+                    <button onClick={saveNote} disabled={noteSaving}
+                      className="text-[10px] px-2.5 py-1 rounded-md bg-[#3eff8e]/15 text-[#3eff8e]/70 hover:bg-[#3eff8e]/25 transition-colors font-medium disabled:opacity-40">
+                      {noteSaving ? 'Guardando…' : 'Guardar'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
             {selected.messages.map(msg => (
               <div key={msg.id} className={`flex ${msg.direction === 'outbound' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-sm lg:max-w-md px-4 py-2.5 rounded-2xl ${
