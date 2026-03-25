@@ -250,15 +250,13 @@ export default function TradeInPage() {
     );
   }
 
-  const conditionChipClass = (c: "A" | "B" | "C", active: boolean) => {
-    if (!active) return "bg-white/[0.06] text-white/55 hover:bg-white/[0.08]";
-    if (c === "A") return "bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 shadow-green-200";
-    if (c === "B") return "bg-amber-500/100 text-white shadow-amber-200";
-    return "bg-red-500/100 text-white shadow-red-200";
+  const conditionChipClass = (_c: "A" | "B" | "C", active: boolean) => {
+    if (!active) return "bg-white/[0.06] text-white/45 hover:bg-white/[0.08]";
+    return "bg-white/[0.12] border border-white/[0.18] text-white/90";
   };
 
   function BatteryBar({ value, size = "normal" }: { value: number; size?: "normal" | "mini" }) {
-    const color = value > 85 ? "bg-emerald-500/100" : value >= 80 ? "bg-amber-500/100" : "bg-red-500/100";
+    const color = "bg-white/30";
     const h = size === "mini" ? "h-1.5" : "h-2";
     return (
       <div className="flex items-center gap-2">
@@ -310,8 +308,8 @@ export default function TradeInPage() {
         <div className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] hover:from-[#333338] hover:to-[#222225] transition-all">
           <div className="rounded-[19px] bg-[#161619] h-full shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_8px_32px_-8px_rgba(0,0,0,0.6)] p-6">
           <div className="flex items-center gap-3 mb-5">
-            <div className="w-10 h-10 bg-[#3eff8e]/15 rounded-xl flex items-center justify-center">
-              <span className="material-symbols-outlined text-xl text-[#3eff8e]">calculate</span>
+            <div className="w-10 h-10 bg-white/[0.05] rounded-xl flex items-center justify-center">
+              <span className="material-symbols-outlined text-xl text-white/40">calculate</span>
             </div>
             <div>
               <h3 className="text-lg font-bold">Cotizador Rápido</h3>
@@ -390,7 +388,7 @@ export default function TradeInPage() {
             <div className="flex flex-col items-center justify-center text-center py-4">
               <p className="text-[10px] uppercase tracking-widest font-bold text-white/45 mb-2">Valor Trade-in</p>
               {quoterPrice !== null ? (
-                <p className="text-5xl font-black text-[#3eff8e] tabular-nums">${quoterPrice}<span className="text-lg font-bold text-white/45 ml-2">USD</span></p>
+                <p className="text-5xl font-black text-white/90 tabular-nums">${quoterPrice}<span className="text-lg font-bold text-white/35 ml-2">USD</span></p>
               ) : (
                 <p className="text-2xl font-bold text-white/35">Sin precio</p>
               )}
@@ -416,8 +414,8 @@ export default function TradeInPage() {
         <div className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] hover:from-[#333338] hover:to-[#222225] transition-all">
           <div className="rounded-[19px] bg-[#161619] h-full shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_8px_32px_-8px_rgba(0,0,0,0.6)] p-6">
           <div className="flex items-center gap-3 mb-5">
-            <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center">
-              <span className="material-symbols-outlined text-xl text-emerald-400">swap_horiz</span>
+            <div className="w-10 h-10 bg-white/[0.05] rounded-xl flex items-center justify-center">
+              <span className="material-symbols-outlined text-xl text-white/40">swap_horiz</span>
             </div>
             <div>
               <h3 className="text-lg font-bold">Tabla de Cotización</h3>
@@ -435,11 +433,11 @@ export default function TradeInPage() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr>
-                    <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45 bg-white/[0.03]">Modelo</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-emerald-400 bg-emerald-500/[0.08]">Estado A — Impecable</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-amber-400 bg-amber-500/[0.08]">Estado B — Detalles</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-red-400 bg-red-500/[0.08]">Estado C — Uso visible</th>
-                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-white/45 bg-white/[0.03]">Batería mín.</th>
+                    <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-white/35 bg-white/[0.03]">Modelo</th>
+                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-white/35 bg-white/[0.03]">Estado A — Impecable</th>
+                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-white/35 bg-white/[0.03]">Estado B — Detalles</th>
+                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-white/35 bg-white/[0.03]">Estado C — Uso visible</th>
+                    <th className="px-4 py-4 text-[10px] uppercase tracking-widest font-bold text-white/35 bg-white/[0.03]">Batería mín.</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -447,16 +445,16 @@ export default function TradeInPage() {
                     <tr key={row.model} className={`hover:bg-blue-500/10/40 transition-colors border-t border-white/[0.06] ${i % 2 === 1 ? "bg-white/[0.02]" : "bg-[#1a1a1d]"}`}>
                       <td className="px-6 py-4 text-sm font-bold">{row.model}</td>
                       <td className="px-4 py-4">
-                        <span className="text-base font-black text-emerald-400">${row.a}</span>
-                        <span className="text-[10px] text-white/45 ml-1">USD</span>
+                        <span className="text-base font-semibold text-white/80">${row.a}</span>
+                        <span className="text-[10px] text-white/35 ml-1">USD</span>
                       </td>
                       <td className="px-4 py-4">
-                        <span className="text-base font-black text-amber-400">${row.b}</span>
-                        <span className="text-[10px] text-white/45 ml-1">USD</span>
+                        <span className="text-base font-semibold text-white/60">${row.b}</span>
+                        <span className="text-[10px] text-white/35 ml-1">USD</span>
                       </td>
                       <td className="px-4 py-4">
-                        <span className="text-base font-black text-red-400">${row.c}</span>
-                        <span className="text-[10px] text-white/45 ml-1">USD</span>
+                        <span className="text-base font-semibold text-white/45">${row.c}</span>
+                        <span className="text-[10px] text-white/35 ml-1">USD</span>
                       </td>
                       <td className="px-4 py-4 w-36">
                         <BatteryBar value={row.bat} size="mini" />
@@ -484,8 +482,8 @@ export default function TradeInPage() {
           <div className="p-6 border-b border-white/[0.06]">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-[#3eff8e]/15 rounded-xl flex items-center justify-center">
-                  <span className="material-symbols-outlined text-xl text-[#3eff8e]">history</span>
+                <div className="w-10 h-10 bg-white/[0.05] rounded-xl flex items-center justify-center">
+                  <span className="material-symbols-outlined text-xl text-white/40">history</span>
                 </div>
                 <h3 className="text-lg font-bold">Historial de Trade-ins</h3>
               </div>
