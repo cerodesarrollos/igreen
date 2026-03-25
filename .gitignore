@@ -3,3 +3,4 @@ node_modules/
 *.tsbuildinfo
 stitch-export/
 .env.local
+.vercel

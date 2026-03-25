@@ -384,11 +384,133 @@ function ProductFormModal({
   );
 }
 
+/* ───── Mobile Card View ───── */
+function MobileProductCard({
+  p,
+  onSell,
+  onEdit,
+  onLabel,
+}: {
+  p: Product;
+  onSell: (p: Product) => void;
+  onEdit: (p: Product) => void;
+  onLabel: (p: Product) => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const days = p.status !== "vendido"
+    ? Math.floor((Date.now() - new Date(p.loaded_at || p.created_at).getTime()) / 86400000)
+    : null;
+
+  return (
+    <div className="rounded-[16px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d]">
+      <div className="rounded-[15px] bg-[#161619] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] overflow-hidden">
+        {/* Main row */}
+        <div className="px-4 py-3.5 flex items-center gap-3" onClick={() => setExpanded(e => !e)}>
+          {/* Photo or placeholder */}
+          <div className="w-11 h-11 rounded-xl bg-white/[0.04] border border-white/[0.07] flex items-center justify-center overflow-hidden shrink-0">
+            {p.photos?.[0]
+              // eslint-disable-next-line @next/next/no-img-element
+              ? <img src={p.photos[0]} alt="" className="w-full h-full object-cover" />
+              : <span className="material-symbols-outlined text-white/15 text-lg">smartphone</span>
+            }
+          </div>
+          {/* Info */}
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-white/80 truncate">{p.model}</p>
+            <p className="text-[10px] text-white/40 font-mono truncate">{p.product_code || '—'} · {p.capacity} · {p.color}</p>
+          </div>
+          {/* Right side */}
+          <div className="flex flex-col items-end gap-1 shrink-0">
+            <p className="text-sm font-semibold text-white/75">{formatPrice(p.sale_price)}</p>
+            <div className="flex items-center gap-1.5">
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
+                p.condition === 'A' ? 'bg-emerald-500/10 text-emerald-400' :
+                p.condition === 'B' ? 'bg-amber-500/10 text-amber-400' :
+                'bg-red-500/10 text-red-400'
+              }`}>{p.condition}</span>
+              <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md ${
+                p.status === 'disponible' ? 'bg-white/[0.07] text-white/50' :
+                p.status === 'reservado' ? 'bg-amber-500/10 text-amber-400' :
+                'bg-white/[0.04] text-white/35'
+              }`}>
+                {p.status === 'disponible' ? 'Disp.' : p.status === 'reservado' ? 'Res.' : 'Vend.'}
+              </span>
+            </div>
+          </div>
+          <span className={`material-symbols-outlined text-[16px] text-white/25 transition-transform duration-200 ${expanded ? 'rotate-90' : ''}`}>chevron_right</span>
+        </div>
+
+        {/* Expanded detail */}
+        {expanded && (
+          <div className="border-t border-white/[0.05] px-4 py-4 space-y-4">
+            {/* Photos row */}
+            {p.photos && p.photos.length > 0 && (
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {p.photos.map((url, i) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img key={i} src={url} alt="" className="w-16 h-16 rounded-xl object-cover border border-white/[0.07] shrink-0" />
+                ))}
+              </div>
+            )}
+            {/* Details grid */}
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { l: "IMEI", v: p.imei, mono: true },
+                { l: "Batería", v: `${p.battery_health}%` },
+                { l: "Origen", v: p.origin === 'consignacion' ? `Consig. ${p.consignment_owner || ''}` : 'Propio' },
+                { l: "Tipo", v: p.is_new ? 'Nuevo' : 'Usado' },
+                ...(p.defects ? [{ l: "Defectos", v: p.defects, mono: false }] : []),
+                ...(days !== null ? [{ l: "Días en stock", v: `${days}d`, mono: false }] : []),
+              ].map(item => (
+                <div key={item.l} className="bg-white/[0.02] rounded-xl p-3">
+                  <p className="text-[9px] uppercase tracking-[0.12em] font-semibold text-white/35 mb-1">{item.l}</p>
+                  <p className={`text-[12px] font-medium text-white/75 break-all ${item.mono ? 'font-mono text-[10px]' : ''}`}>{item.v}</p>
+                </div>
+              ))}
+            </div>
+            {/* Prices row */}
+            <div className="flex gap-2">
+              {[
+                { l: "Costo", v: formatPrice(p.cost_price), dim: true },
+                { l: "Venta", v: formatPrice(p.sale_price), dim: false },
+                ...(p.cost_price && p.sale_price ? [{ l: "Ganancia", v: formatPrice(p.sale_price - p.cost_price), dim: false }] : []),
+              ].map(item => (
+                <div key={item.l} className="flex-1 bg-white/[0.03] border border-white/[0.05] rounded-xl p-3 text-center">
+                  <p className="text-[9px] uppercase tracking-[0.12em] font-semibold text-white/30 mb-1">{item.l}</p>
+                  <p className={`text-[12px] font-semibold ${item.l === 'Ganancia' ? 'text-emerald-400' : item.dim ? 'text-white/45' : 'text-white/75'}`}>{item.v}</p>
+                </div>
+              ))}
+            </div>
+            {/* Action buttons */}
+            <div className="flex gap-2">
+              {p.status === 'disponible' && (
+                <button onClick={() => onSell(p)}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-[#3eff8e]/10 border border-[#3eff8e]/20 text-[#3eff8e] text-sm font-semibold rounded-xl">
+                  <span className="material-symbols-outlined text-[15px]">sell</span>Vender
+                </button>
+              )}
+              <button onClick={() => onEdit(p)}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-white/[0.05] border border-white/[0.08] text-white/55 text-sm font-medium rounded-xl">
+                <span className="material-symbols-outlined text-[15px]">edit</span>Editar
+              </button>
+              <button onClick={() => onLabel(p)}
+                className="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-white/[0.05] border border-white/[0.08] text-white/55 text-sm font-medium rounded-xl">
+                <span className="material-symbols-outlined text-[15px]">label</span>
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ───── component ───── */
 export default function VentasStockPage() {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [sales, setSales] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("todos");
   const [conditionFilter, setConditionFilter] = useState<string>("todos");
   const [originFilter, setOriginFilter] = useState<string>("todos");
@@ -420,6 +542,13 @@ export default function VentasStockPage() {
   const [editForm, setEditForm] = useState(emptyProductForm);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [savingEdit, setSavingEdit] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -657,28 +786,6 @@ export default function VentasStockPage() {
     setSavingAdd(false);
   }
 
-  /* Edit Product */
-  function openEditModal(product: Product) {
-    setEditingProduct(product);
-    setEditForm({
-      model: product.model || "",
-      imei: product.imei || "",
-      capacity: product.capacity || "",
-      color: product.color || "",
-      condition: product.condition,
-      battery_health: product.battery_health,
-      cost_price: product.cost_price?.toString() || "",
-      sale_price: product.sale_price?.toString() || "",
-      origin: product.origin,
-      consignment_owner: product.consignment_owner || "",
-      defects: product.defects || "",
-      notes: product.notes || "",
-      is_new: product.is_new ?? false,
-      photos: product.photos || [],
-    });
-    setShowEditModal(true);
-  }
-
   async function handleEditProduct(e: React.FormEvent) {
     e.preventDefault();
     if (!editingProduct) return;
@@ -718,7 +825,91 @@ export default function VentasStockPage() {
     );
   }
 
+  const openEditModal = (prod: Product) => {
+    setEditingProduct(prod);
+    setEditForm({ model: prod.model, imei: prod.imei, capacity: prod.capacity, color: prod.color, condition: prod.condition, battery_health: prod.battery_health, cost_price: prod.cost_price?.toString() || "", sale_price: prod.sale_price?.toString() || "", origin: prod.origin || "propio", consignment_owner: prod.consignment_owner || "", defects: prod.defects || "", notes: prod.notes || "", is_new: prod.is_new, photos: prod.photos || [] });
+    setShowEditModal(true);
+  };
+
+  const mobileContent = (
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Mobile header */}
+      <div className="px-4 pt-4 pb-3 border-b border-white/[0.05] flex items-center gap-2">
+        <div className="flex items-center gap-2 bg-white/[0.04] border border-white/[0.06] rounded-xl px-3 py-2.5 flex-1">
+          <span className="material-symbols-outlined text-white/40 text-base">search</span>
+          <input className="bg-transparent text-sm text-white/70 placeholder:text-white/35 outline-none w-full" placeholder="Buscar…" value={search} onChange={e => setSearch(e.target.value)} />
+        </div>
+        <button onClick={() => { setAddForm(emptyProductForm); setShowAddModal(true); }}
+          className="flex items-center gap-1.5 bg-white/[0.08] hover:bg-white/[0.12] border border-white/[0.1] text-white/80 text-sm font-medium px-3 py-2.5 rounded-xl transition-colors whitespace-nowrap">
+          <span className="material-symbols-outlined text-[16px]">add</span>Cargar
+        </button>
+      </div>
+      {/* Mobile filter chips */}
+      <div className="px-4 py-2.5 flex gap-2 overflow-x-auto border-b border-white/[0.05]">
+        {[
+          { val: statusFilter, set: setStatusFilter, opts: [["todos","Todos"],["disponible","Disp."],["reservado","Res."],["vendido","Vend."]] },
+          { val: conditionFilter, set: setConditionFilter, opts: [["todos","Cond."],["A","A"],["B","B"],["C","C"]] },
+        ].map((group, gi) => (
+          <div key={gi} className="flex gap-1.5 shrink-0">
+            {group.opts.map(([key, lbl]) => (
+              <button key={key} onClick={() => group.set(key)}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-medium whitespace-nowrap transition-colors ${
+                  group.val === key
+                    ? 'bg-white/[0.10] border border-white/[0.14] text-white/80'
+                    : 'text-white/40 hover:text-white/60 bg-white/[0.03]'
+                }`}>{lbl}</button>
+            ))}
+            {gi === 0 && <div className="w-px bg-white/[0.08] mx-1 self-stretch" />}
+          </div>
+        ))}
+      </div>
+      {/* KPIs horizontal scroll */}
+      <div className="px-4 py-3 flex gap-2.5 overflow-x-auto border-b border-white/[0.04]">
+        {[
+          { label: "Disp.", value: disponibles.toString(), icon: "inventory_2" },
+          { label: "Res.", value: reservados.toString(), icon: "bookmark" },
+          { label: "Hoy", value: vendidosHoy.toString(), icon: "sell" },
+          { label: "Stock", value: formatPrice(valorStock), icon: "payments" },
+        ].map(k => (
+          <div key={k.label} className="shrink-0 rounded-[14px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d]">
+            <div className="rounded-[13px] bg-[#161619] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] flex items-center gap-2.5">
+              <span className="material-symbols-outlined text-[15px] text-white/15">{k.icon}</span>
+              <div>
+                <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-white/30">{k.label}</p>
+                <p className="text-[15px] font-semibold text-white/80 leading-tight">{k.value}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      {/* Cards list */}
+      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
+        {filtered.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <span className="material-symbols-outlined text-white/10 text-4xl mb-3">inventory_2</span>
+            <p className="text-sm text-white/50">No hay equipos</p>
+          </div>
+        ) : (
+          <>
+            {filtered.map(p => (
+              <MobileProductCard
+                key={p.id}
+                p={p}
+                onSell={openSaleModal}
+                onEdit={openEditModal}
+                onLabel={printLabel}
+              />
+            ))}
+            <p className="text-center text-[11px] text-white/30 py-2">{filtered.length} de {allProducts.length} equipos</p>
+          </>
+        )}
+      </div>
+    </div>
+  );
+
   return (
+    <>
+    {isMobile ? mobileContent : (
     <div className="px-8 py-8 overflow-y-auto flex-1">
     <>
       {/* Top row: Filters left + KPIs right */}
@@ -1016,43 +1207,56 @@ export default function VentasStockPage() {
         </div>
       </div>
 
-      {/* Sale Modal */}
-      {showSaleModal && saleProduct && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => { if (!saleConfirmation) setShowSaleModal(false); }}>
-          <div className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] w-full max-w-md" onClick={e => e.stopPropagation()}>
-            <div className="rounded-[19px] bg-[#161619] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-              {saleConfirmation ? (
-                <div className="p-6 space-y-5 text-center">
-                  <div>
-                    <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-3">
-                      <span className="material-symbols-outlined text-emerald-400 text-2xl">check_circle</span>
-                    </div>
-                    <p className="text-base font-semibold text-white/80">Venta registrada</p>
+      {/* Add Modal */}
+      {showAddModal && (
+        <ProductFormModal title="Cargar Equipo" form={addForm} setForm={setAddForm} onSubmit={handleAddProduct} onClose={() => setShowAddModal(false)} saving={savingAdd} submitLabel="Guardar Equipo" />
+      )}
+      {/* Edit Modal */}
+      {showEditModal && editingProduct && (
+        <ProductFormModal title="Editar Equipo" form={editForm} setForm={setEditForm} onSubmit={handleEditProduct} onClose={() => setShowEditModal(false)} saving={savingEdit} submitLabel="Guardar Cambios" />
+      )}
+    </>
+    </div>
+    )}
+
+    {/* Shared modals (available in both mobile and desktop) */}
+    {showSaleModal && saleProduct && (
+      <div className={`fixed inset-0 z-50 flex ${isMobile ? 'items-end' : 'items-center'} justify-center bg-black/60 p-4`} onClick={() => { if (!saleConfirmation) setShowSaleModal(false); }}>
+        <div className={`${isMobile ? 'rounded-t-[24px] w-full' : 'rounded-[20px] w-full max-w-md'} p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d]`} onClick={e => e.stopPropagation()}>
+          <div className={`${isMobile ? 'rounded-t-[23px]' : 'rounded-[19px]'} bg-[#161619] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] ${isMobile ? 'max-h-[85vh] overflow-y-auto' : ''}`}>
+            {saleConfirmation ? (
+              <div className="p-6 space-y-5 text-center">
+                <div>
+                  <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-3">
+                    <span className="material-symbols-outlined text-emerald-400 text-2xl">check_circle</span>
                   </div>
-                  <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4 text-left space-y-2">
-                    {[["Equipo", `${saleConfirmation.product.model} ${saleConfirmation.product.capacity}`], ["Precio", formatPrice(saleConfirmation.sale_price)], ["Pago", saleConfirmation.payment_method]].map(([l, v]) => (
-                      <div key={l} className="flex justify-between"><span className="text-[11px] text-white/55">{l}</span><span className="text-[11px] font-medium text-white/60">{v}</span></div>
-                    ))}
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <a href={`/ventas/print/garantia?product_id=${saleConfirmation.product.id}`} target="_blank" className="py-2.5 bg-white/[0.05] border border-white/[0.08] text-white/60 text-xs font-medium rounded-xl text-center hover:bg-white/[0.08] transition-colors">Garantía</a>
-                    <a href={`/ventas/print/ticket?product_id=${saleConfirmation.product.id}`} target="_blank" className="py-2.5 bg-white/[0.05] border border-white/[0.08] text-white/60 text-xs font-medium rounded-xl text-center hover:bg-white/[0.08] transition-colors">Ticket</a>
-                  </div>
-                  <button onClick={() => { setShowSaleModal(false); setSaleProduct(null); setSaleConfirmation(null); }} className="w-full py-2.5 bg-white/[0.08] border border-white/[0.1] text-white/70 text-sm font-medium rounded-xl hover:bg-white/[0.12] transition-colors">Cerrar</button>
+                  <p className="text-base font-semibold text-white/80">Venta registrada</p>
                 </div>
-              ) : (
-                <>
-                  <div className="p-5 border-b border-white/[0.06] flex items-center justify-between">
-                    <p className="text-sm font-semibold text-white/80">Registrar Venta</p>
-                    <button onClick={() => setShowSaleModal(false)} className="text-white/55 hover:text-white/60"><span className="material-symbols-outlined text-[20px]">close</span></button>
+                <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4 text-left space-y-2">
+                  {[["Equipo", `${saleConfirmation.product.model} ${saleConfirmation.product.capacity}`], ["Precio", formatPrice(saleConfirmation.sale_price)], ["Pago", saleConfirmation.payment_method]].map(([l, v]) => (
+                    <div key={l} className="flex justify-between"><span className="text-[11px] text-white/55">{l}</span><span className="text-[11px] font-medium text-white/60">{v}</span></div>
+                  ))}
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <a href={`/ventas/print/garantia?product_id=${saleConfirmation.product.id}`} target="_blank" className="py-2.5 bg-white/[0.05] border border-white/[0.08] text-white/60 text-xs font-medium rounded-xl text-center hover:bg-white/[0.08] transition-colors">Garantía</a>
+                  <a href={`/ventas/print/ticket?product_id=${saleConfirmation.product.id}`} target="_blank" className="py-2.5 bg-white/[0.05] border border-white/[0.08] text-white/60 text-xs font-medium rounded-xl text-center hover:bg-white/[0.08] transition-colors">Ticket</a>
+                </div>
+                <button onClick={() => { setShowSaleModal(false); setSaleProduct(null); setSaleConfirmation(null); }} className="w-full py-2.5 bg-white/[0.08] border border-white/[0.1] text-white/70 text-sm font-medium rounded-xl hover:bg-white/[0.12] transition-colors">Cerrar</button>
+              </div>
+            ) : (
+              /* Sale form — shared between mobile and desktop */
+              <>
+                <div className="p-5 border-b border-white/[0.06] flex items-center justify-between">
+                  <p className="text-sm font-semibold text-white/80">Registrar Venta</p>
+                  <button onClick={() => setShowSaleModal(false)} className="text-white/55 hover:text-white/60"><span className="material-symbols-outlined text-[20px]">close</span></button>
+                </div>
+                <div className="p-5 space-y-4 overflow-y-auto max-h-[70vh]">
+                  <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3">
+                    <p className="text-sm font-medium text-white/70">{saleProduct.model}</p>
+                    <p className="text-[11px] text-white/55 font-mono">{saleProduct.imei}</p>
+                    <p className="text-[11px] text-white/55 mt-0.5">{saleProduct.capacity} · {saleProduct.color} · Grado {saleProduct.condition} · Batería {saleProduct.battery_health}%</p>
                   </div>
-                  <form onSubmit={handleRegisterSale} className="p-5 space-y-4">
-                    <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3">
-                      <p className="text-sm font-medium text-white/70">{saleProduct.model}</p>
-                      <p className="text-[11px] text-white/55 font-mono">{saleProduct.imei}</p>
-                      <p className="text-[11px] text-white/55 mt-0.5">{saleProduct.capacity} · {saleProduct.color} · Grado {saleProduct.condition} · Batería {saleProduct.battery_health}%</p>
-                    </div>
-                    {/* Client search */}
+                  <form id="sale-form" onSubmit={handleRegisterSale} className="space-y-4">
                     <div className="relative">
                       <label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50 block mb-1">
                         {saleForm.client_id ? "✓ Cliente seleccionado" : "Buscar Cliente Existente"}
@@ -1132,7 +1336,6 @@ export default function VentasStockPage() {
                           className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white/70 outline-none focus:border-white/[0.2] transition-colors" />
                       </div>
                     </div>
-                    {/* Garantía */}
                     <div className="border-t border-white/[0.06] pt-4 space-y-2">
                       <div className="flex items-center justify-between">
                         <div>
@@ -1151,7 +1354,6 @@ export default function VentasStockPage() {
                         <span className="material-symbols-outlined text-[20px]">{saleForm.extended_warranty ? "check_circle" : "add_circle"}</span>
                       </button>
                     </div>
-
                     <div className="flex gap-3 pt-1">
                       <button type="button" onClick={() => setShowSaleModal(false)} className="flex-1 py-2.5 bg-white/[0.04] border border-white/[0.08] text-white/50 text-sm rounded-xl">Cancelar</button>
                       <button type="submit" disabled={savingSale} className="flex-1 py-2.5 bg-white/[0.1] border border-white/[0.12] text-white/80 text-sm font-semibold rounded-xl disabled:opacity-50">
@@ -1159,22 +1361,19 @@ export default function VentasStockPage() {
                       </button>
                     </div>
                   </form>
-                </>
-              )}
-            </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
-      )}
-
-      {/* Add Modal */}
-      {showAddModal && (
-        <ProductFormModal title="Cargar Equipo" form={addForm} setForm={setAddForm} onSubmit={handleAddProduct} onClose={() => setShowAddModal(false)} saving={savingAdd} submitLabel="Guardar Equipo" />
-      )}
-      {/* Edit Modal */}
-      {showEditModal && editingProduct && (
-        <ProductFormModal title="Editar Equipo" form={editForm} setForm={setEditForm} onSubmit={handleEditProduct} onClose={() => setShowEditModal(false)} saving={savingEdit} submitLabel="Guardar Cambios" />
-      )}
+      </div>
+    )}
+    {showAddModal && (
+      <ProductFormModal title="Cargar Equipo" form={addForm} setForm={setAddForm} onSubmit={handleAddProduct} onClose={() => setShowAddModal(false)} saving={savingAdd} submitLabel="Guardar Equipo" />
+    )}
+    {showEditModal && editingProduct && (
+      <ProductFormModal title="Editar Equipo" form={editForm} setForm={setEditForm} onSubmit={handleEditProduct} onClose={() => setShowEditModal(false)} saving={savingEdit} submitLabel="Guardar Cambios" />
+    )}
     </>
-    </div>
   );
 }
