@@ -39,7 +39,9 @@ export default function InboxPage() {
   const [search, setSearch] = useState('');
   const [replyText, setReplyText] = useState('');
   const [sending, setSending] = useState(false);
+  const [attachments, setAttachments] = useState<File[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const channels = [
     { key: 'instagram', label: 'Instagram', icon: 'photo_camera' },
@@ -141,15 +143,37 @@ export default function InboxPage() {
   }
 
   async function sendReply() {
-    if (!selected || !replyText.trim() || sending) return;
+    if (!selected || (!replyText.trim() && attachments.length === 0) || sending) return;
     setSending(true);
     try {
       const res = await fetch('/api/instagram/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ recipientId: selected.sender_id, text: replyText, conversationId: selected.conversation_id }) });
       const data = await res.json();
-      if (data.ok) setReplyText('');
+      if (data.ok) { setReplyText(''); setAttachments([]); }
       else alert('Error enviando: ' + (data.error || 'desconocido'));
     } catch (e: unknown) { alert('Error: ' + (e as Error).message); }
     finally { setSending(false); }
+  }
+
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files || []);
+    setAttachments(prev => [...prev, ...files].slice(0, 5)); // máx 5
+    e.target.value = ''; // reset input
+  }
+
+  function removeAttachment(idx: number) {
+    setAttachments(prev => prev.filter((_, i) => i !== idx));
+  }
+
+  function getFileIcon(file: File) {
+    if (file.type.startsWith('image/')) return 'image';
+    if (file.type === 'application/pdf') return 'picture_as_pdf';
+    return 'attach_file';
+  }
+
+  function formatFileSize(bytes: number) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(0) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   }
 
   function formatTime(iso: string) {
@@ -315,8 +339,47 @@ export default function InboxPage() {
           </div>
 
           {/* Reply input */}
-          <div className="shrink-0 p-4 border-t border-white/[0.06] bg-[#111114]">
-            <div className="flex items-end gap-3">
+          <div className="shrink-0 border-t border-white/[0.06] bg-[#111114]">
+
+            {/* Attachment previews */}
+            {attachments.length > 0 && (
+              <div className="px-4 pt-3 flex flex-wrap gap-2">
+                {attachments.map((file, idx) => (
+                  <div key={idx} className="flex items-center gap-2 bg-white/[0.06] border border-white/[0.08] rounded-lg px-2.5 py-1.5 max-w-[180px]">
+                    <span className={`material-symbols-outlined text-[15px] shrink-0 ${
+                      file.type === 'application/pdf' ? 'text-red-400/70' : 'text-blue-400/70'
+                    }`}>{getFileIcon(file)}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] text-white/70 truncate">{file.name}</p>
+                      <p className="text-[9px] text-white/35">{formatFileSize(file.size)}</p>
+                    </div>
+                    <button onClick={() => removeAttachment(idx)} className="text-white/30 hover:text-white/60 transition-colors shrink-0">
+                      <span className="material-symbols-outlined text-[13px]">close</span>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="p-4 flex items-end gap-2">
+              {/* Hidden file input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept="image/*,application/pdf"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+              {/* Attach button */}
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                title="Adjuntar imagen o PDF"
+                className="p-2.5 text-white/35 hover:text-white/65 hover:bg-white/[0.06] rounded-xl transition-colors shrink-0"
+              >
+                <span className="material-symbols-outlined text-[20px]">attach_file</span>
+              </button>
+
               <textarea
                 value={replyText}
                 onChange={e => setReplyText(e.target.value)}
@@ -325,8 +388,8 @@ export default function InboxPage() {
                 rows={2}
                 className="flex-1 resize-none px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-white/70 placeholder:text-white/45 outline-none focus:border-white/[0.15] transition-colors"
               />
-              <button onClick={sendReply} disabled={!replyText.trim() || sending}
-                className="p-2.5 bg-white/[0.08] hover:bg-white/[0.12] border border-white/[0.1] text-white/60 rounded-xl disabled:opacity-30 transition-colors">
+              <button onClick={sendReply} disabled={(!replyText.trim() && attachments.length === 0) || sending}
+                className="p-2.5 bg-white/[0.08] hover:bg-white/[0.12] border border-white/[0.1] text-white/60 rounded-xl disabled:opacity-30 transition-colors shrink-0">
                 {sending
                   ? <div className="w-5 h-5 border border-white/30 border-t-white/70 rounded-full animate-spin" />
                   : <span className="material-symbols-outlined text-[20px]">send</span>
