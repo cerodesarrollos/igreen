@@ -83,7 +83,6 @@ export default function RendicionPage() {
   const [customFrom, setCustomFrom] = useState("");
   const [customTo, setCustomTo] = useState("");
 
-  /* Liquidation modal */
   const [showModal, setShowModal] = useState(false);
   const [modalProvider, setModalProvider] = useState<string | null>(null);
   const [settling, setSettling] = useState(false);
@@ -103,7 +102,7 @@ export default function RendicionPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-32">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#3eff8e]" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white/30" />
         <span className="ml-3 text-sm text-white/45">Cargando rendición...</span>
       </div>
     );
@@ -138,16 +137,14 @@ export default function RendicionPage() {
       };
     });
 
-  /* ── Owners / providers ── */
+  /* ── Owners ── */
   const owners = Array.from(new Set(products.map((p) => p.consignment_owner).filter(Boolean))) as string[];
-
   const ownerSummaries = owners.map((owner) => {
     const owned = products.filter((p) => p.consignment_owner === owner);
     const enStock = owned.filter((p) => p.status === "disponible" || p.status === "reservado");
     const vendidos = consignmentSales.filter((r) => r.provider === owner);
     const totalOwed = vendidos.filter((r) => !r.settled).reduce((s, r) => s + r.cost_price, 0);
-    const totalSold = vendidos.length;
-    return { owner, enStock: enStock.length, totalSold, totalOwed };
+    return { owner, enStock: enStock.length, totalSold: vendidos.length, totalOwed };
   });
 
   /* ── KPIs ── */
@@ -178,16 +175,16 @@ export default function RendicionPage() {
   }
 
   const periods: { key: PeriodKey; label: string }[] = [
-    { key: "todos", label: "Todos" },
+    { key: "todos",  label: "Todos"      },
     { key: "semana", label: "Esta Semana" },
-    { key: "mes", label: "Este Mes" },
-    { key: "custom", label: "Rango" },
+    { key: "mes",    label: "Este Mes"   },
+    { key: "custom", label: "Rango"      },
   ];
 
   return (
     <div className="px-8 py-8 overflow-y-auto flex-1">
-    <>
-      {/* ── Chip Filters ── */}
+
+      {/* ── Period chips ── */}
       <div className="flex flex-wrap items-center gap-2 mb-6">
         {periods.map((p) => (
           <button
@@ -195,8 +192,8 @@ export default function RendicionPage() {
             onClick={() => setPeriod(p.key)}
             className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
               period === p.key
-                ? "bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e]"
-                : "bg-white/[0.06] text-white/55 hover:bg-white/[0.08]"
+                ? "bg-white/[0.12] border border-white/[0.18] text-white/90"
+                : "bg-white/[0.06] text-white/45 hover:bg-white/[0.08]"
             }`}
           >
             {p.label}
@@ -208,140 +205,145 @@ export default function RendicionPage() {
               type="date"
               value={customFrom}
               onChange={(e) => setCustomFrom(e.target.value)}
-              className="border border-white/[0.08] rounded-xl px-3 py-1.5 text-xs"
+              className="bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-1.5 text-xs focus:outline-none"
             />
             <span className="text-xs text-white/45">→</span>
             <input
               type="date"
               value={customTo}
               onChange={(e) => setCustomTo(e.target.value)}
-              className="border border-white/[0.08] rounded-xl px-3 py-1.5 text-xs"
+              className="bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-1.5 text-xs focus:outline-none"
             />
           </div>
         )}
       </div>
 
       {/* ── KPI Cards ── */}
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[
-          { label: "Stock Consignación", value: stockCount.toString(), icon: "inventory_2", bg: "bg-[#3eff8e]/15", color: "text-[#3eff8e]" },
-          { label: "Vendidos Mes", value: soldThisMonth.toString(), icon: "sell", bg: "bg-emerald-500/15", color: "text-emerald-400" },
-          { label: "Ganancia Total", value: formatPrice(totalProfit), icon: "trending_up", bg: "bg-blue-500/15", color: "text-blue-400" },
-          { label: "Pendiente Liquidar", value: formatPrice(pendingAmount), icon: "hourglass_top", bg: "bg-amber-500/15", color: "text-amber-400" },
+          { label: "Stock Consignación", value: stockCount.toString(),     icon: "inventory_2"   },
+          { label: "Vendidos Mes",        value: soldThisMonth.toString(),  icon: "sell"          },
+          { label: "Ganancia Total",      value: formatPrice(totalProfit),  icon: "trending_up"   },
+          { label: "Pendiente Liquidar",  value: formatPrice(pendingAmount),icon: "hourglass_top" },
         ].map((kpi) => (
-          <div key={kpi.label} className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 p-5">
-            <div className="flex items-center gap-3 mb-3">
-              <div className={`w-10 h-10 rounded-xl ${kpi.bg} flex items-center justify-center`}>
-                <span className={`material-symbols-outlined text-xl ${kpi.color}`}>{kpi.icon}</span>
+          <div key={kpi.label} className="rounded-[18px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d]">
+            <div className="rounded-[17px] bg-[#161619] px-5 py-4 h-full shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/35">{kpi.label}</p>
+                <span className="material-symbols-outlined text-[16px] text-white/15">{kpi.icon}</span>
+              </div>
+              <div className="mt-3">
+                <p className="text-[22px] font-medium leading-none tracking-tight text-white/90">{kpi.value}</p>
               </div>
             </div>
-            <p className="text-[10px] uppercase tracking-widest font-bold text-white/45 mb-1">{kpi.label}</p>
-            <p className="text-xl font-bold tracking-tight">{kpi.value}</p>
           </div>
         ))}
       </section>
 
-      {/* ── Provider Summary Cards ── */}
+      {/* ── Provider Cards ── */}
       {ownerSummaries.length > 0 && (
-        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
           {ownerSummaries.map((o) => (
-            <div key={o.owner} className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 p-5">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-[#3eff8e]/15 flex items-center justify-center">
-                  <span className="text-sm font-bold text-[#3eff8e]">{o.owner.charAt(0).toUpperCase()}</span>
-                </div>
-                <div>
+            <div key={o.owner} className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d]">
+              <div className="rounded-[19px] bg-[#161619] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] p-5">
+                {/* Header */}
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-9 h-9 rounded-full bg-white/[0.07] flex items-center justify-center">
+                    <span className="text-sm font-bold text-white/60">{o.owner.charAt(0).toUpperCase()}</span>
+                  </div>
                   <h4 className="text-sm font-bold">{o.owner}</h4>
                 </div>
+                {/* Stats */}
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-widest font-bold text-white/35">En Stock</p>
+                    <p className="text-lg font-bold text-white/90">{o.enStock}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-widest font-bold text-white/35">Vendidos</p>
+                    <p className="text-lg font-bold text-white/90">{o.totalSold}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-[10px] uppercase tracking-widest font-bold text-white/35">Adeudado</p>
+                    <p className="text-lg font-bold text-white/90">{formatPrice(o.totalOwed)}</p>
+                  </div>
+                </div>
+                {/* Liquidar button */}
+                <button
+                  onClick={() => { setModalProvider(o.owner); setShowModal(true); }}
+                  disabled={o.totalOwed === 0}
+                  className="w-full px-4 py-2 bg-white/[0.08] border border-white/[0.12] text-white/70 rounded-xl text-sm font-bold hover:bg-white/[0.11] transition-all disabled:opacity-35 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  <span className="material-symbols-outlined text-sm">price_check</span>
+                  Liquidar
+                </button>
               </div>
-              <div className="grid grid-cols-2 gap-3 mb-4">
-                <div>
-                  <p className="text-[10px] uppercase tracking-widest font-bold text-white/45">En Stock</p>
-                  <p className="text-lg font-bold">{o.enStock}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] uppercase tracking-widest font-bold text-white/45">Vendidos</p>
-                  <p className="text-lg font-bold">{o.totalSold}</p>
-                </div>
-                <div className="col-span-2">
-                  <p className="text-[10px] uppercase tracking-widest font-bold text-white/45">Adeudado</p>
-                  <p className="text-lg font-bold text-amber-400">{formatPrice(o.totalOwed)}</p>
-                </div>
-              </div>
-              <button
-                onClick={() => { setModalProvider(o.owner); setShowModal(true); }}
-                disabled={o.totalOwed === 0}
-                className="w-full px-4 py-2 bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e] rounded-xl text-sm font-bold hover:brightness-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                <span className="material-symbols-outlined text-sm">price_check</span>
-                Liquidar
-              </button>
             </div>
           ))}
         </section>
       )}
 
       {/* ── Movements Table ── */}
-      <section className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 overflow-hidden mb-8">
-        <div className="px-6 py-4 border-b border-white/[0.06]">
-          <p className="text-[10px] uppercase tracking-widest font-bold text-white/45">Movimientos</p>
-        </div>
-        {consignmentSales.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-white/45">
-            <span className="material-symbols-outlined text-4xl mb-3">account_balance</span>
-            <p className="text-sm font-medium">Sin movimientos en este período</p>
+      <section className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] mb-8">
+        <div className="rounded-[19px] bg-[#161619] shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_8px_32px_-8px_rgba(0,0,0,0.6)] overflow-hidden">
+          <div className="px-6 py-4 border-b border-white/[0.06]">
+            <p className="text-[10px] uppercase tracking-widest font-bold text-white/45">Movimientos</p>
           </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-white/[0.03]">
-                  <th className="px-6 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Fecha</th>
-                  <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Producto</th>
-                  <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Venta</th>
-                  <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Costo</th>
-                  <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Ganancia</th>
-                  <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Proveedor</th>
-                  <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Estado</th>
-                </tr>
-              </thead>
-              <tbody>
-                {consignmentSales.map((r, i) => (
-                  <tr
-                    key={`${r.product_id}-${i}`}
-                    className={`hover:bg-white/[0.03] transition-colors ${i % 2 === 1 ? "bg-white/[0.02]" : ""}`}
-                  >
-                    <td className="px-6 py-3 text-sm text-white/50">
-                      {new Date(r.sold_at).toLocaleDateString("es-AR")}
-                    </td>
-                    <td className="px-4 py-3 text-sm font-medium">{r.productLabel}</td>
-                    <td className="px-4 py-3 text-sm">{formatPrice(r.sale_price)}</td>
-                    <td className="px-4 py-3 text-sm">{formatPrice(r.cost_price)}</td>
-                    <td className="px-4 py-3 text-sm font-medium text-emerald-400">{formatPrice(r.profit)}</td>
-                    <td className="px-4 py-3 text-sm">{r.provider}</td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`px-2.5 py-0.5 text-[10px] font-bold rounded-full ${
-                          r.settled
-                            ? "bg-emerald-500/15 text-emerald-400"
-                            : "bg-amber-500/15 text-amber-400"
-                        }`}
-                      >
-                        {r.settled ? "LIQUIDADO" : "PENDIENTE"}
-                      </span>
-                    </td>
+          {consignmentSales.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-white/35">
+              <span className="material-symbols-outlined text-4xl mb-3">account_balance</span>
+              <p className="text-sm font-medium">Sin movimientos en este período</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-white/[0.03]">
+                    <th className="px-6 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Fecha</th>
+                    <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Producto</th>
+                    <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Venta</th>
+                    <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Costo</th>
+                    <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Ganancia</th>
+                    <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Proveedor</th>
+                    <th className="px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-white/45">Estado</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                </thead>
+                <tbody>
+                  {consignmentSales.map((r, i) => (
+                    <tr
+                      key={`${r.product_id}-${i}`}
+                      className={`border-b border-white/[0.04] last:border-0 hover:bg-white/[0.03] transition-colors ${i % 2 === 1 ? "bg-white/[0.02]" : ""}`}
+                    >
+                      <td className="px-6 py-3 text-sm text-white/50">
+                        {new Date(r.sold_at).toLocaleDateString("es-AR")}
+                      </td>
+                      <td className="px-4 py-3 text-sm font-medium text-white/80">{r.productLabel}</td>
+                      <td className="px-4 py-3 text-sm text-white/70">{formatPrice(r.sale_price)}</td>
+                      <td className="px-4 py-3 text-sm text-white/70">{formatPrice(r.cost_price)}</td>
+                      <td className="px-4 py-3 text-sm font-medium text-white/80">{formatPrice(r.profit)}</td>
+                      <td className="px-4 py-3 text-sm text-white/60">{r.provider}</td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2.5 py-0.5 text-[10px] font-bold rounded-full border ${
+                          r.settled
+                            ? "bg-white/[0.07] border-white/[0.10] text-white/55"
+                            : "bg-white/[0.05] border-white/[0.08] text-white/45"
+                        }`}>
+                          {r.settled ? "LIQUIDADO" : "PENDIENTE"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </section>
 
       {/* ── Liquidation Modal ── */}
       {showModal && modalProvider && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1a1a1d] border border-white/[0.10] rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col">
+          <div className="bg-[#161619] border border-white/[0.10] rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col">
             <div className="p-6 border-b border-white/[0.06] flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-bold">Liquidar — {modalProvider}</h3>
@@ -361,17 +363,12 @@ export default function RendicionPage() {
               ) : (
                 <div className="space-y-3">
                   {modalItems.map((item, i) => (
-                    <div
-                      key={`${item.product_id}-${i}`}
-                      className="flex items-center justify-between p-3 bg-white/[0.03] rounded-xl"
-                    >
+                    <div key={`${item.product_id}-${i}`} className="flex items-center justify-between p-3 bg-white/[0.04] rounded-xl border border-white/[0.06]">
                       <div>
-                        <p className="text-sm font-medium">{item.productLabel}</p>
-                        <p className="text-xs text-white/45">
-                          {new Date(item.sold_at).toLocaleDateString("es-AR")}
-                        </p>
+                        <p className="text-sm font-medium text-white/80">{item.productLabel}</p>
+                        <p className="text-xs text-white/40">{new Date(item.sold_at).toLocaleDateString("es-AR")}</p>
                       </div>
-                      <p className="text-sm font-bold">{formatPrice(item.cost_price)}</p>
+                      <p className="text-sm font-bold text-white/85">{formatPrice(item.cost_price)}</p>
                     </div>
                   ))}
                 </div>
@@ -381,18 +378,18 @@ export default function RendicionPage() {
             <div className="p-6 border-t border-white/[0.06]">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-sm text-white/50">Total a liquidar</span>
-                <span className="text-xl font-bold">
+                <span className="text-xl font-bold text-white/90">
                   {formatPrice(modalItems.reduce((s, r) => s + r.cost_price, 0))}
                 </span>
               </div>
               <button
                 onClick={handleSettle}
                 disabled={settling || modalItems.length === 0}
-                className="w-full px-4 py-3 bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e] rounded-xl text-sm font-bold hover:brightness-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full px-4 py-3 bg-white/[0.10] border border-white/[0.16] text-white/85 rounded-xl text-sm font-bold hover:bg-white/[0.13] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {settling ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white/50" />
                     Procesando...
                   </>
                 ) : (
@@ -406,7 +403,6 @@ export default function RendicionPage() {
           </div>
         </div>
       )}
-    </>
     </div>
   );
 }
