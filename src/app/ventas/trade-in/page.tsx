@@ -478,7 +478,8 @@ export default function TradeInPage() {
 
       {/* ============ 4. Historial ============ */}
       <section>
-        <div className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d] border-0 overflow-hidden">
+        <div className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d]">
+          <div className="rounded-[19px] bg-[#161619] shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_8px_32px_-8px_rgba(0,0,0,0.6)] overflow-hidden">
           <div className="p-6 border-b border-white/[0.06]">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-3">
@@ -502,8 +503,8 @@ export default function TradeInPage() {
                     onClick={() => setHistoryFilter(f.key)}
                     className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
                       historyFilter === f.key
-                        ? "bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e]"
-                        : "bg-white/[0.06] text-white/55 hover:bg-white/[0.08]"
+                        ? "bg-white/[0.12] border border-white/[0.18] text-white/90"
+                        : "bg-white/[0.06] text-white/45 hover:bg-white/[0.08]"
                     }`}
                   >
                     {f.label}
@@ -662,6 +663,7 @@ export default function TradeInPage() {
               </table>
             </div>
           )}
+          </div>
         </div>
       </section>
 
