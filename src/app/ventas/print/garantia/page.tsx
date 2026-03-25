@@ -43,7 +43,6 @@ function addDays(dateStr: string, days: number) {
 
 function generateGarCode(saleId: string, soldAt: string) {
   const year = new Date(soldAt).getFullYear().toString().slice(-2);
-  // Use last 4 chars of UUID as number-ish code
   const num = parseInt(saleId.replace(/-/g, "").slice(-4), 16) % 9999 + 1;
   return `GAR-${year}-${num.toString().padStart(4, "0")}`;
 }
@@ -53,6 +52,27 @@ const CONDITION_LABELS: Record<string, string> = {
   B: "B — Bueno",
   C: "C — Con detalles",
 };
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div style={{ display: "flex", marginBottom: "5px" }}>
+      <span style={{ color: "#888", width: "180px", flexShrink: 0, fontSize: "11px" }}>{label}</span>
+      <span style={{ fontWeight: "600", fontSize: "11px", color: "#111" }}>{value}</span>
+    </div>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div style={{ marginBottom: "22px" }}>
+      <div style={{ display: "flex", alignItems: "center", marginBottom: "10px" }}>
+        <span style={{ fontSize: "9px", fontWeight: "800", textTransform: "uppercase", letterSpacing: "0.15em", color: "#444" }}>{title}</span>
+        <div style={{ flex: 1, height: "1px", background: "#ddd", marginLeft: "10px" }} />
+      </div>
+      {children}
+    </div>
+  );
+}
 
 function GarantiaContent() {
   const searchParams = useSearchParams();
@@ -91,7 +111,7 @@ function GarantiaContent() {
       const { data, error: err } = await query.single();
 
       if (err || !data) {
-        setError("No se encontró la venta. Verificá que el producto fue vendido.");
+        setError("No se encontró la venta.");
         setLoading(false);
         return;
       }
@@ -102,25 +122,21 @@ function GarantiaContent() {
     load();
   }, [productId, saleId]);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-white">
-        <p className="text-slate-400 text-sm">Cargando garantía...</p>
-      </div>
-    );
-  }
+  if (loading) return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: "#fff" }}>
+      <p style={{ color: "#999", fontSize: "13px" }}>Cargando garantía...</p>
+    </div>
+  );
 
-  if (error || !sale) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-white">
-        <div className="text-center">
-          <p className="text-red-500 font-medium mb-2">Error</p>
-          <p className="text-slate-500 text-sm">{error}</p>
-          <a href="/ventas/stock" className="mt-4 inline-block text-sm text-slate-400 underline">Volver al stock</a>
-        </div>
+  if (error || !sale) return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: "#fff" }}>
+      <div style={{ textAlign: "center" }}>
+        <p style={{ color: "#e00", fontWeight: "600", marginBottom: "8px" }}>Error</p>
+        <p style={{ color: "#666", fontSize: "13px" }}>{error}</p>
+        <a href="/ventas/stock" style={{ color: "#999", fontSize: "12px", marginTop: "12px", display: "inline-block" }}>← Volver al stock</a>
       </div>
-    );
-  }
+    </div>
+  );
 
   const garCode = generateGarCode(sale.id, sale.sold_at);
   const warrantyDays = sale.warranty_days || 90;
@@ -130,147 +146,122 @@ function GarantiaContent() {
     <>
       <style>{`
         @media print {
-          @page { size: A4; margin: 15mm; }
+          @page { size: A4; margin: 14mm 16mm; }
           body * { visibility: hidden; }
           .print-area, .print-area * { visibility: visible; }
           .print-area { position: absolute; left: 0; top: 0; width: 100%; }
           .no-print { display: none !important; }
         }
+        body { margin: 0; padding: 0; }
       `}</style>
 
       {/* Action bar */}
-      <div className="no-print flex items-center gap-4 p-4 border-b border-slate-200 bg-slate-50">
-        <button
-          onClick={() => window.print()}
-          className="flex items-center gap-2 px-6 py-2.5 bg-[#34C759] text-white rounded-full font-bold text-sm shadow-md hover:brightness-95 transition-all"
-        >
-          <span className="material-symbols-outlined text-lg">print</span>
+      <div className="no-print" style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 20px", borderBottom: "1px solid #eee", background: "#fafafa" }}>
+        <button onClick={() => window.print()} style={{ display: "flex", alignItems: "center", gap: "6px", padding: "8px 20px", background: "#111", color: "#fff", border: "none", borderRadius: "20px", fontWeight: "700", fontSize: "13px", cursor: "pointer" }}>
+          <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>print</span>
           Imprimir
         </button>
-        <a
-          href="/ventas/stock"
-          className="flex items-center gap-1 px-5 py-2.5 text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors"
-        >
-          <span className="material-symbols-outlined text-lg">arrow_back</span>
+        <a href="/ventas/stock" style={{ fontSize: "13px", color: "#666", textDecoration: "none", display: "flex", alignItems: "center", gap: "4px" }}>
+          <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>arrow_back</span>
           Volver
         </a>
       </div>
 
       {/* Print area */}
-      <div className="print-area max-w-[210mm] mx-auto p-8 bg-white min-h-screen">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-5xl font-black text-[#34C759] tracking-tight">iGreen</h1>
-          <h2 className="text-2xl font-bold text-slate-800 mt-2">Certificado de Garantía</h2>
-        </div>
+      <div className="print-area" style={{ maxWidth: "180mm", margin: "0 auto", padding: "32px 24px", background: "#fff", minHeight: "100vh", fontFamily: "Inter, -apple-system, sans-serif" }}>
 
-        {/* Cert number + date */}
-        <div className="flex justify-between items-center mb-8 pb-4 border-b-2 border-[#34C759]/20">
-          <div />
-          <div className="text-right">
-            <p className="text-lg font-bold text-slate-800">{garCode}</p>
-            <p className="text-sm text-slate-500">{formatDate(sale.sold_at)}</p>
+        {/* Header */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "28px", paddingBottom: "20px", borderBottom: "2px solid #111" }}>
+          {/* Logo */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-igreen.png" alt="iGreen" style={{ height: "36px", objectFit: "contain" }} />
+          {/* Cert info */}
+          <div style={{ textAlign: "right" }}>
+            <p style={{ fontSize: "10px", color: "#888", marginBottom: "2px", textTransform: "uppercase", letterSpacing: "0.1em" }}>Certificado de Garantía</p>
+            <p style={{ fontSize: "16px", fontWeight: "800", color: "#111", marginBottom: "2px" }}>{garCode}</p>
+            <p style={{ fontSize: "11px", color: "#666" }}>{formatDate(sale.sold_at)}</p>
           </div>
         </div>
 
         {/* Equipo */}
-        <div className="mb-6">
-          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-[#34C759] mb-4 pb-2 border-b border-slate-200">
-            Equipo
-          </h3>
-          <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
-            {[
-              ["Modelo", sale.product.model],
-              ["Capacidad", sale.product.capacity],
-              ["Color", sale.product.color],
-              ["IMEI", sale.product.imei],
-              ["Estado", CONDITION_LABELS[sale.product.condition] || sale.product.condition],
-              ["Batería al momento de venta", `${sale.product.battery_health}%`],
-              ...(sale.product.product_code ? [["Código de producto", sale.product.product_code]] : []),
-            ].map(([label, value]) => (
-              <div key={label} className="flex">
-                <span className="text-slate-500 w-48 flex-shrink-0">{label}:</span>
-                <span className="font-bold">{value}</span>
-              </div>
-            ))}
+        <Section title="Equipo">
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 24px" }}>
+            <Row label="Modelo" value={sale.product.model} />
+            <Row label="Capacidad" value={sale.product.capacity} />
+            <Row label="Color" value={sale.product.color} />
+            <Row label="IMEI" value={sale.product.imei} />
+            <Row label="Estado" value={CONDITION_LABELS[sale.product.condition] || sale.product.condition} />
+            <Row label="Batería al momento de venta" value={`${sale.product.battery_health}%`} />
+            {sale.product.product_code && <Row label="Código de producto" value={sale.product.product_code} />}
           </div>
-        </div>
+        </Section>
 
         {/* Cliente */}
-        <div className="mb-6">
-          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-[#34C759] mb-4 pb-2 border-b border-slate-200">
-            Cliente
-          </h3>
+        <Section title="Cliente">
           {(sale.client_name || sale.client_phone) ? (
-            <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
-              {sale.client_name && (
-                <div className="flex"><span className="text-slate-500 w-48 flex-shrink-0">Nombre:</span><span className="font-bold">{sale.client_name}</span></div>
-              )}
-              {sale.client_phone && (
-                <div className="flex"><span className="text-slate-500 w-48 flex-shrink-0">Teléfono:</span><span className="font-bold">{sale.client_phone}</span></div>
-              )}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 24px" }}>
+              {sale.client_name && <Row label="Nombre" value={sale.client_name} />}
+              {sale.client_phone && <Row label="Teléfono" value={sale.client_phone} />}
             </div>
           ) : (
-            <p className="text-sm text-slate-400 italic">Venta sin datos de cliente registrados</p>
+            <p style={{ fontSize: "11px", color: "#aaa", fontStyle: "italic" }}>Venta sin datos de cliente registrados</p>
           )}
-
-        </div>
+        </Section>
 
         {/* Cobertura */}
-        <div className="mb-8">
-          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-[#34C759] mb-4 pb-2 border-b border-slate-200">
-            Cobertura
-          </h3>
-          <div className="grid grid-cols-3 gap-x-8 gap-y-2 text-sm mb-5">
-            <div className="flex">
-              <span className="text-slate-500 w-24 flex-shrink-0">Vigencia:</span>
-              <span className="font-bold">{warrantyDays} días{warrantyDays > 90 ? " (extendida)" : ""}</span>
+        <Section title="Cobertura">
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0 24px", marginBottom: "14px" }}>
+            <Row label="Vigencia" value={`${warrantyDays} días${warrantyDays > 90 ? " (extendida)" : ""}`} />
+            <Row label="Desde" value={formatDate(sale.sold_at)} />
+            <Row label="Hasta" value={formatDate(warrantyUntil)} />
+          </div>
+
+          {/* Qué cubre / No cubre */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginTop: "4px" }}>
+            {/* Cubre */}
+            <div style={{ background: "#f8f8f8", borderRadius: "8px", padding: "12px" }}>
+              <p style={{ fontSize: "9px", fontWeight: "800", textTransform: "uppercase", letterSpacing: "0.12em", color: "#333", marginBottom: "7px" }}>Incluye</p>
+              {["Defectos de fabricación o funcionamiento bajo uso normal", "Fallas de componentes internos (placa, pantalla, batería por defecto)", "Problemas de software no causados por el usuario"].map(t => (
+                <p key={t} style={{ fontSize: "10px", color: "#444", marginBottom: "4px", lineHeight: "1.4" }}>· {t}</p>
+              ))}
             </div>
-            <div className="flex">
-              <span className="text-slate-500 w-24 flex-shrink-0">Desde:</span>
-              <span className="font-bold">{formatDate(sale.sold_at)}</span>
-            </div>
-            <div className="flex">
-              <span className="text-slate-500 w-24 flex-shrink-0">Hasta:</span>
-              <span className="font-bold">{formatDate(warrantyUntil)}</span>
+            {/* No cubre */}
+            <div style={{ background: "#f8f8f8", borderRadius: "8px", padding: "12px" }}>
+              <p style={{ fontSize: "9px", fontWeight: "800", textTransform: "uppercase", letterSpacing: "0.12em", color: "#333", marginBottom: "7px" }}>No incluye</p>
+              {["Caídas, golpes o daño físico", "Daño por líquidos u oxidación", "Manipulación por terceros no autorizados", "Desgaste normal (batería, botones)", "Accesorios o daño de puerto por cargador no original"].map(t => (
+                <p key={t} style={{ fontSize: "10px", color: "#444", marginBottom: "4px", lineHeight: "1.4" }}>· {t}</p>
+              ))}
             </div>
           </div>
 
-          <div className="text-sm text-slate-700 leading-relaxed border border-slate-200 rounded-lg p-5 bg-slate-50/50">
-            <p className="mb-3">
-              Esta garantía cubre defectos de funcionamiento del equipo bajo condiciones normales de uso.
-            </p>
-            <p className="font-bold mb-2">NO cubre:</p>
-            <ul className="list-none space-y-1 ml-1 mb-3">
-              <li>• Daño físico (caídas, golpes, presión)</li>
-              <li>• Daño por líquidos</li>
-              <li>• Manipulación o reparación por terceros no autorizados</li>
-              <li>• Desgaste normal de batería</li>
-              <li>• Accesorios</li>
-            </ul>
-            <p>
-              En caso de reclamo, presentar este certificado junto con el equipo en el local.
+          {/* Condiciones */}
+          <div style={{ marginTop: "12px", padding: "10px 12px", border: "1px solid #e8e8e8", borderRadius: "8px" }}>
+            <p style={{ fontSize: "9px", fontWeight: "800", textTransform: "uppercase", letterSpacing: "0.12em", color: "#333", marginBottom: "6px" }}>Condiciones de uso</p>
+            <p style={{ fontSize: "10px", color: "#555", lineHeight: "1.6" }}>
+              Para hacer válida esta garantía, presentar este certificado junto con el equipo en nuestro local. El IMEI del equipo debe coincidir con el registrado. Diagnóstico en hasta 48hs hábiles · Reparación en hasta 10 días hábiles. En caso de no tener solución, se realizará cambio por equipo equivalente o devolución. Garantía personal, no transferible.
             </p>
           </div>
-        </div>
+        </Section>
 
         {/* Firmas */}
-        <div className="flex justify-between items-end mt-16 mb-12 px-8">
-          <div className="text-center">
-            <div className="w-48 border-b border-slate-400 mb-2" />
-            <p className="text-sm text-slate-600">Firma del cliente</p>
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: "36px", paddingTop: "20px" }}>
+          <div style={{ textAlign: "center", width: "140px" }}>
+            <div style={{ borderTop: "1px solid #ccc", paddingTop: "6px" }}>
+              <p style={{ fontSize: "10px", color: "#666" }}>Firma del cliente</p>
+            </div>
           </div>
-          <div className="text-center">
-            <div className="w-48 border-b border-slate-400 mb-2" />
-            <p className="text-sm font-bold text-[#34C759]">iGreen</p>
+          <div style={{ textAlign: "center", width: "140px" }}>
+            <div style={{ borderTop: "1px solid #ccc", paddingTop: "6px" }}>
+              <p style={{ fontSize: "10px", fontWeight: "700", color: "#111" }}>iGreen</p>
+            </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="text-center text-xs text-slate-400 pt-6 border-t border-slate-200">
-          <p>iGreen · Los Ríos 1774, CABA · Tel: +54 11 3577-2057</p>
-          <p className="mt-1">www.igreen.com.ar</p>
+        <div style={{ textAlign: "center", marginTop: "24px", paddingTop: "14px", borderTop: "1px solid #eee" }}>
+          <p style={{ fontSize: "9px", color: "#bbb" }}>iGreen · Los Ríos 1774, CABA · Tel: +54 11 3577-2057 · www.igreen.com.ar</p>
         </div>
+
       </div>
     </>
   );
@@ -278,7 +269,7 @@ function GarantiaContent() {
 
 export default function GarantiaPage() {
   return (
-    <Suspense fallback={<div className="flex items-center justify-center min-h-screen bg-white"><p className="text-slate-400 text-sm">Cargando...</p></div>}>
+    <Suspense fallback={<div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: "#fff" }}><p style={{ color: "#999" }}>Cargando...</p></div>}>
       <GarantiaContent />
     </Suspense>
   );
