@@ -270,16 +270,6 @@ export default function TradeInPage() {
 
   return (
     <div className="px-8 py-8 overflow-y-auto flex-1">
-      {/* Action button */}
-      <div className="flex justify-end mb-6">
-        <button
-          onClick={() => { setEditingId(null); setForm(emptyForm); setShowAddModal(true); }}
-          className="flex items-center gap-2 px-6 py-3 bg-[#3eff8e]/20 border border-[#3eff8e]/30 text-[#3eff8e] rounded-full font-bold text-sm  hover:brightness-95 transition-all"
-        >
-          <span className="material-symbols-outlined text-lg">add</span> Registrar Trade-in
-        </button>
-      </div>
-
       {/* ============ 1. KPI Cards Row ============ */}
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[
@@ -488,8 +478,8 @@ export default function TradeInPage() {
                 </div>
                 <h3 className="text-lg font-bold">Historial de Trade-ins</h3>
               </div>
-              {/* Filter chips */}
-              <div className="flex gap-2">
+              {/* Filter chips + Add button */}
+              <div className="flex items-center gap-2">
                 {(
                   [
                     { key: "todos", label: "Todos" },
@@ -510,6 +500,12 @@ export default function TradeInPage() {
                     {f.label}
                   </button>
                 ))}
+                <button
+                  onClick={() => { setEditingId(null); setForm(emptyForm); setShowAddModal(true); }}
+                  className="flex items-center gap-1.5 px-4 py-1.5 bg-white/[0.08] border border-white/[0.12] text-white/75 rounded-full font-bold text-xs hover:bg-white/[0.12] transition-all ml-2"
+                >
+                  <span className="material-symbols-outlined text-sm">add</span> Registrar
+                </button>
               </div>
             </div>
           </div>
