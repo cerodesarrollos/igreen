@@ -2,10 +2,10 @@
   "name": "iGreen - Ventas",
   "short_name": "iGreen",
   "description": "Gestión de ventas de equipos iPhone usados",
-  "start_url": "/ventas/mobile",
+  "start_url": "/ventas/stock",
   "display": "standalone",
-  "background_color": "#f8fafc",
-  "theme_color": "#34C759",
+  "background_color": "#111113",
+  "theme_color": "#111113",
   "orientation": "portrait",
   "icons": [
     {
