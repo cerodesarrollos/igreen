@@ -20,10 +20,12 @@ async function getIgUserProfile(senderId: string): Promise<{ name: string | null
   }
 }
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 // GET — verificación del webhook por Meta
 export async function GET(request: NextRequest) {
@@ -82,7 +84,7 @@ export async function POST(request: NextRequest) {
         // Fetch sender profile for display name/username
         const { name: senderName, username: senderUsername } = await getIgUserProfile(senderId);
 
-        await supabase.from('ig_messages').upsert({
+        await getSupabase().from('ig_messages').upsert({
           ig_message_id: msg.mid,
           ig_sender_id: senderId,
           sender_name: senderName,
