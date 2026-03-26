@@ -54,6 +54,45 @@ function fmtDate(d: string | null) {
   });
 }
 
+/* ───── DarkSelect — dropdown custom sin fondo blanco del OS ───── */
+function DarkSelect({ value, onChange, options }: {
+  value: string;
+  onChange: (v: string) => void;
+  options: { value: string; label: string }[];
+}) {
+  const [open, setOpen] = useState(false);
+  const label = options.find(o => o.value === value)?.label ?? value;
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between px-3.5 py-2.5 bg-white/[0.05] border border-white/[0.09] rounded-xl text-[13px] text-white/75 hover:border-white/20 transition-colors"
+      >
+        <span>{label}</span>
+        <span className={`material-symbols-outlined text-[16px] text-white/30 transition-transform ${open ? "rotate-180" : ""}`}>expand_more</span>
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+          <div className="absolute z-20 top-full mt-1 left-0 right-0 bg-[#1e1e21] border border-white/[0.10] rounded-xl overflow-hidden shadow-xl">
+            {options.map(o => (
+              <button
+                key={o.value}
+                type="button"
+                onClick={() => { onChange(o.value); setOpen(false); }}
+                className={`w-full text-left px-3.5 py-2 text-[13px] transition-colors hover:bg-white/[0.07] ${value === o.value ? "text-white/90 bg-white/[0.05]" : "text-white/55"}`}
+              >
+                {o.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 /* ───── GlassCard (igual que Resumen) ───── */
 function GlassCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
@@ -365,19 +404,23 @@ export default function GastosPage() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-[10px] uppercase tracking-[0.14em] font-normal text-white/40 block mb-1.5">Categoría</label>
-                <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
-                  className="w-full px-3.5 py-2.5 bg-white/[0.05] border border-white/[0.09] rounded-xl text-[13px] text-white/75 outline-none focus:border-white/20">
-                  {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
+                <DarkSelect
+                  value={form.category}
+                  onChange={v => setForm(f => ({ ...f, category: v }))}
+                  options={CATEGORIES.map(c => ({ value: c, label: c }))}
+                />
               </div>
               <div>
                 <label className="text-[10px] uppercase tracking-[0.14em] font-normal text-white/40 block mb-1.5">Scope</label>
-                <select value={form.scope} onChange={e => setForm(f => ({ ...f, scope: e.target.value }))}
-                  className="w-full px-3.5 py-2.5 bg-white/[0.05] border border-white/[0.09] rounded-xl text-[13px] text-white/75 outline-none focus:border-white/20">
-                  <option value="ventas">Ventas</option>
-                  <option value="local">Local</option>
-                  <option value="otro">Otro</option>
-                </select>
+                <DarkSelect
+                  value={form.scope}
+                  onChange={v => setForm(f => ({ ...f, scope: v }))}
+                  options={[
+                    { value: "ventas", label: "Ventas" },
+                    { value: "local",  label: "Local"  },
+                    { value: "otro",   label: "Otro"   },
+                  ]}
+                />
               </div>
             </div>
 
@@ -401,12 +444,17 @@ export default function GastosPage() {
               </button>
               <span className="text-[12px] text-white/50">Gasto recurrente</span>
               {form.recurring && (
-                <select value={form.recurring_period} onChange={e => setForm(f => ({ ...f, recurring_period: e.target.value }))}
-                  className="px-3 py-1.5 bg-white/[0.05] border border-white/[0.09] rounded-xl text-[12px] text-white/65 outline-none">
-                  <option value="monthly">Mensual</option>
-                  <option value="weekly">Semanal</option>
-                  <option value="yearly">Anual</option>
-                </select>
+                <div className="w-32">
+                  <DarkSelect
+                    value={form.recurring_period}
+                    onChange={v => setForm(f => ({ ...f, recurring_period: v }))}
+                    options={[
+                      { value: "monthly", label: "Mensual" },
+                      { value: "weekly",  label: "Semanal" },
+                      { value: "yearly",  label: "Anual"   },
+                    ]}
+                  />
+                </div>
               )}
             </div>
           </div>
