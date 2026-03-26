@@ -50,7 +50,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    // Escuchar cambios de sesión primero
+    // onAuthStateChange dispara INITIAL_SESSION inmediatamente al montar.
+    // No necesitamos getSession(). setLoading(false) siempre se llama acá.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -62,26 +63,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
-    // Luego intentar obtener sesión existente
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      // onAuthStateChange ya maneja el estado, pero si no disparó aún:
-      if (session) {
-        setUser(session.user);
-      } else {
-        setUser(null);
-        setLoading(false);
-      }
-    }).catch(() => {
-      setLoading(false);
-    });
-
     return () => subscription.unsubscribe();
   }, []);
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    setUser(null);
-    setIgUser(null);
   };
 
   return (
