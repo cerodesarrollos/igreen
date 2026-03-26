@@ -50,8 +50,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    // onAuthStateChange dispara INITIAL_SESSION inmediatamente al montar.
-    // No necesitamos getSession(). setLoading(false) siempre se llama acá.
+    let settled = false;
+
+    function settle() {
+      if (!settled) {
+        settled = true;
+        setLoading(false);
+      }
+    }
+
+    // Timeout de seguridad: si en 4 segundos no resolvió, forzamos loading=false
+    const timeout = setTimeout(settle, 4000);
+
+    // getSession() lee desde localStorage inmediatamente si el token es válido.
+    // No espera red — es la forma más rápida de saber el estado inicial.
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        const iu = await fetchIgUser(session.user.id);
+        setIgUser(iu);
+      } else {
+        setIgUser(null);
+      }
+      settle();
+    }).catch(() => settle());
+
+    // onAuthStateChange maneja cambios posteriores (login, logout, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -60,10 +84,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         setIgUser(null);
       }
-      setLoading(false);
+      settle();
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      clearTimeout(timeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {
