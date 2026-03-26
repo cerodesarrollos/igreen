@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Sidebar from "@/components/Sidebar";
-import Header from "@/components/Header";
 import CursorGlow from "@/components/CursorGlow";
+import AppShell from "@/components/AppShell";
 import { AuthProvider } from "@/lib/auth";
 
 export const metadata: Metadata = {
@@ -32,22 +31,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             >
               <CursorGlow />
               <div className="relative z-10 flex w-full h-full">
-                <Sidebar />
-                <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-                  <Header />
-                  <main className="flex-1 overflow-hidden flex flex-col">
-                    {children}
-                  </main>
-                </div>
+                <AppShell>{children}</AppShell>
               </div>
             </div>
           </div>
 
-          {/* Mobile: full screen, sin sidebar ni header */}
+          {/* Mobile: full screen */}
           <div className="md:hidden h-screen w-screen overflow-hidden" style={{ background: "#0d0d10" }}>
-            <main className="h-full w-full overflow-hidden flex flex-col">
-              {children}
-            </main>
+            <AppShell>{children}</AppShell>
           </div>
         </AuthProvider>
       </body>
