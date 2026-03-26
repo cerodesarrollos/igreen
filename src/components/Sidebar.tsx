@@ -3,17 +3,18 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/lib/auth";
 
-const ventasItems = [
-  { href: "/ventas",            icon: "space_dashboard", label: "Resumen"    },
-  { href: "/ventas/stock",      icon: "inventory_2",     label: "Stock"      },
-  { href: "/ventas/turnos",     icon: "calendar_month",  label: "Turnos"     },
-  { href: "/ventas/inbox",      icon: "chat_bubble",     label: "Inbox"      },
-  { href: "/ventas/trade-in",   icon: "swap_horiz",      label: "Trade-in"   },
-  { href: "/ventas/clientes",   icon: "group",           label: "Clientes"   },
-  { href: "/ventas/rendicion",  icon: "receipt_long",    label: "Rendición"  },
-  { href: "/ventas/metricas",   icon: "bar_chart",       label: "Métricas"   },
-  { href: "/ventas/publicidad", icon: "campaign",        label: "Publicidad" },
+const allVentasItems = [
+  { href: "/ventas",            icon: "space_dashboard", label: "Resumen",    adminOnly: false },
+  { href: "/ventas/stock",      icon: "inventory_2",     label: "Stock",      adminOnly: false },
+  { href: "/ventas/turnos",     icon: "calendar_month",  label: "Turnos",     adminOnly: false },
+  { href: "/ventas/inbox",      icon: "chat_bubble",     label: "Inbox",      adminOnly: false },
+  { href: "/ventas/trade-in",   icon: "swap_horiz",      label: "Trade-in",   adminOnly: false },
+  { href: "/ventas/clientes",   icon: "group",           label: "Clientes",   adminOnly: false },
+  { href: "/ventas/rendicion",  icon: "receipt_long",    label: "Rendición",  adminOnly: true  },
+  { href: "/ventas/metricas",   icon: "bar_chart",       label: "Métricas",   adminOnly: true  },
+  { href: "/ventas/publicidad", icon: "campaign",        label: "Publicidad", adminOnly: true  },
 ];
 
 function NavItem({ href, icon, label, active, collapsed }: {
@@ -43,7 +44,12 @@ function NavItem({ href, icon, label, active, collapsed }: {
 export default function Sidebar() {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+  const { role } = useAuth();
   const w = collapsed ? "w-[48px]" : "w-[224px]";
+
+  const ventasItems = allVentasItems.filter(item =>
+    !item.adminOnly || role === "admin"
+  );
 
   return (
     <aside className={`${w} shrink-0 bg-[#111114] border-r border-white/[0.06] flex flex-col transition-all duration-150 h-full overflow-hidden`}>
@@ -104,7 +110,9 @@ export default function Sidebar() {
 
       {/* Bottom */}
       <div className="p-2 border-t border-white/[0.06] space-y-px">
-        <NavItem href="/settings" icon="settings" label="Ajustes" active={pathname === "/settings"} collapsed={collapsed} />
+        {role === "admin" && (
+          <NavItem href="/settings" icon="settings" label="Ajustes" active={pathname === "/settings"} collapsed={collapsed} />
+        )}
         <button
           onClick={() => setCollapsed(!collapsed)}
           className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-white/50 hover:text-white/50 hover:bg-white/[0.04] transition-colors text-sm"
