@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import CursorGlow from "@/components/CursorGlow";
 import AppShell from "@/components/AppShell";
 import { AuthProvider } from "@/lib/auth";
 
@@ -21,25 +20,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="theme-color" content="#0d0d10" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
       </head>
-      <body className="antialiased" style={{ background: "#080809", color: "#ededed" }}>
+      <body className="antialiased h-screen w-screen overflow-hidden" style={{ background: "#080809", color: "#ededed" }}>
         <AuthProvider>
-          {/* Desktop: padding + rounded shell */}
-          <div className="hidden md:block h-screen w-screen p-3 box-border">
-            <div
-              className="relative flex h-full overflow-hidden rounded-2xl border border-white/[0.06]"
-              style={{ background: "#0d0d10" }}
-            >
-              <CursorGlow />
-              <div className="relative z-10 flex w-full h-full">
-                <AppShell>{children}</AppShell>
-              </div>
-            </div>
-          </div>
-
-          {/* Mobile: full screen */}
-          <div className="md:hidden h-screen w-screen overflow-hidden" style={{ background: "#0d0d10" }}>
-            <AppShell>{children}</AppShell>
-          </div>
+          <AppShell>{children}</AppShell>
         </AuthProvider>
       </body>
     </html>
