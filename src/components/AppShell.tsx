@@ -1,6 +1,7 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
@@ -8,18 +9,39 @@ import CursorGlow from "@/components/CursorGlow";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { user, loading } = useAuth();
 
   const isLoginPage = pathname === "/login";
-  const showShell = !isLoginPage && (loading || !!user);
 
-  // Login o sin sesión → full screen, sin shell, sin padding
-  if (!showShell) {
+  // Redirect a login si no hay sesión (después de cargar)
+  useEffect(() => {
+    if (!loading && !user && !isLoginPage) {
+      router.replace("/login");
+    }
+  }, [loading, user, isLoginPage, router]);
+
+  // Login page → full screen sin shell
+  if (isLoginPage) {
     return (
       <div className="h-screen w-screen" style={{ background: "#080809" }}>
         {children}
       </div>
     );
+  }
+
+  // Cargando sesión → spinner centrado
+  if (loading) {
+    return (
+      <div className="h-screen w-screen flex items-center justify-center" style={{ background: "#0d0d10" }}>
+        <div className="w-5 h-5 border border-white/20 border-t-white/60 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // Sin sesión → vacío (redirect en curso)
+  if (!user) {
+    return null;
   }
 
   return (

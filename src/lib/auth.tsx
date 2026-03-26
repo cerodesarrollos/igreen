@@ -1,10 +1,8 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { createClient } from "@/lib/supabase-browser";
+import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
-
-export const supabase = createClient();
 
 export type UserRole = "admin" | "vendedor";
 

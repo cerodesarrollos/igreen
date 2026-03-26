@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAuth, supabase, IgUser } from "@/lib/auth";
+import { useAuth, IgUser } from "@/lib/auth";
+import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 
 export default function SettingsPage() {
