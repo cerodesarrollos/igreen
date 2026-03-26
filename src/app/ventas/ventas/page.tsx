@@ -84,6 +84,16 @@ function warrantyStatus(until: string | null) {
 type DateFilter = "todos" | "hoy" | "semana" | "mes";
 type PaymentFilter = "todos" | "efectivo" | "transferencia" | "debito" | "credito" | "crypto";
 
+/* ───── stat cell helper ───── */
+function StatCell({ label, value, valueClass = "text-white/80" }: { label: string; value: React.ReactNode; valueClass?: string }) {
+  return (
+    <div className="flex flex-col gap-1">
+      <span className="text-[9px] uppercase tracking-[0.12em] font-bold text-white/30">{label}</span>
+      <span className={`text-[13px] font-semibold leading-tight ${valueClass}`}>{value}</span>
+    </div>
+  );
+}
+
 /* ───── expanded detail ───── */
 function SaleDetail({ s, docPreview, setDocPreview }: {
   s: Sale;
@@ -95,145 +105,131 @@ function SaleDetail({ s, docPreview, setDocPreview }: {
   const clientName = [s.client_name, s.client_last_name].filter(Boolean).join(" ");
 
   return (
-    <tr className="border-b border-white/[0.05] bg-[#111113]">
-      <td colSpan={7} className="px-6 py-5">
-        <div className="grid grid-cols-3 gap-5">
+    <tr className="border-b border-white/[0.05]">
+      <td colSpan={7} className="bg-[#0f0f11] px-6 py-5">
 
-          {/* Col 1 — Transacción */}
-          <div>
-            <p className="text-[9px] uppercase tracking-[0.14em] font-bold text-white/30 mb-3">Transacción</p>
-            <div className="space-y-2.5">
-              {[
-                { l: "Precio de venta", v: formatMoney(s.sale_price), bold: true },
-                { l: "Costo", v: formatMoney(s.cost_price) },
-                { l: "Ganancia", v: formatMoney(margin), color: margin >= 0 ? "text-emerald-400" : "text-red-400", bold: true },
-                { l: "Método de pago", v: PAYMENT_LABELS[s.payment_method] || s.payment_method, chip: true },
-                { l: "Fecha", v: formatDate(s.sold_at) },
-              ].map(({ l, v, bold, color, chip }) => (
-                <div key={l} className="flex items-center justify-between gap-3">
-                  <span className="text-[11px] text-white/40 whitespace-nowrap">{l}</span>
-                  {chip ? (
-                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${PAYMENT_COLORS[s.payment_method] || "bg-white/[0.07] text-white/50"}`}>{v}</span>
-                  ) : (
-                    <span className={`text-[12px] font-medium ${color || (bold ? "text-white/85" : "text-white/60")}`}>{v}</span>
-                  )}
-                </div>
-              ))}
-              {s.notes && (
-                <div className="pt-2 border-t border-white/[0.05]">
-                  <p className="text-[9px] uppercase tracking-widest font-bold text-white/30 mb-1">Notas</p>
-                  <p className="text-[11px] text-white/50 leading-relaxed">{s.notes}</p>
-                </div>
-              )}
+        {/* ── Row 1: 4 stat pills ── */}
+        <div className="grid grid-cols-4 gap-3 mb-5">
+          {[
+            { label: "Precio de venta", value: formatMoney(s.sale_price), valueClass: "text-white/90 text-[15px] font-bold" },
+            { label: "Costo", value: formatMoney(s.cost_price), valueClass: "text-white/55" },
+            { label: "Ganancia", value: formatMoney(margin), valueClass: `text-[15px] font-bold ${margin >= 0 ? "text-emerald-400" : "text-red-400"}` },
+            { label: "Método de pago", value: (
+              <span className={`inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold ${PAYMENT_COLORS[s.payment_method] || "bg-white/[0.07] text-white/50"}`}>
+                {PAYMENT_LABELS[s.payment_method] || s.payment_method}
+              </span>
+            )},
+          ].map((c, i) => (
+            <div key={i} className="bg-white/[0.03] border border-white/[0.06] rounded-2xl px-4 py-3">
+              <StatCell label={c.label} value={c.value} valueClass={"valueClass" in c ? c.valueClass : undefined} />
             </div>
-          </div>
+          ))}
+        </div>
 
-          {/* Col 2 — Equipo + Cliente */}
-          <div className="space-y-4">
-            {/* Equipo */}
+        {/* ── Row 2: 3 sections ── */}
+        <div className="grid grid-cols-3 gap-4">
+
+          {/* Equipo */}
+          <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4">
+            <p className="text-[9px] uppercase tracking-[0.14em] font-bold text-white/30 mb-3">Equipo</p>
             {s.product ? (
-              <div>
-                <p className="text-[9px] uppercase tracking-[0.14em] font-bold text-white/30 mb-3">Equipo</p>
-                <div className="space-y-2.5">
-                  {[
-                    { l: "Modelo", v: `${s.product.brand} ${s.product.model}` },
-                    { l: "Capacidad", v: s.product.capacity },
-                    { l: "Color", v: s.product.color },
-                    { l: "Condición", v: `Grado ${s.product.condition}` },
-                    { l: "Batería", v: s.product.battery_health != null ? `${s.product.battery_health}%` : null },
-                    { l: "IMEI", v: s.product.imei, mono: true },
-                    { l: "Código", v: s.product.product_code, mono: true },
-                  ].map(({ l, v, mono }) => v ? (
-                    <div key={l} className="flex items-center justify-between gap-3">
-                      <span className="text-[11px] text-white/40">{l}</span>
-                      <span className={`text-[12px] font-medium text-white/70 ${mono ? "font-mono text-[11px]" : ""}`}>{v}</span>
-                    </div>
-                  ) : null)}
-                </div>
+              <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+                <StatCell label="Modelo" value={`${s.product.brand} ${s.product.model}`} />
+                {s.product.capacity && <StatCell label="Capacidad" value={s.product.capacity} />}
+                {s.product.color && <StatCell label="Color" value={s.product.color} />}
+                <StatCell label="Condición" value={`Grado ${s.product.condition}`} />
+                {s.product.battery_health != null && <StatCell label="Batería" value={`${s.product.battery_health}%`} />}
+                {s.product.imei && <StatCell label="IMEI" value={<span className="font-mono text-[11px]">{s.product.imei}</span>} />}
+                {s.product.product_code && <StatCell label="Código" value={<span className="font-mono text-[11px]">{s.product.product_code}</span>} />}
+                <StatCell label="Fecha de venta" value={formatDate(s.sold_at)} valueClass="text-white/55" />
               </div>
             ) : (
-              <div>
-                <p className="text-[9px] uppercase tracking-[0.14em] font-bold text-white/30 mb-3">Equipo</p>
-                <p className="text-[11px] text-white/30 italic">Producto eliminado</p>
+              <p className="text-[11px] text-white/30 italic">Producto eliminado</p>
+            )}
+            {s.notes && (
+              <div className="mt-3 pt-3 border-t border-white/[0.05]">
+                <p className="text-[9px] uppercase tracking-[0.12em] font-bold text-white/30 mb-1">Notas</p>
+                <p className="text-[11px] text-white/50 leading-relaxed">{s.notes}</p>
               </div>
             )}
+          </div>
 
-            {/* Cliente */}
-            <div className="pt-3 border-t border-white/[0.05]">
-              <p className="text-[9px] uppercase tracking-[0.14em] font-bold text-white/30 mb-3">Cliente</p>
-              {clientName ? (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-full bg-white/[0.07] flex items-center justify-center flex-shrink-0">
-                      <span className="text-xs font-bold text-white/50">{(s.client_name || "?").charAt(0).toUpperCase()}</span>
-                    </div>
-                    <div>
-                      <p className="text-[12px] font-bold text-white/80">{clientName}</p>
-                      {s.client_dni && <p className="text-[10px] text-white/35">DNI {s.client_dni}</p>}
-                    </div>
+          {/* Cliente */}
+          <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4">
+            <p className="text-[9px] uppercase tracking-[0.14em] font-bold text-white/30 mb-3">Cliente</p>
+            {clientName ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-white/[0.08] flex items-center justify-center flex-shrink-0 text-sm font-bold text-white/60">
+                    {(s.client_name || "?").charAt(0).toUpperCase()}
                   </div>
+                  <div>
+                    <p className="text-[13px] font-bold text-white/85">{clientName}</p>
+                    {s.client_dni && <p className="text-[11px] text-white/35">DNI {s.client_dni}</p>}
+                  </div>
+                </div>
+                <div className="space-y-2 pt-1">
                   {s.client_phone && (
-                    <div className="flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-[13px] text-white/25">phone</span>
-                      <span className="text-[11px] text-white/50">{s.client_phone}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-[14px] text-white/25">phone</span>
+                      <span className="text-[12px] text-white/55">{s.client_phone}</span>
                     </div>
                   )}
                   {s.client_email && (
-                    <div className="flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-[13px] text-white/25">mail</span>
-                      <span className="text-[11px] text-white/50">{s.client_email}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-[14px] text-white/25">mail</span>
+                      <span className="text-[12px] text-white/55">{s.client_email}</span>
                     </div>
                   )}
                 </div>
-              ) : (
-                <p className="text-[11px] text-white/30 italic">Sin datos de cliente</p>
-              )}
-            </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-6 text-white/25">
+                <span className="material-symbols-outlined text-2xl mb-1.5">person_off</span>
+                <p className="text-[11px]">Sin datos de cliente</p>
+              </div>
+            )}
           </div>
 
-          {/* Col 3 — Garantía + Documentos */}
-          <div className="space-y-4">
+          {/* Garantía + Documentos */}
+          <div className="flex flex-col gap-3">
+
             {/* Garantía */}
-            <div>
+            <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4">
               <p className="text-[9px] uppercase tracking-[0.14em] font-bold text-white/30 mb-3">Garantía</p>
               {wStatus ? (
                 <div className="space-y-2.5">
                   <div className="flex items-center gap-1.5">
                     <span className={`material-symbols-outlined text-[16px] ${wStatus.color}`}>{wStatus.icon}</span>
-                    <span className={`text-[12px] font-bold ${wStatus.color}`}>{wStatus.label}</span>
+                    <span className={`text-[13px] font-bold ${wStatus.color}`}>{wStatus.label}</span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-white/40">Cobertura</span>
-                    <span className="text-[11px] text-white/60">{s.warranty_days} días</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-white/40">Vence</span>
-                    <span className="text-[11px] text-white/60">{formatDate(s.warranty_until!)}</span>
+                  <div className="grid grid-cols-2 gap-3 pt-1">
+                    <StatCell label="Cobertura" value={`${s.warranty_days} días`} valueClass="text-white/60" />
+                    <StatCell label="Vence" value={formatDate(s.warranty_until!)} valueClass="text-white/60" />
                   </div>
                 </div>
               ) : (
-                <p className="text-[11px] text-white/30 italic">Sin garantía</p>
+                <p className="text-[11px] text-white/30 italic">Sin garantía registrada</p>
               )}
             </div>
 
             {/* Documentos */}
-            <div className="pt-3 border-t border-white/[0.05]">
+            <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4">
               <p className="text-[9px] uppercase tracking-[0.14em] font-bold text-white/30 mb-3">Documentos</p>
               <div className="space-y-2">
 
-                {/* Botón Recibo */}
+                {/* Btn Recibo */}
                 <button
                   onClick={() => setDocPreview(docPreview === "ticket" ? null : "ticket")}
                   className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl border text-left transition-all ${
-                    docPreview === "ticket" ? "bg-white/[0.08] border-white/[0.15]" : "bg-white/[0.04] border-white/[0.07] hover:bg-white/[0.07]"
+                    docPreview === "ticket" ? "bg-white/[0.08] border-white/[0.18]" : "bg-white/[0.04] border-white/[0.07] hover:bg-white/[0.07]"
                   }`}
                 >
                   <span className="material-symbols-outlined text-[15px] text-white/40">receipt</span>
                   <span className="flex-1 text-[11px] font-bold text-white/70">Ver recibo de pago</span>
-                  <span className={`material-symbols-outlined text-[14px] text-white/35 transition-transform ${docPreview === "ticket" ? "rotate-180" : ""}`}>expand_more</span>
+                  <span className={`material-symbols-outlined text-[13px] text-white/35 transition-transform ${docPreview === "ticket" ? "rotate-180" : ""}`}>expand_more</span>
                 </button>
 
-                {/* Preview Ticket */}
                 {docPreview === "ticket" && (
                   <div className="rounded-xl overflow-hidden border border-white/[0.08]">
                     <div className="flex gap-2 p-2.5 bg-white/[0.04] border-b border-white/[0.06]">
@@ -265,19 +261,18 @@ function SaleDetail({ s, docPreview, setDocPreview }: {
                   </div>
                 )}
 
-                {/* Botón Garantía */}
+                {/* Btn Garantía */}
                 <button
                   onClick={() => setDocPreview(docPreview === "garantia" ? null : "garantia")}
                   className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl border text-left transition-all ${
-                    docPreview === "garantia" ? "bg-white/[0.08] border-white/[0.15]" : "bg-white/[0.04] border-white/[0.07] hover:bg-white/[0.07]"
+                    docPreview === "garantia" ? "bg-white/[0.08] border-white/[0.18]" : "bg-white/[0.04] border-white/[0.07] hover:bg-white/[0.07]"
                   }`}
                 >
                   <span className="material-symbols-outlined text-[15px] text-white/40">verified_user</span>
                   <span className="flex-1 text-[11px] font-bold text-white/70">Ver garantía</span>
-                  <span className={`material-symbols-outlined text-[14px] text-white/35 transition-transform ${docPreview === "garantia" ? "rotate-180" : ""}`}>expand_more</span>
+                  <span className={`material-symbols-outlined text-[13px] text-white/35 transition-transform ${docPreview === "garantia" ? "rotate-180" : ""}`}>expand_more</span>
                 </button>
 
-                {/* Preview Garantía */}
                 {docPreview === "garantia" && (
                   <div className="rounded-xl overflow-hidden border border-white/[0.08]">
                     <div className="flex gap-2 p-2.5 bg-white/[0.04] border-b border-white/[0.06]">
@@ -304,9 +299,10 @@ function SaleDetail({ s, docPreview, setDocPreview }: {
 
               </div>
             </div>
-          </div>
 
+          </div>
         </div>
+
       </td>
     </tr>
   );
