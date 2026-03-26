@@ -118,7 +118,7 @@ export default function VentasPage() {
       if (!salesData) { setSales([]); return; }
 
       // Join products
-      const productIds = [...new Set(salesData.map((s) => s.product_id).filter(Boolean))];
+      const productIds = Array.from(new Set(salesData.map((s) => s.product_id).filter(Boolean)));
       const productsMap: Record<string, Product> = {};
 
       if (productIds.length > 0) {
