@@ -119,7 +119,7 @@ export default function VentasPage() {
 
       // Join products
       const productIds = [...new Set(salesData.map((s) => s.product_id).filter(Boolean))];
-      let productsMap: Record<string, Product> = {};
+      const productsMap: Record<string, Product> = {};
 
       if (productIds.length > 0) {
         const { data: prods } = await supabase
