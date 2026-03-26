@@ -637,27 +637,33 @@ export default function VentasStockPage() {
     // Auto-create client if name provided and no client_id
     let clientId: string | null = saleForm.client_id || null;
     if (!clientId && saleForm.client_name) {
-      // Check if client exists by phone or name
-      let existingClient = null;
+      // Buscar cliente existente por teléfono (más confiable) o DNI
+      let existingClient: { id: string } | null = null;
       if (saleForm.client_phone) {
         const { data } = await supabase.from("ig_clients").select("id").eq("phone", saleForm.client_phone).limit(1).maybeSingle();
         existingClient = data;
       }
-      if (!existingClient && saleForm.client_name) {
-        const { data } = await supabase.from("ig_clients").select("id").eq("name", saleForm.client_name).limit(1).maybeSingle();
+      if (!existingClient && saleForm.client_dni) {
+        const { data } = await supabase.from("ig_clients").select("id").eq("dni", saleForm.client_dni).limit(1).maybeSingle();
         existingClient = data;
       }
+
+      const clientPayload = {
+        name: saleForm.client_name,
+        last_name: saleForm.client_last_name || null,
+        phone: saleForm.client_phone || null,
+        dni: saleForm.client_dni || null,
+        email: saleForm.client_email || null,
+        role: "comprador" as const,
+      };
+
       if (existingClient) {
+        // Actualizar datos del cliente existente con la info nueva
         clientId = existingClient.id;
+        await supabase.from("ig_clients").update(clientPayload).eq("id", clientId);
       } else {
-        // Create new client
-        const { data: newClient } = await supabase.from("ig_clients").insert({
-          name: saleForm.client_name,
-          last_name: saleForm.client_last_name || null,
-          phone: saleForm.client_phone || null,
-          dni: saleForm.client_dni || null,
-          email: saleForm.client_email || null,
-        }).select("id").single();
+        // Crear cliente nuevo
+        const { data: newClient } = await supabase.from("ig_clients").insert(clientPayload).select("id").single();
         if (newClient) clientId = newClient.id;
       }
     }
