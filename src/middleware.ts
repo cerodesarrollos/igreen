@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 
 // Middleware is a pass-through — auth protection handled client-side in AppShell
 // Only skip static assets
-export function middleware(request: NextRequest) {
+export function middleware(_request: NextRequest) {
   return NextResponse.next();
 }
 
