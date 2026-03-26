@@ -2,7 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/auth";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  (process.env.NEXT_PUBLIC_SUPABASE_URL || "").trim(),
+  (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "").trim()
+);
 
 export default function LoginPage() {
   const router = useRouter();
@@ -16,18 +21,19 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
 
-    const { error: authError } = await supabase.auth.signInWithPassword({
+    const { data, error: authError } = await supabase.auth.signInWithPassword({
       email: email.trim(),
       password,
     });
 
-    if (authError) {
+    if (authError || !data.session) {
       setError("Email o contraseña incorrectos");
       setLoading(false);
       return;
     }
 
-    router.push("/ventas/stock");
+    // Force full page reload so middleware picks up the new cookie
+    window.location.href = "/ventas/stock";
   }
 
   return (
