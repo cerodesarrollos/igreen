@@ -230,37 +230,6 @@ function SaleDetail({ s, docPreview, setDocPreview }: {
                   <span className={`material-symbols-outlined text-[13px] text-white/35 transition-transform ${docPreview === "ticket" ? "rotate-180" : ""}`}>expand_more</span>
                 </button>
 
-                {docPreview === "ticket" && (
-                  <div className="rounded-xl overflow-hidden border border-white/[0.08]">
-                    <div className="flex gap-2 p-2.5 bg-white/[0.04] border-b border-white/[0.06]">
-                      <a href={`/ventas/print/ticket?sale_id=${s.id}`} target="_blank" rel="noopener noreferrer"
-                        className="flex-1 flex items-center justify-center gap-1.5 py-1.5 bg-white/[0.07] hover:bg-white/[0.12] border border-white/[0.1] rounded-lg text-[11px] font-bold text-white/65 transition-colors">
-                        <span className="material-symbols-outlined text-[13px]">print</span>Imprimir
-                      </a>
-                      <a href={`/ventas/print/ticket?sale_id=${s.id}`} target="_blank" rel="noopener noreferrer"
-                        className="flex-1 flex items-center justify-center gap-1.5 py-1.5 bg-white/[0.07] hover:bg-white/[0.12] border border-white/[0.1] rounded-lg text-[11px] font-bold text-white/65 transition-colors">
-                        <span className="material-symbols-outlined text-[13px]">open_in_new</span>Abrir
-                      </a>
-                    </div>
-                    <div className="bg-white p-3 font-mono text-[8.5px] text-slate-700 leading-relaxed">
-                      <p className="text-center text-slate-300">─────────────────</p>
-                      <p className="text-center font-bold text-slate-900">🍏 iGreen</p>
-                      <p className="text-center text-slate-500">Los Ríos 1774, CABA</p>
-                      <p className="text-center text-slate-300">─────────────────</p>
-                      <p className="text-center font-bold">GARANTÍA + RECIBO</p>
-                      <p className="text-center text-slate-500">{formatDate(s.sold_at)}</p>
-                      <p className="text-center text-slate-300">─────────────────</p>
-                      {s.product && <><p className="font-bold text-slate-900">{s.product.brand} {s.product.model}</p>{s.product.imei && <p>IMEI: ••••{s.product.imei.slice(-4)}</p>}</>}
-                      <p className="text-center text-slate-300">─────────────────</p>
-                      {s.client_name && <p>Cliente: <span className="font-bold">{s.client_name}</span></p>}
-                      <p>Garantía: {s.warranty_days}d</p>
-                      <p className="text-center text-slate-300">─────────────────</p>
-                      <div className="flex justify-between font-bold text-slate-900"><span>TOTAL:</span><span>{formatMoney(s.sale_price)}</span></div>
-                      <p>{PAYMENT_LABELS[s.payment_method] || s.payment_method}</p>
-                    </div>
-                  </div>
-                )}
-
                 {/* Btn Garantía */}
                 <button
                   onClick={() => setDocPreview(docPreview === "garantia" ? null : "garantia")}
@@ -273,35 +242,83 @@ function SaleDetail({ s, docPreview, setDocPreview }: {
                   <span className={`material-symbols-outlined text-[13px] text-white/35 transition-transform ${docPreview === "garantia" ? "rotate-180" : ""}`}>expand_more</span>
                 </button>
 
-                {docPreview === "garantia" && (
-                  <div className="rounded-xl overflow-hidden border border-white/[0.08]">
-                    <div className="flex gap-2 p-2.5 bg-white/[0.04] border-b border-white/[0.06]">
-                      <a href={`/ventas/print/garantia?sale_id=${s.id}`} target="_blank" rel="noopener noreferrer"
-                        className="flex-1 flex items-center justify-center gap-1.5 py-1.5 bg-white/[0.07] hover:bg-white/[0.12] border border-white/[0.1] rounded-lg text-[11px] font-bold text-white/65 transition-colors">
-                        <span className="material-symbols-outlined text-[13px]">print</span>Imprimir
-                      </a>
-                      <a href={`/ventas/print/garantia?sale_id=${s.id}`} target="_blank" rel="noopener noreferrer"
-                        className="flex-1 flex items-center justify-center gap-1.5 py-1.5 bg-white/[0.07] hover:bg-white/[0.12] border border-white/[0.1] rounded-lg text-[11px] font-bold text-white/65 transition-colors">
-                        <span className="material-symbols-outlined text-[13px]">open_in_new</span>Abrir
-                      </a>
-                    </div>
-                    <div className="bg-white p-3 text-[8.5px] text-slate-700 leading-relaxed" style={{ fontFamily: "Inter, sans-serif" }}>
-                      <div className="flex justify-between border-b border-slate-100 pb-2 mb-2">
-                        <div><p className="font-bold text-slate-900">🍏 iGreen</p><p className="text-slate-400">Los Ríos 1774</p></div>
-                        <div className="text-right"><p className="text-slate-400" style={{ fontSize: "7px" }}>CERTIFICADO DE GARANTÍA</p><p className="font-bold text-slate-900">{formatDate(s.sold_at)}</p></div>
-                      </div>
-                      {s.product && <div className="mb-1.5"><p className="font-bold text-slate-900">{s.product.brand} {s.product.model}</p>{s.product.imei && <p className="font-mono text-slate-500">{s.product.imei}</p>}</div>}
-                      {s.client_name && <div className="mb-1.5"><p className="font-bold text-slate-900">{clientName}</p>{s.client_dni && <p className="text-slate-500">DNI {s.client_dni}</p>}</div>}
-                      <div><p className="font-bold text-slate-900">{s.warranty_days} días de garantía</p>{s.warranty_until && <p className="text-slate-500">Vence: {formatDate(s.warranty_until)}</p>}</div>
-                    </div>
-                  </div>
-                )}
-
               </div>
             </div>
 
           </div>
         </div>
+
+        {/* ── Row 3: Document preview full-width ── */}
+        {docPreview === "ticket" && (
+          <div className="mt-4 bg-white/[0.03] border border-white/[0.06] rounded-2xl overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-[15px] text-white/40">receipt</span>
+                <span className="text-[11px] font-bold text-white/60">Recibo de pago</span>
+              </div>
+              <div className="flex gap-2">
+                <a href={`/ventas/print/ticket?sale_id=${s.id}`} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.07] hover:bg-white/[0.12] border border-white/[0.1] rounded-lg text-[11px] font-bold text-white/65 transition-colors">
+                  <span className="material-symbols-outlined text-[13px]">print</span>Imprimir
+                </a>
+                <a href={`/ventas/print/ticket?sale_id=${s.id}`} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.07] hover:bg-white/[0.12] border border-white/[0.1] rounded-lg text-[11px] font-bold text-white/65 transition-colors">
+                  <span className="material-symbols-outlined text-[13px]">open_in_new</span>Abrir
+                </a>
+              </div>
+            </div>
+            <div className="flex justify-center py-5 bg-[#1a1a1c]">
+              <div className="bg-white p-4 font-mono text-[9px] text-slate-700 leading-relaxed w-64 rounded shadow-lg">
+                <p className="text-center text-slate-300">─────────────────</p>
+                <p className="text-center font-bold text-slate-900">🍏 iGreen</p>
+                <p className="text-center text-slate-500">Los Ríos 1774, CABA</p>
+                <p className="text-center text-slate-300">─────────────────</p>
+                <p className="text-center font-bold">GARANTÍA + RECIBO</p>
+                <p className="text-center text-slate-500">{formatDate(s.sold_at)}</p>
+                <p className="text-center text-slate-300">─────────────────</p>
+                {s.product && <><p className="font-bold text-slate-900">{s.product.brand} {s.product.model}</p>{s.product.imei && <p>IMEI: ••••{s.product.imei.slice(-4)}</p>}</>}
+                <p className="text-center text-slate-300">─────────────────</p>
+                {s.client_name && <p>Cliente: <span className="font-bold">{s.client_name}</span></p>}
+                <p>Garantía: {s.warranty_days}d</p>
+                <p className="text-center text-slate-300">─────────────────</p>
+                <div className="flex justify-between font-bold text-slate-900"><span>TOTAL:</span><span>{formatMoney(s.sale_price)}</span></div>
+                <p>{PAYMENT_LABELS[s.payment_method] || s.payment_method}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {docPreview === "garantia" && (
+          <div className="mt-4 bg-white/[0.03] border border-white/[0.06] rounded-2xl overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-[15px] text-white/40">verified_user</span>
+                <span className="text-[11px] font-bold text-white/60">Certificado de garantía</span>
+              </div>
+              <div className="flex gap-2">
+                <a href={`/ventas/print/garantia?sale_id=${s.id}`} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.07] hover:bg-white/[0.12] border border-white/[0.1] rounded-lg text-[11px] font-bold text-white/65 transition-colors">
+                  <span className="material-symbols-outlined text-[13px]">print</span>Imprimir
+                </a>
+                <a href={`/ventas/print/garantia?sale_id=${s.id}`} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.07] hover:bg-white/[0.12] border border-white/[0.1] rounded-lg text-[11px] font-bold text-white/65 transition-colors">
+                  <span className="material-symbols-outlined text-[13px]">open_in_new</span>Abrir
+                </a>
+              </div>
+            </div>
+            <div className="flex justify-center py-5 bg-[#1a1a1c]">
+              <div className="bg-white p-4 text-[9px] text-slate-700 leading-relaxed w-80 rounded shadow-lg" style={{ fontFamily: "Inter, sans-serif" }}>
+                <div className="flex justify-between border-b border-slate-100 pb-2 mb-3">
+                  <div><p className="font-bold text-slate-900">🍏 iGreen</p><p className="text-slate-400">Los Ríos 1774</p></div>
+                  <div className="text-right"><p className="text-slate-400" style={{ fontSize: "7px" }}>CERTIFICADO DE GARANTÍA</p><p className="font-bold text-slate-900">{formatDate(s.sold_at)}</p></div>
+                </div>
+                {s.product && <div className="mb-2"><p className="font-bold text-slate-900">{s.product.brand} {s.product.model}</p>{s.product.imei && <p className="font-mono text-slate-500">{s.product.imei}</p>}</div>}
+                {s.client_name && <div className="mb-2"><p className="font-bold text-slate-900">{clientName}</p>{s.client_dni && <p className="text-slate-500">DNI {s.client_dni}</p>}</div>}
+                <div><p className="font-bold text-slate-900">{s.warranty_days} días de garantía</p>{s.warranty_until && <p className="text-slate-500">Vence: {formatDate(s.warranty_until)}</p>}</div>
+              </div>
+            </div>
+          </div>
+        )}
 
       </td>
     </tr>
