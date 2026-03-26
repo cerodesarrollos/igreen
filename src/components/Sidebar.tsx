@@ -13,6 +13,7 @@ const allVentasItems = [
   { href: "/ventas/ventas",     icon: "point_of_sale",   label: "Ventas",     adminOnly: false },
   { href: "/ventas/trade-in",   icon: "swap_horiz",      label: "Trade-in",   adminOnly: false },
   { href: "/ventas/clientes",   icon: "group",           label: "Clientes",   adminOnly: false },
+  { href: "/ventas/gastos",     icon: "payments",        label: "Gastos",     adminOnly: true  },
   { href: "/ventas/rendicion",  icon: "receipt_long",    label: "Rendición",  adminOnly: true  },
   { href: "/ventas/metricas",   icon: "bar_chart",       label: "Métricas",   adminOnly: true  },
   { href: "/ventas/publicidad", icon: "campaign",        label: "Publicidad", adminOnly: true  },
