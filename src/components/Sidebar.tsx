@@ -10,6 +10,7 @@ const allVentasItems = [
   { href: "/ventas/stock",      icon: "inventory_2",     label: "Stock",      adminOnly: false },
   { href: "/ventas/turnos",     icon: "calendar_month",  label: "Turnos",     adminOnly: false },
   { href: "/ventas/inbox",      icon: "chat_bubble",     label: "Inbox",      adminOnly: false },
+  { href: "/ventas/ventas",     icon: "point_of_sale",   label: "Ventas",     adminOnly: false },
   { href: "/ventas/trade-in",   icon: "swap_horiz",      label: "Trade-in",   adminOnly: false },
   { href: "/ventas/clientes",   icon: "group",           label: "Clientes",   adminOnly: false },
   { href: "/ventas/rendicion",  icon: "receipt_long",    label: "Rendición",  adminOnly: true  },
