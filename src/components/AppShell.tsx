@@ -13,6 +13,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
 
   const isLoginPage = pathname === "/login";
+  const isPrintPage = pathname.startsWith("/ventas/print");
 
   // Redirect a login si no hay sesión (después de cargar)
   useEffect(() => {
@@ -21,10 +22,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     }
   }, [loading, user, isLoginPage, router]);
 
-  // Login page → full screen sin shell
-  if (isLoginPage) {
+  // Login page o print → full screen sin shell, sin auth check
+  if (isLoginPage || isPrintPage) {
     return (
-      <div className="h-screen w-screen" style={{ background: "#080809" }}>
+      <div className="h-screen w-screen" style={{ background: isLoginPage ? "#080809" : "#ffffff" }}>
         {children}
       </div>
     );
