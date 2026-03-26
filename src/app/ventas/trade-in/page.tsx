@@ -102,13 +102,14 @@ export default function TradeInPage() {
 
   const fetchData = useCallback(async () => {
     setLoading(true);
+    try {
     const [pricesRes, histRes] = await Promise.all([
       supabase.from("ig_trade_in_prices").select("*").order("model"),
       supabase.from("ig_trade_ins").select("*").order("created_at", { ascending: false }),
     ]);
     setTradeInPrices((pricesRes.data || []) as TradeInPrice[]);
     setTradeIns((histRes.data || []) as TradeIn[]);
-    setLoading(false);
+    } catch { } finally { setLoading(false); }
   }, []);
 
   useEffect(() => { fetchData(); }, [fetchData]);

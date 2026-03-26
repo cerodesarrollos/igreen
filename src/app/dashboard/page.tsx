@@ -25,6 +25,7 @@ export default function DashboardPage() {
   useEffect(() => {
     async function fetchDashboard() {
       setLoading(true);
+      try {
       const now = new Date();
       const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
       const todayStr = now.toISOString().slice(0, 10);
@@ -43,7 +44,7 @@ export default function DashboardPage() {
       if (salesRes.data) setVendidosMes(salesRes.data.length);
       if (aptRes.data) setTurnosHoy(aptRes.data.length);
       if (actRes.data) setRecentActivity(actRes.data as ActivityLog[]);
-      setLoading(false);
+    } catch { } finally { setLoading(false); }
     }
     fetchDashboard();
   }, []);

@@ -350,9 +350,14 @@ export default function TurnosPage() {
 
   const fetchData = useCallback(async () => {
     setLoading(true);
-    const { data } = await supabase.from("ig_appointments").select("*").order("scheduled_at", { ascending: true });
-    setAppointments((data || []) as Appointment[]);
-    setLoading(false);
+    try {
+      const { data } = await supabase.from("ig_appointments").select("*").order("scheduled_at", { ascending: true });
+      setAppointments((data || []) as Appointment[]);
+    } catch {
+      setAppointments([]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => { fetchData(); }, [fetchData]);

@@ -552,6 +552,7 @@ export default function VentasStockPage() {
 
   const fetchData = useCallback(async () => {
     setLoading(true);
+    try {
     const [prodRes, salesRes] = await Promise.all([
       supabase.from("ig_products").select("*").order("created_at", { ascending: false }),
       supabase.from("ig_sales").select("*").order("sold_at", { ascending: false }),
@@ -564,7 +565,7 @@ export default function VentasStockPage() {
       }
     }
     if (salesRes.data) setSales(salesRes.data as Sale[]);
-    setLoading(false);
+    } catch { } finally { setLoading(false); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

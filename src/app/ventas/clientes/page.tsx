@@ -63,9 +63,10 @@ export default function ClientesPage() {
   /* ── fetch ── */
   const fetchData = useCallback(async () => {
     setLoading(true);
-    const { data } = await supabase.from("ig_clients").select("*").order("name");
-    setClients((data || []) as Client[]);
-    setLoading(false);
+    try {
+      const { data } = await supabase.from("ig_clients").select("*").order("name");
+      setClients((data || []) as Client[]);
+    } catch { setClients([]); } finally { setLoading(false); }
   }, []);
 
   useEffect(() => { fetchData(); }, [fetchData]);
