@@ -828,7 +828,7 @@ export default function VentasStockPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-40">
+      <div className="flex items-center justify-center" style={{ height: "calc(100vh - 56px)" }}>
         <div className="w-4 h-4 border border-white/20 border-t-white/60 rounded-full animate-spin" />
       </div>
     );

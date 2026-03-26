@@ -67,7 +67,7 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-32">
+      <div className="flex items-center justify-center" style={{ height: "calc(100vh - 56px)" }}>
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         <span className="ml-3 text-sm text-cool-grey">Cargando dashboard...</span>
       </div>
