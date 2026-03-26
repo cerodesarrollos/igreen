@@ -99,6 +99,8 @@ type DateFilter = "todos" | "hoy" | "semana" | "mes";
 type PaymentFilter = "todos" | "efectivo" | "transferencia" | "debito" | "credito" | "crypto";
 
 /* ───── component ───── */
+type DocPreview = "ticket" | "garantia" | null;
+
 export default function VentasPage() {
   const [sales, setSales] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(true);
@@ -106,6 +108,7 @@ export default function VentasPage() {
   const [dateFilter, setDateFilter] = useState<DateFilter>("todos");
   const [paymentFilter, setPaymentFilter] = useState<PaymentFilter>("todos");
   const [selected, setSelected] = useState<Sale | null>(null);
+  const [docPreview, setDocPreview] = useState<DocPreview>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -332,7 +335,7 @@ export default function VentasPage() {
                       return (
                         <tr
                           key={s.id}
-                          onClick={() => setSelected(selected?.id === s.id ? null : s)}
+                          onClick={() => { setSelected(selected?.id === s.id ? null : s); setDocPreview(null); }}
                           className={`cursor-pointer transition-colors border-b border-white/[0.04] last:border-0 ${
                             selected?.id === s.id
                               ? "bg-white/[0.06]"
@@ -575,113 +578,159 @@ export default function VentasPage() {
             <div className="rounded-[20px] p-px bg-gradient-to-b from-[#2a2a2e] to-[#1a1a1d]">
               <div className="rounded-[19px] bg-[#161619] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] p-6">
                 <p className="text-[10px] uppercase tracking-widest font-bold text-white/35 mb-4">Documentos</p>
-                <div className="space-y-3">
+                <div className="space-y-2.5">
 
-                  {/* Ticket */}
-                  <div className="bg-white/[0.04] rounded-2xl p-4 border border-white/[0.06]">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-xl bg-white/[0.07] flex items-center justify-center">
-                          <span className="material-symbols-outlined text-[16px] text-white/50">receipt</span>
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold text-white/80">Ticket de venta</p>
-                          <p className="text-[10px] text-white/35">Recibo + resumen</p>
-                        </div>
-                      </div>
-                      <a
-                        href={`/ventas/print/ticket?sale_id=${selected.id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.08] hover:bg-white/[0.13] border border-white/[0.1] rounded-xl text-[11px] font-bold text-white/70 transition-colors"
-                      >
-                        <span className="material-symbols-outlined text-[13px]">print</span>
-                        Imprimir
-                      </a>
+                  {/* Botón Ticket */}
+                  <button
+                    onClick={() => setDocPreview(docPreview === "ticket" ? null : "ticket")}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all text-left ${
+                      docPreview === "ticket"
+                        ? "bg-white/[0.08] border-white/[0.15]"
+                        : "bg-white/[0.04] border-white/[0.06] hover:bg-white/[0.07]"
+                    }`}
+                  >
+                    <div className="w-8 h-8 rounded-xl bg-white/[0.07] flex items-center justify-center flex-shrink-0">
+                      <span className="material-symbols-outlined text-[16px] text-white/50">receipt</span>
                     </div>
-                    {/* Mini preview */}
-                    <div className="bg-white rounded-xl p-3 font-mono text-[9px] text-slate-700 leading-relaxed overflow-hidden">
-                      <p className="text-center font-bold text-slate-900">─────────────────</p>
-                      <p className="text-center font-bold">🍏 iGreen</p>
-                      <p className="text-center text-slate-500">Los Ríos 1774, CABA</p>
-                      <p className="text-center font-bold text-slate-900">─────────────────</p>
-                      <p className="text-center font-bold">GARANTÍA + RECIBO</p>
-                      <p className="text-center text-slate-500">{formatDate(selected.sold_at)}</p>
-                      <p className="text-center font-bold text-slate-900">─────────────────</p>
-                      {selected.product && (
-                        <>
-                          <p className="font-bold">{selected.product.brand} {selected.product.model}</p>
-                          {selected.product.capacity && <p>{selected.product.capacity}{selected.product.color ? ` · ${selected.product.color}` : ""}</p>}
-                          {selected.product.imei && <p>IMEI: ••••{selected.product.imei.slice(-4)}</p>}
-                        </>
-                      )}
-                      <p className="text-center font-bold text-slate-900">─────────────────</p>
-                      {selected.client_name && <p>Cliente: {selected.client_name}</p>}
-                      <p>Garantía: {selected.warranty_days}d</p>
-                      <p className="text-center font-bold text-slate-900">─────────────────</p>
-                      <div className="flex justify-between font-bold text-slate-900">
-                        <span>TOTAL:</span>
-                        <span>{formatMoney(selected.sale_price)}</span>
-                      </div>
-                      <p>{PAYMENT_LABELS[selected.payment_method] || selected.payment_method}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold text-white/80">Ver recibo de pago</p>
+                      <p className="text-[10px] text-white/35">Ticket + resumen</p>
                     </div>
-                  </div>
+                    <span className={`material-symbols-outlined text-[16px] text-white/40 transition-transform ${docPreview === "ticket" ? "rotate-180" : ""}`}>expand_more</span>
+                  </button>
 
-                  {/* Garantía */}
-                  <div className="bg-white/[0.04] rounded-2xl p-4 border border-white/[0.06]">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-xl bg-white/[0.07] flex items-center justify-center">
-                          <span className="material-symbols-outlined text-[16px] text-white/50">verified_user</span>
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold text-white/80">Certificado de garantía</p>
-                          <p className="text-[10px] text-white/35">Documento formal A4</p>
-                        </div>
+                  {/* Preview Ticket */}
+                  {docPreview === "ticket" && (
+                    <div className="rounded-2xl overflow-hidden border border-white/[0.08]">
+                      {/* Acciones */}
+                      <div className="flex gap-2 p-3 bg-white/[0.04] border-b border-white/[0.06]">
+                        <a
+                          href={`/ventas/print/ticket?sale_id=${selected.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-white/[0.08] hover:bg-white/[0.13] border border-white/[0.1] rounded-xl text-[11px] font-bold text-white/70 transition-colors"
+                        >
+                          <span className="material-symbols-outlined text-[14px]">print</span>
+                          Imprimir
+                        </a>
+                        <a
+                          href={`/ventas/print/ticket?sale_id=${selected.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-white/[0.08] hover:bg-white/[0.13] border border-white/[0.1] rounded-xl text-[11px] font-bold text-white/70 transition-colors"
+                        >
+                          <span className="material-symbols-outlined text-[14px]">open_in_new</span>
+                          Abrir
+                        </a>
                       </div>
-                      <a
-                        href={`/ventas/print/garantia?sale_id=${selected.id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.08] hover:bg-white/[0.13] border border-white/[0.1] rounded-xl text-[11px] font-bold text-white/70 transition-colors"
-                      >
-                        <span className="material-symbols-outlined text-[13px]">print</span>
-                        Imprimir
-                      </a>
-                    </div>
-                    {/* Mini preview */}
-                    <div className="bg-white rounded-xl p-3 text-[9px] text-slate-700 leading-relaxed overflow-hidden" style={{ fontFamily: "Inter, sans-serif" }}>
-                      <div className="flex justify-between items-start border-b border-slate-200 pb-2 mb-2">
-                        <div>
-                          <p className="font-bold text-slate-900 text-[10px]">🍏 iGreen</p>
-                          <p className="text-slate-500">Los Ríos 1774, Recoleta</p>
+                      {/* Preview */}
+                      <div className="bg-white p-4 font-mono text-[9px] text-slate-700 leading-relaxed">
+                        <p className="text-center text-slate-300">─────────────────</p>
+                        <p className="text-center font-bold text-slate-900 text-[11px]">🍏 iGreen</p>
+                        <p className="text-center text-slate-500">Los Ríos 1774, CABA</p>
+                        <p className="text-center text-slate-300">─────────────────</p>
+                        <p className="text-center font-bold text-slate-900">GARANTÍA + RECIBO</p>
+                        <p className="text-center text-slate-500">{formatDate(selected.sold_at)}</p>
+                        <p className="text-center text-slate-300">─────────────────</p>
+                        {selected.product && (
+                          <>
+                            <p className="font-bold text-slate-900">{selected.product.brand} {selected.product.model}</p>
+                            {selected.product.capacity && <p>{selected.product.capacity}{selected.product.color ? ` · ${selected.product.color}` : ""}</p>}
+                            {selected.product.imei && <p>IMEI: ••••{selected.product.imei.slice(-4)}</p>}
+                          </>
+                        )}
+                        <p className="text-center text-slate-300">─────────────────</p>
+                        {selected.client_name && <p>Cliente: <span className="font-bold">{selected.client_name}</span></p>}
+                        <p>Garantía: {selected.warranty_days}d</p>
+                        <p className="text-center text-slate-300">─────────────────</p>
+                        <div className="flex justify-between font-bold text-slate-900 text-[10px] mt-1">
+                          <span>TOTAL:</span>
+                          <span>{formatMoney(selected.sale_price)}</span>
                         </div>
-                        <div className="text-right">
-                          <p className="text-slate-400 uppercase tracking-wider" style={{ fontSize: "7px" }}>Certificado de Garantía</p>
-                          <p className="font-bold text-slate-900">{formatDate(selected.sold_at)}</p>
-                        </div>
-                      </div>
-                      {selected.product && (
-                        <div className="mb-1.5">
-                          <p className="uppercase font-bold text-slate-400" style={{ fontSize: "7px", letterSpacing: "0.1em" }}>EQUIPO</p>
-                          <p className="font-bold text-slate-900">{selected.product.brand} {selected.product.model}</p>
-                          {selected.product.imei && <p>IMEI: {selected.product.imei}</p>}
-                        </div>
-                      )}
-                      {selected.client_name && (
-                        <div className="mb-1.5">
-                          <p className="uppercase font-bold text-slate-400" style={{ fontSize: "7px", letterSpacing: "0.1em" }}>CLIENTE</p>
-                          <p className="font-bold text-slate-900">{[selected.client_name, selected.client_last_name].filter(Boolean).join(" ")}</p>
-                          {selected.client_dni && <p>DNI {selected.client_dni}</p>}
-                        </div>
-                      )}
-                      <div>
-                        <p className="uppercase font-bold text-slate-400" style={{ fontSize: "7px", letterSpacing: "0.1em" }}>GARANTÍA</p>
-                        <p className="font-bold text-slate-900">{selected.warranty_days} días</p>
-                        {selected.warranty_until && <p>Vence: {formatDate(selected.warranty_until)}</p>}
+                        <p className="text-slate-600">{PAYMENT_LABELS[selected.payment_method] || selected.payment_method}</p>
+                        <p className="text-center text-slate-300 mt-1">─────────────────</p>
                       </div>
                     </div>
-                  </div>
+                  )}
+
+                  {/* Botón Garantía */}
+                  <button
+                    onClick={() => setDocPreview(docPreview === "garantia" ? null : "garantia")}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all text-left ${
+                      docPreview === "garantia"
+                        ? "bg-white/[0.08] border-white/[0.15]"
+                        : "bg-white/[0.04] border-white/[0.06] hover:bg-white/[0.07]"
+                    }`}
+                  >
+                    <div className="w-8 h-8 rounded-xl bg-white/[0.07] flex items-center justify-center flex-shrink-0">
+                      <span className="material-symbols-outlined text-[16px] text-white/50">verified_user</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold text-white/80">Ver garantía</p>
+                      <p className="text-[10px] text-white/35">Certificado formal A4</p>
+                    </div>
+                    <span className={`material-symbols-outlined text-[16px] text-white/40 transition-transform ${docPreview === "garantia" ? "rotate-180" : ""}`}>expand_more</span>
+                  </button>
+
+                  {/* Preview Garantía */}
+                  {docPreview === "garantia" && (
+                    <div className="rounded-2xl overflow-hidden border border-white/[0.08]">
+                      {/* Acciones */}
+                      <div className="flex gap-2 p-3 bg-white/[0.04] border-b border-white/[0.06]">
+                        <a
+                          href={`/ventas/print/garantia?sale_id=${selected.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-white/[0.08] hover:bg-white/[0.13] border border-white/[0.1] rounded-xl text-[11px] font-bold text-white/70 transition-colors"
+                        >
+                          <span className="material-symbols-outlined text-[14px]">print</span>
+                          Imprimir
+                        </a>
+                        <a
+                          href={`/ventas/print/garantia?sale_id=${selected.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-white/[0.08] hover:bg-white/[0.13] border border-white/[0.1] rounded-xl text-[11px] font-bold text-white/70 transition-colors"
+                        >
+                          <span className="material-symbols-outlined text-[14px]">open_in_new</span>
+                          Abrir
+                        </a>
+                      </div>
+                      {/* Preview */}
+                      <div className="bg-white p-4 text-[9px] text-slate-700 leading-relaxed" style={{ fontFamily: "Inter, sans-serif" }}>
+                        <div className="flex justify-between items-start border-b border-slate-100 pb-2 mb-3">
+                          <div>
+                            <p className="font-bold text-slate-900 text-[11px]">🍏 iGreen</p>
+                            <p className="text-slate-400">Los Ríos 1774, Recoleta</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-slate-400 uppercase tracking-wider" style={{ fontSize: "7px" }}>Certificado de Garantía</p>
+                            <p className="font-bold text-slate-900 text-[10px]">{formatDate(selected.sold_at)}</p>
+                          </div>
+                        </div>
+                        {selected.product && (
+                          <div className="mb-2">
+                            <p className="uppercase font-bold text-slate-400 mb-0.5" style={{ fontSize: "7px", letterSpacing: "0.12em" }}>EQUIPO</p>
+                            <p className="font-bold text-slate-900 text-[10px]">{selected.product.brand} {selected.product.model}</p>
+                            {selected.product.capacity && <p className="text-slate-500">{selected.product.capacity}{selected.product.color ? ` · ${selected.product.color}` : ""}</p>}
+                            {selected.product.imei && <p className="text-slate-500 font-mono">{selected.product.imei}</p>}
+                          </div>
+                        )}
+                        {selected.client_name && (
+                          <div className="mb-2">
+                            <p className="uppercase font-bold text-slate-400 mb-0.5" style={{ fontSize: "7px", letterSpacing: "0.12em" }}>CLIENTE</p>
+                            <p className="font-bold text-slate-900 text-[10px]">{[selected.client_name, selected.client_last_name].filter(Boolean).join(" ")}</p>
+                            {selected.client_dni && <p className="text-slate-500">DNI {selected.client_dni}</p>}
+                          </div>
+                        )}
+                        <div>
+                          <p className="uppercase font-bold text-slate-400 mb-0.5" style={{ fontSize: "7px", letterSpacing: "0.12em" }}>GARANTÍA</p>
+                          <p className="font-bold text-slate-900 text-[10px]">{selected.warranty_days} días</p>
+                          {selected.warranty_until && <p className="text-slate-500">Vence: {formatDate(selected.warranty_until)}</p>}
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                 </div>
               </div>
