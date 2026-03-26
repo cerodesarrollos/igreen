@@ -43,58 +43,55 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .select("*")
         .eq("auth_id", authId)
         .single();
-      return data as IgUser | null;
+      if (data) setIgUser(data as IgUser);
     } catch {
-      return null;
+      // silencioso — igUser queda null
     }
   }
 
   useEffect(() => {
-    let settled = false;
-
-    function settle() {
-      if (!settled) {
-        settled = true;
-        setLoading(false);
+    // Intentar leer sesión de localStorage directamente (sin red)
+    // El key de Supabase vanilla es sb-<ref>-auth-token
+    try {
+      const raw = localStorage.getItem("sb-iglfukxthrmprnqergbz-auth-token");
+      if (raw) {
+        const stored = JSON.parse(raw);
+        const sessionUser = stored?.user ?? null;
+        const expiresAt = stored?.expires_at ?? 0;
+        if (sessionUser && expiresAt > Date.now() / 1000) {
+          // Sesión válida en localStorage — no necesitamos red para mostrar el shell
+          setUser(sessionUser);
+          setLoading(false);
+          // Fetch igUser en background, sin bloquear
+          fetchIgUser(sessionUser.id);
+          return;
+        }
       }
+    } catch {
+      // localStorage no disponible o JSON inválido
     }
 
-    // Timeout de seguridad: si en 4 segundos no resolvió, forzamos loading=false
-    const timeout = setTimeout(settle, 4000);
+    // Sin sesión en localStorage → loading=false inmediato, ir a login
+    setLoading(false);
 
-    // getSession() lee desde localStorage inmediatamente si el token es válido.
-    // No espera red — es la forma más rápida de saber el estado inicial.
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    // onAuthStateChange maneja login/logout y token refresh posterior
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
-      if (session?.user) {
-        const iu = await fetchIgUser(session.user.id);
-        setIgUser(iu);
-      } else {
+      if (!session?.user) {
         setIgUser(null);
-      }
-      settle();
-    }).catch(() => settle());
-
-    // onAuthStateChange maneja cambios posteriores (login, logout, token refresh)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        const iu = await fetchIgUser(session.user.id);
-        setIgUser(iu);
       } else {
-        setIgUser(null);
+        fetchIgUser(session.user.id);
       }
-      settle();
+      setLoading(false);
     });
 
-    return () => {
-      clearTimeout(timeout);
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    setUser(null);
+    setIgUser(null);
   };
 
   return (
