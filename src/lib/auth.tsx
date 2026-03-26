@@ -46,12 +46,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
+    // Timeout de seguridad: si getSession no responde en 5s, forzar loading=false
+    const timeout = setTimeout(() => setLoading(false), 5000);
+
     supabase.auth.getSession().then(async ({ data: { session } }) => {
+      clearTimeout(timeout);
       setUser(session?.user ?? null);
       if (session?.user) {
         const iu = await fetchIgUser(session.user.id);
         setIgUser(iu);
       }
+      setLoading(false);
+    }).catch(() => {
+      clearTimeout(timeout);
       setLoading(false);
     });
 
@@ -65,7 +72,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      clearTimeout(timeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {
