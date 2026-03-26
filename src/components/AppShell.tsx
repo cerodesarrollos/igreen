@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
@@ -9,7 +9,6 @@ import CursorGlow from "@/components/CursorGlow";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const router = useRouter();
   const { user, loading } = useAuth();
 
   const isLoginPage = pathname === "/login";
@@ -17,10 +16,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   // Redirect a login si no hay sesión (después de cargar)
   useEffect(() => {
-    if (!loading && !user && !isLoginPage) {
-      router.replace("/login");
+    if (!loading && !user && !isLoginPage && !isPrintPage) {
+      window.location.href = "/login";
     }
-  }, [loading, user, isLoginPage, router]);
+  }, [loading, user, isLoginPage, isPrintPage]);
 
   // Login page o print → full screen sin shell, sin auth check
   if (isLoginPage || isPrintPage) {
