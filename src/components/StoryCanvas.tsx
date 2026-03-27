@@ -81,17 +81,22 @@ export default function StoryCanvas({
       const PHOTO_H = PHOTO_BOT - PHOTO_TOP;
 
       if (photo) {
+        // contain: mostrar imagen completa sin recortar, centrada
         const imgRatio = photo.naturalWidth / photo.naturalHeight;
         const targetRatio = W / PHOTO_H;
-        let sx = 0, sy = 0, sw = photo.naturalWidth, sh = photo.naturalHeight;
+        let dw, dh, dx, dy;
         if (imgRatio > targetRatio) {
-          sw = sh * targetRatio;
-          sx = (photo.naturalWidth - sw) / 2;
+          dw = W;
+          dh = W / imgRatio;
+          dx = 0;
+          dy = PHOTO_TOP + (PHOTO_H - dh) / 2;
         } else {
-          sh = sw / targetRatio;
-          sy = (photo.naturalHeight - sh) / 2;
+          dh = PHOTO_H;
+          dw = PHOTO_H * imgRatio;
+          dx = (W - dw) / 2;
+          dy = PHOTO_TOP;
         }
-        ctx.drawImage(photo, sx, sy, sw, sh, 0, PHOTO_TOP, W, PHOTO_H);
+        ctx.drawImage(photo, dx, dy, dw, dh);
 
         // Gradient top over photo (for logo)
         const topGrad = ctx.createLinearGradient(0, PHOTO_TOP, 0, PHOTO_TOP + 300);
