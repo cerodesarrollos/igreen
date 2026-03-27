@@ -370,8 +370,7 @@ function TabPublicar({
                   {/* Preview — ocupa todo el alto disponible */}
                   <div className="flex-1 min-w-0">
                     <StoryCanvas imageUrl={imageUrl} model={selectedProduct.model} capacity={selectedProduct.capacity}
-                      color={selectedProduct.color} condition={selectedProduct.condition}
-                      batteryHealth={selectedProduct.battery_health} price={selectedProduct.sale_price} isNew={selectedProduct.is_new} />
+                      price={selectedProduct.sale_price} />
                   </div>
                   {/* Panel derecho — foto + info */}
                   <div className="w-52 shrink-0 space-y-3">
