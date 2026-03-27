@@ -77,7 +77,7 @@ export default function StoryCanvas({
 
       // ── Product photo area (center, full width, cropped) ──
       const PHOTO_TOP = 200;
-      const PHOTO_BOT = H - 320;
+      const PHOTO_BOT = H - 520;
       const PHOTO_H = PHOTO_BOT - PHOTO_TOP;
 
       if (photo) {
@@ -187,7 +187,7 @@ export default function StoryCanvas({
       ctx.restore();
 
       // Specs (capacity · color)
-      let specsY = modelY + 55;
+      let specsY = modelY + 60;
       const specs = [capacity, color].filter(Boolean).join("  ·  ");
       if (specs) {
         ctx.save();
@@ -197,7 +197,7 @@ export default function StoryCanvas({
         ctx.textBaseline = "alphabetic";
         ctx.fillText(specs, PAD, specsY);
         ctx.restore();
-        specsY += 48;
+        specsY += 52;
       }
 
       // Battery
@@ -209,23 +209,25 @@ export default function StoryCanvas({
         ctx.textBaseline = "alphabetic";
         ctx.fillText(`🔋 Batería ${batteryHealth}%`, PAD, specsY);
         ctx.restore();
-        specsY += 44;
+        specsY += 52;
       }
 
-      // Price — gold, right side
+      specsY += 20;
+
+      // Price — gold, left side, below specs
       if (price) {
         const priceText = `USD ${price.toLocaleString()}`;
         ctx.save();
-        ctx.font = "100 110px -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif";
+        ctx.font = "200 96px -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif";
         ctx.fillStyle = GOLD;
-        ctx.textAlign = "right";
+        ctx.textAlign = "left";
         ctx.textBaseline = "alphabetic";
-        ctx.fillText(priceText, W - PAD, modelY + 10);
+        ctx.fillText(priceText, PAD, specsY);
         ctx.restore();
       }
 
       // Divider
-      const dividerY = H - 210;
+      const dividerY = H - 240;
       ctx.save();
       ctx.strokeStyle = "rgba(255,255,255,0.10)";
       ctx.lineWidth = 1;
