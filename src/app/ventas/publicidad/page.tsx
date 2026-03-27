@@ -307,7 +307,7 @@ function TabPublicar({
       {/* Modal */}
       {showModal && selectedProduct && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#161619] border border-white/[0.10] rounded-2xl shadow-2xl w-full max-w-2xl max-h-[95vh] overflow-y-auto">
+          <div className="bg-[#161619] border border-white/[0.10] rounded-2xl shadow-2xl w-full max-w-4xl max-h-[95vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-start mb-5">
                 <div>
@@ -366,23 +366,37 @@ function TabPublicar({
               )}
 
               {modalTab === "historia" && (
-                <div className="space-y-4">
-                  {!imageUrl && (
-                    <PhotoUploader productId={selectedProduct.id} currentPhotos={selectedProduct.photos || []}
-                      onPhotosChange={photos => { setImageUrl(photos[0] || ""); setSelectedProduct({ ...selectedProduct, photos }); }} />
-                  )}
-                  {imageUrl && (
-                    <div className="flex items-center gap-2 p-2 bg-white/[0.04] border border-white/[0.07] rounded-xl">
-                      <img src={imageUrl} alt="" className="w-10 h-10 object-cover rounded-lg shrink-0" /> {/* eslint-disable-line @next/next/no-img-element */}
-                      <p className="text-[11px] text-white/45 flex-1 truncate">{selectedProduct.model}</p>
-                      <button onClick={() => setImageUrl("")} className="p-1 hover:bg-white/[0.07] rounded-lg">
-                        <span className="material-symbols-outlined text-[14px] text-white/30">close</span>
-                      </button>
+                <div className="flex gap-5">
+                  {/* Preview — ocupa todo el alto disponible */}
+                  <div className="flex-1 min-w-0">
+                    <StoryCanvas imageUrl={imageUrl} model={selectedProduct.model} capacity={selectedProduct.capacity}
+                      color={selectedProduct.color} condition={selectedProduct.condition}
+                      batteryHealth={selectedProduct.battery_health} price={selectedProduct.sale_price} isNew={selectedProduct.is_new} />
+                  </div>
+                  {/* Panel derecho — foto + info */}
+                  <div className="w-52 shrink-0 space-y-3">
+                    {!imageUrl ? (
+                      <PhotoUploader productId={selectedProduct.id} currentPhotos={selectedProduct.photos || []}
+                        onPhotosChange={photos => { setImageUrl(photos[0] || ""); setSelectedProduct({ ...selectedProduct, photos }); }} />
+                    ) : (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 p-2 bg-white/[0.04] border border-white/[0.07] rounded-xl">
+                          <img src={imageUrl} alt="" className="w-10 h-10 object-cover rounded-lg shrink-0" /> {/* eslint-disable-line @next/next/no-img-element */}
+                          <p className="text-[11px] text-white/45 flex-1 truncate">{selectedProduct.model}</p>
+                          <button onClick={() => setImageUrl("")} className="p-1 hover:bg-white/[0.07] rounded-lg">
+                            <span className="material-symbols-outlined text-[14px] text-white/30">close</span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                    <div className="p-3 bg-white/[0.03] border border-white/[0.06] rounded-xl space-y-1.5">
+                      <p className="text-[10px] uppercase tracking-widest text-white/30">Datos del equipo</p>
+                      <p className="text-[11px] text-white/60">{selectedProduct.model} {selectedProduct.capacity}</p>
+                      {selectedProduct.color && <p className="text-[11px] text-white/40">{selectedProduct.color}</p>}
+                      {selectedProduct.battery_health && <p className="text-[11px] text-white/40">🔋 {selectedProduct.battery_health}%</p>}
+                      {selectedProduct.sale_price && <p className="text-[12px] font-semibold text-[#C9A84C]">USD {selectedProduct.sale_price.toLocaleString()}</p>}
                     </div>
-                  )}
-                  <StoryCanvas imageUrl={imageUrl} model={selectedProduct.model} capacity={selectedProduct.capacity}
-                    color={selectedProduct.color} condition={selectedProduct.condition}
-                    batteryHealth={selectedProduct.battery_health} price={selectedProduct.sale_price} isNew={selectedProduct.is_new} />
+                  </div>
                 </div>
               )}
             </div>
