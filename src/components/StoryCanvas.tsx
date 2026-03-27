@@ -9,8 +9,8 @@ interface StoryCanvasProps {
   price?: number | null;
 }
 
-const STORY_W = 1080;
-const STORY_H = 1920;
+const W = 1080;
+const H = 1920;
 const ADDRESS = "Las Heras 1774, Recoleta";
 const GOLD = "#C9A84C";
 const BG = "#080808";
@@ -43,8 +43,8 @@ export default function StoryCanvas({ imageUrl, model, capacity, price }: StoryC
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    canvas.width = STORY_W;
-    canvas.height = STORY_H;
+    canvas.width = W;
+    canvas.height = H;
 
     const photo = new Image();
     photo.crossOrigin = "anonymous";
@@ -53,58 +53,47 @@ export default function StoryCanvas({ imageUrl, model, capacity, price }: StoryC
     photo.src = imageUrl;
 
     function draw(ctx: CanvasRenderingContext2D, photo: HTMLImageElement | null) {
-      const W = STORY_W, H = STORY_H;
-
-      // ── Fondo negro total ──
+      // ── Fondo negro ──
       ctx.fillStyle = BG;
       ctx.fillRect(0, 0, W, H);
 
-      // ── Zonas ──
-      const LOGO_ZONE_H = 180;       // arriba: logo
-      const BOTTOM_ZONE_H = 420;     // abajo: info
-      const PHOTO_TOP = LOGO_ZONE_H;
-      const PHOTO_BOT = H - BOTTOM_ZONE_H;
-      const PHOTO_H = PHOTO_BOT - PHOTO_TOP;
-
-      // ── Foto: contain, centrada ──
+      // ── Foto full bleed (cover) ──
       if (photo) {
         const imgRatio = photo.naturalWidth / photo.naturalHeight;
-        const zoneRatio = W / PHOTO_H;
-        let dw, dh, dx, dy;
-        if (imgRatio > zoneRatio) {
-          dw = W; dh = W / imgRatio;
-          dx = 0; dy = PHOTO_TOP + (PHOTO_H - dh) / 2;
+        const canvasRatio = W / H;
+        let sx = 0, sy = 0, sw = photo.naturalWidth, sh = photo.naturalHeight;
+        if (imgRatio > canvasRatio) {
+          // más ancha → recortar lados
+          sw = sh * canvasRatio;
+          sx = (photo.naturalWidth - sw) / 2;
         } else {
-          dh = PHOTO_H; dw = PHOTO_H * imgRatio;
-          dx = (W - dw) / 2; dy = PHOTO_TOP;
+          // más alta → recortar arriba/abajo
+          sh = sw / canvasRatio;
+          sy = (photo.naturalHeight - sh) / 2;
         }
-        ctx.drawImage(photo, dx, dy, dw, dh);
+        ctx.drawImage(photo, sx, sy, sw, sh, 0, 0, W, H);
       }
 
-      // Gradiente suave foto→negro arriba
-      const topGrad = ctx.createLinearGradient(0, PHOTO_TOP, 0, PHOTO_TOP + 160);
-      topGrad.addColorStop(0, "rgba(8,8,8,0.85)");
+      // ── Gradiente oscuro arriba (logo) ──
+      const topGrad = ctx.createLinearGradient(0, 0, 0, 340);
+      topGrad.addColorStop(0, "rgba(8,8,8,0.90)");
       topGrad.addColorStop(1, "rgba(8,8,8,0)");
       ctx.fillStyle = topGrad;
-      ctx.fillRect(0, PHOTO_TOP, W, 160);
+      ctx.fillRect(0, 0, W, 340);
 
-      // Gradiente suave foto→negro abajo
-      const botGrad = ctx.createLinearGradient(0, PHOTO_BOT - 200, 0, PHOTO_BOT);
+      // ── Gradiente oscuro abajo (texto) ──
+      const botGrad = ctx.createLinearGradient(0, H - 680, 0, H);
       botGrad.addColorStop(0, "rgba(8,8,8,0)");
+      botGrad.addColorStop(0.35, "rgba(8,8,8,0.82)");
       botGrad.addColorStop(1, "rgba(8,8,8,1)");
       ctx.fillStyle = botGrad;
-      ctx.fillRect(0, PHOTO_BOT - 200, W, 200);
-
-      // Panel inferior sólido
-      ctx.fillStyle = BG;
-      ctx.fillRect(0, PHOTO_BOT, W, H - PHOTO_BOT);
+      ctx.fillRect(0, H - 680, W, 680);
 
       // ─────────────────────────────────────────
-      // LOGO ZONE — "iGreen" + Apple Premium Reseller
+      // LOGO — arriba izquierda
       // ─────────────────────────────────────────
-      const LOGO_CY = LOGO_ZONE_H / 2 + 8;
+      const LOGO_CY = 112;
 
-      // Wordmark "iGreen"
       ctx.save();
       ctx.font = "300 80px -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif";
       ctx.fillStyle = "#ffffff";
@@ -113,54 +102,53 @@ export default function StoryCanvas({ imageUrl, model, capacity, price }: StoryC
       ctx.fillText("iGreen", PAD, LOGO_CY);
       ctx.restore();
 
-      // Separator
-      ctx.fillStyle = "rgba(255,255,255,0.18)";
-      ctx.fillRect(PAD + 208, LOGO_CY - 32, 1.5, 64);
+      // Separador vertical
+      ctx.fillStyle = "rgba(255,255,255,0.20)";
+      ctx.fillRect(PAD + 212, LOGO_CY - 32, 1.5, 64);
 
-      // "Apple Premium Reseller" pequeño
+      // "Apple Premium Reseller"
       ctx.save();
       ctx.font = "400 22px -apple-system, sans-serif";
-      ctx.fillStyle = "rgba(255,255,255,0.42)";
+      ctx.fillStyle = "rgba(255,255,255,0.44)";
       ctx.textAlign = "left";
       ctx.textBaseline = "middle";
-      ctx.fillText("Apple Premium", PAD + 226, LOGO_CY - 14);
-      ctx.fillText("Reseller", PAD + 226, LOGO_CY + 14);
+      ctx.fillText("Apple Premium", PAD + 230, LOGO_CY - 14);
+      ctx.fillText("Reseller", PAD + 230, LOGO_CY + 14);
       ctx.restore();
 
-      // Línea gold debajo del logo
+      // Línea gold bajo logo
       const lineGrad = ctx.createLinearGradient(PAD, 0, PAD + 380, 0);
       lineGrad.addColorStop(0, GOLD);
       lineGrad.addColorStop(1, "rgba(201,168,76,0)");
       ctx.fillStyle = lineGrad;
-      ctx.fillRect(PAD, LOGO_CY + 44, 380, 2);
+      ctx.fillRect(PAD, LOGO_CY + 50, 380, 2);
 
       // ─────────────────────────────────────────
-      // BOTTOM ZONE
+      // BOTTOM — modelo, precio, dirección, botón
       // ─────────────────────────────────────────
-      const INFO_Y = PHOTO_BOT + 30;
-
-      // Modelo + GB
       const modelCapacity = capacity ? `${model} ${capacity}` : model;
-      ctx.save();
-      ctx.font = "200 90px -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif";
-      ctx.fillStyle = "#ffffff";
-      ctx.textAlign = "left";
-      ctx.textBaseline = "alphabetic";
 
-      // Si el texto es muy largo, reducir font
-      let fontSize = 90;
-      while (ctx.measureText(modelCapacity).width > W - PAD * 2 - 20 && fontSize > 52) {
+      // Medir y ajustar font modelo
+      let fontSize = 100;
+      ctx.font = `200 ${fontSize}px -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif`;
+      while (ctx.measureText(modelCapacity).width > W - PAD * 2 && fontSize > 52) {
         fontSize -= 4;
         ctx.font = `200 ${fontSize}px -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif`;
       }
-      ctx.fillText(modelCapacity, PAD, INFO_Y + fontSize);
+
+      const modelY = H - 490;
+      ctx.save();
+      ctx.fillStyle = "#ffffff";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "alphabetic";
+      ctx.fillText(modelCapacity, PAD, modelY);
       ctx.restore();
 
-      // Precio — gold
-      const priceY = INFO_Y + fontSize + 60;
+      // Precio
+      const priceY = modelY + 110;
       if (price) {
         ctx.save();
-        ctx.font = `100 110px -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif`;
+        ctx.font = "100 118px -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif";
         ctx.fillStyle = GOLD;
         ctx.textAlign = "left";
         ctx.textBaseline = "alphabetic";
@@ -168,31 +156,33 @@ export default function StoryCanvas({ imageUrl, model, capacity, price }: StoryC
         ctx.restore();
       }
 
-      // Dirección
-      const addrY = H - 210;
-      ctx.save();
-      ctx.strokeStyle = "rgba(255,255,255,0.08)";
+      // Separador
+      const sepY = H - 252;
+      ctx.strokeStyle = "rgba(255,255,255,0.10)";
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(PAD, addrY - 20);
-      ctx.lineTo(W - PAD, addrY - 20);
+      ctx.moveTo(PAD, sepY);
+      ctx.lineTo(W - PAD, sepY);
       ctx.stroke();
+
+      // Dirección + handle
+      ctx.save();
       ctx.font = "300 26px -apple-system, sans-serif";
-      ctx.fillStyle = "rgba(255,255,255,0.28)";
+      ctx.fillStyle = "rgba(255,255,255,0.35)";
       ctx.textAlign = "left";
       ctx.textBaseline = "middle";
-      ctx.fillText(`📍 ${ADDRESS}  ·  @igreen.recoleta`, PAD, addrY + 14);
+      ctx.fillText(`📍 ${ADDRESS}  ·  @igreen.recoleta`, PAD, sepY + 30);
       ctx.restore();
 
       // Botón ESCRIBINOS
-      const btnY = H - 154;
-      const btnW = 360;
-      const btnH = 72;
+      const btnY = H - 158;
+      const btnW = 380;
+      const btnH = 76;
       ctx.save();
       roundRect(ctx, PAD, btnY, btnW, btnH, 6);
       ctx.fillStyle = GOLD;
       ctx.fill();
-      ctx.font = "700 26px -apple-system, sans-serif";
+      ctx.font = "700 28px -apple-system, sans-serif";
       ctx.fillStyle = BG;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
@@ -214,7 +204,7 @@ export default function StoryCanvas({ imageUrl, model, capacity, price }: StoryC
 
   return (
     <div className="flex flex-col items-center gap-4 h-full">
-      <div className="relative w-full flex-1">
+      <div className="relative w-full flex-1" style={{ aspectRatio: "9/16" }}>
         <canvas
           ref={canvasRef}
           className="w-full h-full rounded-xl object-contain"
