@@ -77,7 +77,7 @@ export default function StoryCanvas({
 
       // ── Product photo area (center, full width, cropped) ──
       const PHOTO_TOP = 200;
-      const PHOTO_BOT = H - 520;
+      const PHOTO_BOT = H - 600;
       const PHOTO_H = PHOTO_BOT - PHOTO_TOP;
 
       if (photo) {
@@ -182,7 +182,7 @@ export default function StoryCanvas({
       }
 
       // Model name — large
-      const modelY = INFO_Y + (condText ? 80 : 10);
+      const modelY = INFO_Y + (condText ? 100 : 10);
       ctx.save();
       ctx.font = "200 88px -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif";
       ctx.fillStyle = "#ffffff";
