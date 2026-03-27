@@ -46,13 +46,20 @@ export default function StoryCanvas({ imageUrl, model, capacity, price }: StoryC
     canvas.width = W;
     canvas.height = H;
 
+    const logo = new Image();
+    logo.src = "/logo-igreen.jpg";
+
     const photo = new Image();
     photo.crossOrigin = "anonymous";
-    photo.onload = () => draw(ctx, photo);
-    photo.onerror = () => draw(ctx, null);
+    photo.onload = () => {
+      // esperar logo también
+      if (logo.complete) draw(ctx, photo, logo);
+      else { logo.onload = () => draw(ctx, photo, logo); logo.onerror = () => draw(ctx, photo, null); }
+    };
+    photo.onerror = () => draw(ctx, null, null);
     photo.src = imageUrl;
 
-    function draw(ctx: CanvasRenderingContext2D, photo: HTMLImageElement | null) {
+    function draw(ctx: CanvasRenderingContext2D, photo: HTMLImageElement | null, logo: HTMLImageElement | null) {
       // ── Fondo negro ──
       ctx.fillStyle = BG;
       ctx.fillRect(0, 0, W, H);
@@ -90,38 +97,30 @@ export default function StoryCanvas({ imageUrl, model, capacity, price }: StoryC
       ctx.fillRect(0, H - 680, W, 680);
 
       // ─────────────────────────────────────────
-      // LOGO — arriba izquierda
+      // LOGO — arriba centrado, invertido a blanco
       // ─────────────────────────────────────────
-      const LOGO_CY = 112;
+      if (logo) {
+        const LOGO_TARGET_W = 600;
+        const logoRatio = logo.naturalWidth / logo.naturalHeight;
+        const LOGO_TARGET_H = LOGO_TARGET_W / logoRatio;
+        const logoX = (W - LOGO_TARGET_W) / 2;
+        const logoY = 60;
 
-      ctx.save();
-      ctx.font = "300 80px -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif";
-      ctx.fillStyle = "#ffffff";
-      ctx.textAlign = "left";
-      ctx.textBaseline = "middle";
-      ctx.fillText("iGreen", PAD, LOGO_CY);
-      ctx.restore();
+        // Dibujar logo en off-screen para invertir colores (negro→blanco)
+        const off = document.createElement("canvas");
+        off.width = LOGO_TARGET_W;
+        off.height = LOGO_TARGET_H;
+        const offCtx = off.getContext("2d")!;
+        offCtx.drawImage(logo, 0, 0, LOGO_TARGET_W, LOGO_TARGET_H);
+        offCtx.globalCompositeOperation = "difference";
+        offCtx.fillStyle = "white";
+        offCtx.fillRect(0, 0, LOGO_TARGET_W, LOGO_TARGET_H);
 
-      // Separador vertical
-      ctx.fillStyle = "rgba(255,255,255,0.20)";
-      ctx.fillRect(PAD + 212, LOGO_CY - 32, 1.5, 64);
-
-      // "Apple Premium Reseller"
-      ctx.save();
-      ctx.font = "400 22px -apple-system, sans-serif";
-      ctx.fillStyle = "rgba(255,255,255,0.44)";
-      ctx.textAlign = "left";
-      ctx.textBaseline = "middle";
-      ctx.fillText("Apple Premium", PAD + 230, LOGO_CY - 14);
-      ctx.fillText("Reseller", PAD + 230, LOGO_CY + 14);
-      ctx.restore();
-
-      // Línea gold bajo logo
-      const lineGrad = ctx.createLinearGradient(PAD, 0, PAD + 380, 0);
-      lineGrad.addColorStop(0, GOLD);
-      lineGrad.addColorStop(1, "rgba(201,168,76,0)");
-      ctx.fillStyle = lineGrad;
-      ctx.fillRect(PAD, LOGO_CY + 50, 380, 2);
+        ctx.save();
+        ctx.globalAlpha = 0.92;
+        ctx.drawImage(off, logoX, logoY, LOGO_TARGET_W, LOGO_TARGET_H);
+        ctx.restore();
+      }
 
       // ─────────────────────────────────────────
       // BOTTOM — modelo, precio, dirección, botón
