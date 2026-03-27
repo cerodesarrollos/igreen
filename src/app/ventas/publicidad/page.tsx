@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
-import StoryCanvas from "@/components/StoryCanvas";
+import StoryCanvas, { StoryOptions } from "@/components/StoryCanvas";
 import PhotoUploader from "@/components/PhotoUploader";
 
 /* ─── types ─── */
@@ -114,13 +114,26 @@ function TabPublicar({
   const [publishing, setPublishing] = useState(false);
   const [publishError, setPublishError] = useState("");
   const [modalTab, setModalTab] = useState<"post" | "historia">("post");
+  const [formatStep, setFormatStep] = useState<"elegir" | "feed" | "story" | "reel" | null>(null);
+  const [storyOptions, setStoryOptions] = useState<StoryOptions>({
+    showLogo: true, showModel: true, showPrice: true, showAddress: true, showButton: true,
+    customModel: "", customPrice: "", customAddress: "Las Heras 1774, Recoleta · @igreen.recoleta",
+    customButton: "ESCRIBINOS →",
+  });
 
   const pendingPosts  = posts.filter(p => p.status === "borrador");
   const publishedPosts = posts.filter(p => p.status === "publicado");
 
   function openModal(p: Product) {
     setSelectedProduct(p); setCaption(buildCaption(p));
-    setImageUrl(p.photos?.[0] || ""); setPublishError(""); setModalTab("post"); setShowModal(true);
+    setImageUrl(p.photos?.[0] || ""); setPublishError(""); setModalTab("post");
+    setFormatStep("elegir");
+    setStoryOptions(prev => ({
+      ...prev,
+      customModel: `${p.model}${p.capacity ? ` ${p.capacity}` : ""}`,
+      customPrice: p.sale_price ? `USD ${p.sale_price.toLocaleString()}` : "",
+    }));
+    setShowModal(true);
   }
 
   async function handlePublish() {
@@ -304,101 +317,192 @@ function TabPublicar({
         </GlassCard>
       </div>
 
-      {/* Modal */}
+      {/* Modal — Crear publicación */}
       {showModal && selectedProduct && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#161619] border border-white/[0.10] rounded-2xl shadow-2xl w-full max-w-4xl max-h-[95vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-start mb-5">
-                <div>
-                  <h3 className="text-base font-medium text-white/90">Publicar en Instagram</h3>
-                  <p className="text-[12px] text-white/40 mt-0.5">{selectedProduct.model} {selectedProduct.capacity}</p>
-                </div>
-                <button onClick={() => setShowModal(false)} className="p-1 hover:bg-white/[0.07] rounded-lg transition-colors">
-                  <span className="material-symbols-outlined text-white/35 text-[20px]">close</span>
-                </button>
-              </div>
+        <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50 p-4">
+          <div className={`bg-[#0f0f12] border border-white/[0.09] rounded-2xl shadow-2xl w-full overflow-hidden transition-all
+            ${formatStep === "story" ? "max-w-5xl h-[92vh]" : "max-w-lg"}`}>
 
-              <div className="flex gap-1 p-1 bg-white/[0.04] border border-white/[0.07] rounded-xl mb-5">
-                {(["post", "historia"] as const).map(tab => (
-                  <button key={tab} onClick={() => setModalTab(tab)}
-                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[11px] font-medium transition-all ${modalTab === tab ? "bg-white/[0.10] border border-white/[0.12] text-white/85" : "text-white/35 hover:text-white/55"}`}>
-                    <span className="material-symbols-outlined text-[14px]">{tab === "post" ? "image" : "auto_awesome"}</span>
-                    {tab === "post" ? "Post Feed" : "Historia"}
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.07]">
+              <div className="flex items-center gap-3">
+                {formatStep !== "elegir" && (
+                  <button onClick={() => setFormatStep("elegir")} className="p-1 hover:bg-white/[0.07] rounded-lg transition-colors">
+                    <span className="material-symbols-outlined text-white/35 text-[18px]">arrow_back</span>
                   </button>
-                ))}
+                )}
+                <div>
+                  <h3 className="text-sm font-semibold text-white/90">Crear publicación</h3>
+                  <p className="text-[11px] text-white/35 mt-0.5">{selectedProduct.model} {selectedProduct.capacity}</p>
+                </div>
               </div>
+              <button onClick={() => setShowModal(false)} className="p-1.5 hover:bg-white/[0.07] rounded-lg transition-colors">
+                <span className="material-symbols-outlined text-white/35 text-[18px]">close</span>
+              </button>
+            </div>
 
-              {modalTab === "post" && (
-                <>
-                  <div className="mb-4">
-                    {imageUrl
-                      ? <div className="relative group">
-                          <img src={imageUrl} alt="Preview" className="w-full aspect-square object-cover rounded-xl" /> {/* eslint-disable-line @next/next/no-img-element */}
+            {/* Paso 1: Elegir formato */}
+            {formatStep === "elegir" && (
+              <div className="p-6">
+                <p className="text-[10px] uppercase tracking-[0.16em] text-white/35 mb-4">Elegí el formato</p>
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { id: "feed" as const,  icon: "grid_view",      label: "Feed",  desc: "Post cuadrado",       soon: false },
+                    { id: "story" as const, icon: "smartphone",     label: "Story", desc: "1080 × 1920px",       soon: false },
+                    { id: "reel" as const,  icon: "play_circle",    label: "Reel",  desc: "Video corto",         soon: true  },
+                  ].map(f => (
+                    <button key={f.id} onClick={() => !f.soon && setFormatStep(f.id)} disabled={f.soon}
+                      className={`relative flex flex-col items-center gap-3 p-5 rounded-2xl border transition-all text-center
+                        ${f.soon ? "opacity-35 cursor-not-allowed border-white/[0.06] bg-white/[0.02]"
+                          : "border-white/[0.09] bg-white/[0.03] hover:bg-white/[0.07] hover:border-white/[0.16] cursor-pointer"}`}>
+                      {f.soon && <span className="absolute top-2 right-2 text-[9px] bg-white/[0.08] text-white/35 px-1.5 py-0.5 rounded-full">Pronto</span>}
+                      <span className="material-symbols-outlined text-[32px] text-white/50">{f.icon}</span>
+                      <div>
+                        <p className="text-sm font-semibold text-white/80">{f.label}</p>
+                        <p className="text-[10px] text-white/35 mt-0.5">{f.desc}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Paso 2: Story — dos columnas */}
+            {formatStep === "story" && (
+              <div className="flex h-[calc(92vh-65px)] overflow-hidden">
+
+                {/* Columna izquierda — controles */}
+                <div className="w-80 shrink-0 border-r border-white/[0.07] flex flex-col overflow-hidden">
+                  <div className="flex-1 overflow-y-auto p-5 space-y-5">
+
+                    {/* Foto */}
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.14em] text-white/35 mb-2">Foto del equipo</p>
+                      {imageUrl ? (
+                        <div className="relative group">
+                          <img src={imageUrl} alt="" className="w-full aspect-video object-cover rounded-xl" /> {/* eslint-disable-line @next/next/no-img-element */}
                           <button onClick={() => setImageUrl("")}
-                            className="absolute top-2 right-2 w-7 h-7 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            className="absolute top-2 right-2 w-7 h-7 bg-black/70 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                             <span className="material-symbols-outlined text-[14px] text-white/70">close</span>
                           </button>
                         </div>
-                      : <PhotoUploader productId={selectedProduct.id} currentPhotos={selectedProduct.photos || []}
+                      ) : (
+                        <PhotoUploader productId={selectedProduct.id} currentPhotos={selectedProduct.photos || []}
                           onPhotosChange={photos => { setImageUrl(photos[0] || ""); setSelectedProduct({ ...selectedProduct, photos }); }} />
-                    }
-                  </div>
-                  <div className="mb-4">
-                    <label className="text-[10px] uppercase tracking-[0.14em] text-white/35 block mb-1.5">Caption</label>
-                    <textarea value={caption} onChange={e => setCaption(e.target.value)} rows={7}
-                      className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2 text-[12px] text-white/70 font-mono resize-none outline-none focus:border-white/15" />
-                  </div>
-                  {publishError && (
-                    <div className="mb-4 p-3 bg-red-500/[0.07] border border-red-500/20 text-red-400 text-[11px] rounded-xl">{publishError}</div>
-                  )}
-                  <div className="flex gap-3">
-                    <button onClick={() => setShowModal(false)}
-                      className="flex-1 py-2.5 bg-white/[0.05] border border-white/[0.07] text-white/45 rounded-xl text-[12px] hover:bg-white/[0.08] transition-colors">
-                      Cancelar
-                    </button>
-                    <button onClick={handlePublish} disabled={publishing || !imageUrl}
-                      className="flex-1 py-2.5 bg-white/[0.09] border border-white/[0.14] text-white/80 rounded-xl text-[12px] font-medium hover:bg-white/[0.12] transition-colors disabled:opacity-40 flex items-center justify-center gap-2">
-                      {publishing ? <><Spinner /> Publicando...</> : supervisado ? "Enviar a cola" : "Publicar ahora"}
-                    </button>
-                  </div>
-                </>
-              )}
+                      )}
+                    </div>
 
-              {modalTab === "historia" && (
-                <div className="flex gap-5">
-                  {/* Preview — ocupa todo el alto disponible */}
-                  <div className="flex-1 min-w-0">
-                    <StoryCanvas imageUrl={imageUrl} model={selectedProduct.model} capacity={selectedProduct.capacity}
-                      price={selectedProduct.sale_price} />
-                  </div>
-                  {/* Panel derecho — foto + info */}
-                  <div className="w-52 shrink-0 space-y-3">
-                    {!imageUrl ? (
-                      <PhotoUploader productId={selectedProduct.id} currentPhotos={selectedProduct.photos || []}
-                        onPhotosChange={photos => { setImageUrl(photos[0] || ""); setSelectedProduct({ ...selectedProduct, photos }); }} />
-                    ) : (
+                    {/* Elementos visibles */}
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.14em] text-white/35 mb-3">Elementos</p>
                       <div className="space-y-2">
-                        <div className="flex items-center gap-2 p-2 bg-white/[0.04] border border-white/[0.07] rounded-xl">
-                          <img src={imageUrl} alt="" className="w-10 h-10 object-cover rounded-lg shrink-0" /> {/* eslint-disable-line @next/next/no-img-element */}
-                          <p className="text-[11px] text-white/45 flex-1 truncate">{selectedProduct.model}</p>
-                          <button onClick={() => setImageUrl("")} className="p-1 hover:bg-white/[0.07] rounded-lg">
-                            <span className="material-symbols-outlined text-[14px] text-white/30">close</span>
-                          </button>
-                        </div>
+                        {([
+                          { key: "showLogo",    label: "Logo iGreen" },
+                          { key: "showModel",   label: "Modelo + GB" },
+                          { key: "showPrice",   label: "Precio" },
+                          { key: "showAddress", label: "Dirección" },
+                          { key: "showButton",  label: "Botón escribinos" },
+                        ] as { key: keyof StoryOptions; label: string }[]).map(el => (
+                          <label key={el.key} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.04] cursor-pointer transition-colors group">
+                            <div onClick={() => setStoryOptions(prev => ({ ...prev, [el.key]: !prev[el.key as keyof StoryOptions] }))}
+                              className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-all cursor-pointer
+                                ${storyOptions[el.key as keyof StoryOptions]
+                                  ? "bg-[#C9A84C] border-[#C9A84C]"
+                                  : "border-white/20 bg-white/[0.04]"}`}>
+                              {storyOptions[el.key as keyof StoryOptions] && (
+                                <span className="material-symbols-outlined text-[11px] text-black" style={{fontVariationSettings:"'FILL' 1, 'wght' 700"}}>check</span>
+                              )}
+                            </div>
+                            <span className="text-[12px] text-white/65 group-hover:text-white/80 transition-colors">{el.label}</span>
+                          </label>
+                        ))}
                       </div>
-                    )}
-                    <div className="p-3 bg-white/[0.03] border border-white/[0.06] rounded-xl space-y-1.5">
-                      <p className="text-[10px] uppercase tracking-widest text-white/30">Datos del equipo</p>
-                      <p className="text-[11px] text-white/60">{selectedProduct.model} {selectedProduct.capacity}</p>
-                      {selectedProduct.color && <p className="text-[11px] text-white/40">{selectedProduct.color}</p>}
-                      {selectedProduct.battery_health && <p className="text-[11px] text-white/40">🔋 {selectedProduct.battery_health}%</p>}
-                      {selectedProduct.sale_price && <p className="text-[12px] font-semibold text-[#C9A84C]">USD {selectedProduct.sale_price.toLocaleString()}</p>}
+                    </div>
+
+                    {/* Editar textos */}
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.14em] text-white/35 mb-3">Editar textos</p>
+                      <div className="space-y-3">
+                        {storyOptions.showModel && (
+                          <div>
+                            <label className="text-[10px] text-white/30 block mb-1">Modelo</label>
+                            <input value={storyOptions.customModel}
+                              onChange={e => setStoryOptions(prev => ({ ...prev, customModel: e.target.value }))}
+                              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-[12px] text-white/70 outline-none focus:border-white/15" />
+                          </div>
+                        )}
+                        {storyOptions.showPrice && (
+                          <div>
+                            <label className="text-[10px] text-white/30 block mb-1">Precio</label>
+                            <input value={storyOptions.customPrice}
+                              onChange={e => setStoryOptions(prev => ({ ...prev, customPrice: e.target.value }))}
+                              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-[12px] text-white/70 outline-none focus:border-white/15" />
+                          </div>
+                        )}
+                        {storyOptions.showAddress && (
+                          <div>
+                            <label className="text-[10px] text-white/30 block mb-1">Dirección</label>
+                            <input value={storyOptions.customAddress}
+                              onChange={e => setStoryOptions(prev => ({ ...prev, customAddress: e.target.value }))}
+                              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-[12px] text-white/70 outline-none focus:border-white/15" />
+                          </div>
+                        )}
+                        {storyOptions.showButton && (
+                          <div>
+                            <label className="text-[10px] text-white/30 block mb-1">Botón</label>
+                            <input value={storyOptions.customButton}
+                              onChange={e => setStoryOptions(prev => ({ ...prev, customButton: e.target.value }))}
+                              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-[12px] text-white/70 outline-none focus:border-white/15" />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              )}
-            </div>
+
+                {/* Columna derecha — preview */}
+                <div className="flex-1 bg-[#080808] flex flex-col items-center justify-center p-6 overflow-hidden">
+                  <div className="h-full max-w-[320px] w-full">
+                    <StoryCanvas imageUrl={imageUrl} options={storyOptions} />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Paso 2: Feed */}
+            {formatStep === "feed" && (
+              <div className="p-6 space-y-4">
+                <div>
+                  {imageUrl
+                    ? <div className="relative group">
+                        <img src={imageUrl} alt="Preview" className="w-full aspect-square object-cover rounded-xl" /> {/* eslint-disable-line @next/next/no-img-element */}
+                        <button onClick={() => setImageUrl("")}
+                          className="absolute top-2 right-2 w-7 h-7 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <span className="material-symbols-outlined text-[14px] text-white/70">close</span>
+                        </button>
+                      </div>
+                    : <PhotoUploader productId={selectedProduct.id} currentPhotos={selectedProduct.photos || []}
+                        onPhotosChange={photos => { setImageUrl(photos[0] || ""); setSelectedProduct({ ...selectedProduct, photos }); }} />
+                  }
+                </div>
+                <div>
+                  <label className="text-[10px] uppercase tracking-[0.14em] text-white/35 block mb-1.5">Caption</label>
+                  <textarea value={caption} onChange={e => setCaption(e.target.value)} rows={6}
+                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2 text-[12px] text-white/70 font-mono resize-none outline-none focus:border-white/15" />
+                </div>
+                {publishError && <div className="p-3 bg-red-500/[0.07] border border-red-500/20 text-red-400 text-[11px] rounded-xl">{publishError}</div>}
+                <div className="flex gap-3">
+                  <button onClick={() => setShowModal(false)}
+                    className="flex-1 py-2.5 bg-white/[0.05] border border-white/[0.07] text-white/45 rounded-xl text-[12px] hover:bg-white/[0.08] transition-colors">
+                    Cancelar
+                  </button>
+                  <button onClick={handlePublish} disabled={publishing || !imageUrl}
+                    className="flex-1 py-2.5 bg-white/[0.09] border border-white/[0.14] text-white/80 rounded-xl text-[12px] font-medium hover:bg-white/[0.12] transition-colors disabled:opacity-40 flex items-center justify-center gap-2">
+                    {publishing ? <><Spinner /> Publicando...</> : supervisado ? "Enviar a cola" : "Publicar ahora"}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
