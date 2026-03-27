@@ -289,7 +289,7 @@ export default function StoryCanvas({
       )}
 
       {/* Preview — scaled 9:16 */}
-      <div className="relative w-full" style={{ aspectRatio: "9/16", maxHeight: 480 }}>
+      <div className="relative w-full" style={{ aspectRatio: "9/16", maxHeight: 680 }}>
         <canvas
           ref={canvasRef}
           className="w-full h-full rounded-xl object-cover"

@@ -307,7 +307,7 @@ function TabPublicar({
       {/* Modal */}
       {showModal && selectedProduct && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#161619] border border-white/[0.10] rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+          <div className="bg-[#161619] border border-white/[0.10] rounded-2xl shadow-2xl w-full max-w-2xl max-h-[95vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-start mb-5">
                 <div>
