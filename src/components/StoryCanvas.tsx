@@ -138,94 +138,137 @@ export default function StoryCanvas({ imageUrl, options }: StoryCanvasProps) {
       ctx.restore();
     }
 
-    // ── FONDO: calcular dinámicamente cuántos elementos hay abajo ──
-    const items: (() => void)[] = [];
-    let currentY = H - 520;
+    // ── GLASS CARD — panel inferior ──
+    const CARD_PAD = 56;
+    const CARD_X = CARD_PAD;
+    const CARD_W = W - CARD_PAD * 2;
+    const CARD_Y = H - 580;
+    const CARD_H = 480;
+    const CARD_R = 40;
+
+    // Sombra suave card
+    ctx.save();
+    ctx.shadowColor = "rgba(0,0,0,0.55)";
+    ctx.shadowBlur = 60;
+    roundRect(ctx, CARD_X, CARD_Y, CARD_W, CARD_H, CARD_R);
+    ctx.fillStyle = "rgba(18,18,22,0.72)";
+    ctx.fill();
+    ctx.restore();
+
+    // Border glass
+    ctx.save();
+    roundRect(ctx, CARD_X, CARD_Y, CARD_W, CARD_H, CARD_R);
+    ctx.strokeStyle = "rgba(255,255,255,0.10)";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.restore();
+
+    // Brillo top (simula luz refractada)
+    const shineGrad = ctx.createLinearGradient(CARD_X, CARD_Y, CARD_X, CARD_Y + 120);
+    shineGrad.addColorStop(0, "rgba(255,255,255,0.07)");
+    shineGrad.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.save();
+    roundRect(ctx, CARD_X, CARD_Y, CARD_W, 120, CARD_R);
+    ctx.fillStyle = shineGrad;
+    ctx.fill();
+    ctx.restore();
+
+    const INNER_X = CARD_X + 56;
+    let currentY = CARD_Y + 56;
 
     // Modelo
     if (options.showModel && options.customModel) {
-      let fontSize = 100;
+      let fontSize = 88;
       ctx.font = `200 ${fontSize}px -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif`;
-      while (ctx.measureText(options.customModel).width > W - PAD * 2 && fontSize > 48) {
+      while (ctx.measureText(options.customModel).width > CARD_W - 112 && fontSize > 44) {
         fontSize -= 4;
         ctx.font = `200 ${fontSize}px -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif`;
       }
-      const capturedY = currentY;
-      const capturedSize = fontSize;
-      items.push(() => {
-        ctx.save();
-        ctx.font = `200 ${capturedSize}px -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif`;
-        ctx.fillStyle = "#ffffff";
-        ctx.textAlign = "left";
-        ctx.textBaseline = "alphabetic";
-        ctx.fillText(options.customModel, PAD, capturedY);
-        ctx.restore();
-      });
-      currentY += fontSize + 24;
+      ctx.save();
+      ctx.fillStyle = "rgba(255,255,255,0.92)";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "alphabetic";
+      ctx.fillText(options.customModel, INNER_X, currentY + fontSize);
+      ctx.restore();
+      currentY += fontSize + 20;
     }
 
     // Precio
     if (options.showPrice && options.customPrice) {
-      const capturedY = currentY;
-      items.push(() => {
-        ctx.save();
-        ctx.font = "100 112px -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif";
-        ctx.fillStyle = GOLD;
-        ctx.textAlign = "left";
-        ctx.textBaseline = "alphabetic";
-        ctx.fillText(options.customPrice, PAD, capturedY);
-        ctx.restore();
-      });
-      currentY += 124;
+      ctx.save();
+      ctx.font = "100 96px -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif";
+      ctx.fillStyle = GOLD;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "alphabetic";
+      ctx.fillText(options.customPrice, INNER_X, currentY + 96);
+      ctx.restore();
+      currentY += 112;
     }
 
     // Separador
-    const sepY = currentY + 16;
-    const capturedSepY = sepY;
-    items.push(() => {
-      ctx.strokeStyle = "rgba(255,255,255,0.10)";
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(PAD, capturedSepY);
-      ctx.lineTo(W - PAD, capturedSepY);
-      ctx.stroke();
-    });
+    ctx.strokeStyle = "rgba(255,255,255,0.08)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(INNER_X, currentY + 8);
+    ctx.lineTo(CARD_X + CARD_W - 56, currentY + 8);
+    ctx.stroke();
+    currentY += 24;
 
     // Dirección
     if (options.showAddress && options.customAddress) {
-      const capturedY = sepY + 30;
-      items.push(() => {
-        ctx.save();
-        ctx.font = "300 26px -apple-system, sans-serif";
-        ctx.fillStyle = "rgba(255,255,255,0.35)";
-        ctx.textAlign = "left";
-        ctx.textBaseline = "middle";
-        ctx.fillText(`📍 ${options.customAddress}`, PAD, capturedY);
-        ctx.restore();
-      });
+      ctx.save();
+      ctx.font = "300 24px -apple-system, sans-serif";
+      ctx.fillStyle = "rgba(255,255,255,0.32)";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText(`📍 ${options.customAddress}`, INNER_X, currentY + 20);
+      ctx.restore();
     }
 
-    // Botón
+    // Botón glass pill
     if (options.showButton && options.customButton) {
-      const btnY = H - 158;
-      const btnW = 400;
-      const btnH = 76;
-      items.push(() => {
-        ctx.save();
-        roundRect(ctx, PAD, btnY, btnW, btnH, 6);
-        ctx.fillStyle = GOLD;
-        ctx.fill();
-        ctx.font = "700 28px -apple-system, sans-serif";
-        ctx.fillStyle = BG;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(options.customButton, PAD + btnW / 2, btnY + btnH / 2);
-        ctx.restore();
-      });
-    }
+      const btnW = CARD_W - 112;
+      const btnH = 80;
+      const btnX = INNER_X;
+      const btnY = CARD_Y + CARD_H - btnH - 48;
+      const btnR = btnH / 2;
 
-    // Render todos los items
-    items.forEach(fn => fn());
+      // Sombra
+      ctx.save();
+      ctx.shadowColor = "rgba(0,0,0,0.4)";
+      ctx.shadowBlur = 24;
+      roundRect(ctx, btnX, btnY, btnW, btnH, btnR);
+      ctx.fillStyle = "rgba(255,255,255,0.10)";
+      ctx.fill();
+      ctx.restore();
+
+      // Border
+      ctx.save();
+      roundRect(ctx, btnX, btnY, btnW, btnH, btnR);
+      ctx.strokeStyle = "rgba(255,255,255,0.20)";
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.restore();
+
+      // Brillo top del botón
+      const btnShine = ctx.createLinearGradient(btnX, btnY, btnX, btnY + btnH / 2);
+      btnShine.addColorStop(0, "rgba(255,255,255,0.08)");
+      btnShine.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.save();
+      roundRect(ctx, btnX, btnY, btnW, btnH / 2, btnR);
+      ctx.fillStyle = btnShine;
+      ctx.fill();
+      ctx.restore();
+
+      // Texto botón
+      ctx.save();
+      ctx.font = "600 30px -apple-system, sans-serif";
+      ctx.fillStyle = "rgba(255,255,255,0.85)";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(options.customButton, btnX + btnW / 2, btnY + btnH / 2);
+      ctx.restore();
+    }
 
     setReady(true);
   }
