@@ -15,8 +15,28 @@ interface StoryCanvasProps {
 
 const STORY_W = 1080;
 const STORY_H = 1920;
-const LOGO_SRC = "/logo-premium-reseller.jpg";
-const ADDRESS = "Los Ríos 1774 · Recoleta, CABA";
+const ADDRESS = "Los Ríos 1774, Recoleta";
+const GOLD = "#C9A84C";
+const BG = "#080808";
+
+/* ─── helpers ─── */
+function conditionLabel(c: string): string {
+  return c === "A" ? "EXCELENTE ESTADO" : c === "B" ? "MUY BUEN ESTADO" : "BUEN ESTADO";
+}
+
+function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
 
 export default function StoryCanvas({
   imageUrl, model, capacity, color, condition, batteryHealth, price, isNew,
@@ -38,198 +58,206 @@ export default function StoryCanvas({
     canvas.width = STORY_W;
     canvas.height = STORY_H;
 
-    // Load product photo + logo in parallel
     const photoImg = new Image();
-    const logoImg = new Image();
     photoImg.crossOrigin = "anonymous";
-    logoImg.crossOrigin = "anonymous";
 
-    let loaded = 0;
-    const onLoad = () => {
-      loaded++;
-      if (loaded < 2) return;
-      draw();
+    photoImg.onload = () => draw(ctx, photoImg);
+    photoImg.onerror = () => {
+      setError("No se pudo cargar la foto del equipo");
+      draw(ctx, null);
     };
-
-    photoImg.onload = onLoad;
-    logoImg.onload = onLoad;
-    photoImg.onerror = () => { setError("No se pudo cargar la foto del equipo"); };
-    logoImg.onerror = onLoad; // logo fail → still draw without logo
-
     photoImg.src = imageUrl;
-    logoImg.src = LOGO_SRC;
 
-    function draw() {
-      if (!ctx) return;
+    function draw(ctx: CanvasRenderingContext2D, photo: HTMLImageElement | null) {
+      const W = STORY_W, H = STORY_H;
 
-      // ── Background: dark fallback
-      ctx.fillStyle = "#111113";
-      ctx.fillRect(0, 0, STORY_W, STORY_H);
+      // ── Background ──
+      ctx.fillStyle = BG;
+      ctx.fillRect(0, 0, W, H);
 
-      // ── Product photo — cover the full canvas
-      const photoAspect = photoImg.naturalWidth / photoImg.naturalHeight;
-      const canvasAspect = STORY_W / STORY_H;
-      let sx = 0, sy = 0, sw = photoImg.naturalWidth, sh = photoImg.naturalHeight;
-      if (photoAspect > canvasAspect) {
-        sw = photoImg.naturalHeight * canvasAspect;
-        sx = (photoImg.naturalWidth - sw) / 2;
+      // ── Product photo area (center, full width, cropped) ──
+      const PHOTO_TOP = 200;
+      const PHOTO_BOT = H - 320;
+      const PHOTO_H = PHOTO_BOT - PHOTO_TOP;
+
+      if (photo) {
+        const imgRatio = photo.naturalWidth / photo.naturalHeight;
+        const targetRatio = W / PHOTO_H;
+        let sx = 0, sy = 0, sw = photo.naturalWidth, sh = photo.naturalHeight;
+        if (imgRatio > targetRatio) {
+          sw = sh * targetRatio;
+          sx = (photo.naturalWidth - sw) / 2;
+        } else {
+          sh = sw / targetRatio;
+          sy = (photo.naturalHeight - sh) / 2;
+        }
+        ctx.drawImage(photo, sx, sy, sw, sh, 0, PHOTO_TOP, W, PHOTO_H);
+
+        // Gradient top over photo (for logo)
+        const topGrad = ctx.createLinearGradient(0, PHOTO_TOP, 0, PHOTO_TOP + 300);
+        topGrad.addColorStop(0, "rgba(8,8,8,0.92)");
+        topGrad.addColorStop(1, "rgba(8,8,8,0)");
+        ctx.fillStyle = topGrad;
+        ctx.fillRect(0, PHOTO_TOP, W, 300);
+
+        // Gradient bottom over photo (for info panel)
+        const botGrad = ctx.createLinearGradient(0, PHOTO_BOT - 400, 0, PHOTO_BOT);
+        botGrad.addColorStop(0, "rgba(8,8,8,0)");
+        botGrad.addColorStop(1, "rgba(8,8,8,0.95)");
+        ctx.fillStyle = botGrad;
+        ctx.fillRect(0, PHOTO_BOT - 400, W, 400);
       } else {
-        sh = photoImg.naturalWidth / canvasAspect;
-        sy = (photoImg.naturalHeight - sh) / 2;
-      }
-      ctx.drawImage(photoImg, sx, sy, sw, sh, 0, 0, STORY_W, STORY_H);
-
-      // ── Top gradient (for logo legibility)
-      const topGrad = ctx.createLinearGradient(0, 0, 0, 480);
-      topGrad.addColorStop(0, "rgba(0,0,0,0.72)");
-      topGrad.addColorStop(1, "rgba(0,0,0,0)");
-      ctx.fillStyle = topGrad;
-      ctx.fillRect(0, 0, STORY_W, 480);
-
-      // ── Bottom gradient (for text legibility)
-      const botGrad = ctx.createLinearGradient(0, STORY_H - 600, 0, STORY_H);
-      botGrad.addColorStop(0, "rgba(0,0,0,0)");
-      botGrad.addColorStop(0.35, "rgba(0,0,0,0.82)");
-      botGrad.addColorStop(1, "rgba(0,0,0,0.95)");
-      ctx.fillStyle = botGrad;
-      ctx.fillRect(0, STORY_H - 600, STORY_W, 600);
-
-      // ── Logo (top-center) — invert black→white via compositing
-      if (logoImg.complete && logoImg.naturalWidth > 0) {
-        const logoH = 110;
-        const logoW = logoImg.naturalWidth * (logoH / logoImg.naturalHeight);
-        const lx = (STORY_W - logoW) / 2;
-        const ly = 90;
-
-        // Draw logo inverted: draw white rect, then use difference blend
-        ctx.save();
-        ctx.globalCompositeOperation = "source-over";
-        // Draw logo white by: draw white layer, then draw logo with 'difference' blend
-        ctx.drawImage(logoImg, lx, ly, logoW, logoH);
-        // Now invert: draw white rect on top with 'difference'
-        ctx.globalCompositeOperation = "difference";
-        ctx.fillStyle = "white";
-        ctx.fillRect(lx, ly, logoW, logoH);
-        ctx.restore();
-        // That gives white-on-transparent for black logos. Clean up background square:
-        // Actually we already have the gradient behind, so let's just use screen blend
+        // Placeholder
+        ctx.fillStyle = "#141414";
+        ctx.fillRect(0, PHOTO_TOP, W, PHOTO_H);
+        ctx.fillStyle = "rgba(255,255,255,0.08)";
+        ctx.font = "300 48px -apple-system, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("[ foto del equipo ]", W / 2, PHOTO_TOP + PHOTO_H / 2);
       }
 
-      // Better logo approach: draw white rect, clip to logo shape via globalCompositeOperation
-      // Simplest reliable: draw logo with 'screen' blend mode over dark background
-      if (logoImg.complete && logoImg.naturalWidth > 0) {
-        const logoH = 110;
-        const logoW = logoImg.naturalWidth * (logoH / logoImg.naturalHeight);
-        const lx = (STORY_W - logoW) / 2;
-        const ly = 90;
+      // ── Solid bottom panel ──
+      ctx.fillStyle = BG;
+      ctx.fillRect(0, PHOTO_BOT, W, H - PHOTO_BOT);
 
-        ctx.save();
-        ctx.globalCompositeOperation = "screen";
-        ctx.drawImage(logoImg, lx, ly, logoW, logoH);
-        ctx.restore();
-      }
+      // ─────────────────────────────────────────
+      // TOP BAR — Logo
+      // ─────────────────────────────────────────
+      const PAD = 60;
+      const LOGO_Y = 100;
 
-      // ── Bottom content
-      const padX = 80;
-      let y = STORY_H - 420;
-
-      // Condition pill
-      if (!isNew && condition) {
-        const condText = condition === "A" ? "EXCELENTE ESTADO" : condition === "B" ? "MUY BUEN ESTADO" : "BUEN ESTADO";
-        ctx.save();
-        ctx.font = "bold 28px -apple-system, Helvetica, sans-serif";
-        const tw = ctx.measureText(condText).width;
-        const pillW = tw + 44;
-        const pillH = 48;
-        ctx.beginPath();
-        ctx.roundRect(padX, y, pillW, pillH, 24);
-        ctx.fillStyle = "rgba(255,255,255,0.14)";
-        ctx.fill();
-        ctx.strokeStyle = "rgba(255,255,255,0.22)";
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-        ctx.fillStyle = "rgba(255,255,255,0.90)";
-        ctx.textBaseline = "middle";
-        ctx.fillText(condText, padX + 22, y + pillH / 2);
-        ctx.restore();
-        y += 72;
-      }
-
-      if (isNew) {
-        ctx.save();
-        ctx.font = "bold 28px -apple-system, Helvetica, sans-serif";
-        const pillW = 260;
-        const pillH = 48;
-        ctx.beginPath();
-        ctx.roundRect(padX, y, pillW, pillH, 24);
-        ctx.fillStyle = "rgba(255,255,255,0.14)";
-        ctx.fill();
-        ctx.fillStyle = "rgba(255,255,255,0.90)";
-        ctx.textBaseline = "middle";
-        ctx.fillText("NUEVO · SELLADO", padX + 22, y + pillH / 2);
-        ctx.restore();
-        y += 72;
-      }
-
-      // Model + capacity
-      ctx.save();
-      ctx.font = "bold 92px -apple-system, Helvetica, sans-serif";
-      ctx.fillStyle = "rgba(255,255,255,0.97)";
+      // "iGreen" wordmark
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "300 72px -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif";
+      ctx.textAlign = "left";
       ctx.textBaseline = "alphabetic";
-      ctx.fillText(model, padX, y);
-      y += 100;
+      ctx.fillText("iGreen", PAD, LOGO_Y + 55);
+
+      // Separator pipe
+      ctx.fillStyle = "rgba(255,255,255,0.2)";
+      ctx.fillRect(PAD + 195, LOGO_Y, 1.5, 68);
+
+      // "Apple Premium" small text
+      ctx.fillStyle = "rgba(255,255,255,0.5)";
+      ctx.font = "400 24px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillText("Apple Premium", PAD + 214, LOGO_Y + 28);
+      ctx.fillText("Reseller", PAD + 214, LOGO_Y + 58);
+
+      // Gold accent line under logo
+      const logoLineGrad = ctx.createLinearGradient(PAD, 0, PAD + 400, 0);
+      logoLineGrad.addColorStop(0, GOLD);
+      logoLineGrad.addColorStop(1, "rgba(201,168,76,0)");
+      ctx.fillStyle = logoLineGrad;
+      ctx.fillRect(PAD, LOGO_Y + 78, 400, 2);
+
+      // ─────────────────────────────────────────
+      // BOTTOM INFO BLOCK
+      // ─────────────────────────────────────────
+      const INFO_Y = PHOTO_BOT + 30;
+
+      // Condition/new badge
+      const condText = isNew ? "NUEVO · SELLADO" : (condition ? conditionLabel(condition) : null);
+      if (condText) {
+        ctx.save();
+        ctx.font = "600 26px -apple-system, sans-serif";
+        const tw = ctx.measureText(condText).width;
+        const pillW = tw + 48;
+        const pillH = 50;
+        roundRect(ctx, PAD, INFO_Y, pillW, pillH, 4);
+        ctx.fillStyle = isNew ? "rgba(201,168,76,0.15)" : "rgba(255,255,255,0.07)";
+        ctx.fill();
+        ctx.strokeStyle = isNew ? GOLD : "rgba(255,255,255,0.12)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.fillStyle = isNew ? GOLD : "rgba(255,255,255,0.55)";
+        ctx.textBaseline = "middle";
+        ctx.textAlign = "left";
+        ctx.fillText(condText, PAD + 24, INFO_Y + pillH / 2);
+        ctx.restore();
+      }
+
+      // Model name — large
+      const modelY = INFO_Y + (condText ? 80 : 10);
+      ctx.save();
+      ctx.font = "200 88px -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif";
+      ctx.fillStyle = "#ffffff";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "alphabetic";
+      ctx.fillText(model, PAD, modelY);
       ctx.restore();
 
-      // Capacity + color
-      if (capacity || color) {
+      // Specs (capacity · color)
+      let specsY = modelY + 55;
+      const specs = [capacity, color].filter(Boolean).join("  ·  ");
+      if (specs) {
         ctx.save();
-        ctx.font = "500 54px -apple-system, Helvetica, sans-serif";
-        ctx.fillStyle = "rgba(255,255,255,0.60)";
-        ctx.fillText([capacity, color].filter(Boolean).join(" · "), padX, y);
-        y += 70;
+        ctx.font = "300 34px -apple-system, sans-serif";
+        ctx.fillStyle = "rgba(255,255,255,0.45)";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "alphabetic";
+        ctx.fillText(specs, PAD, specsY);
         ctx.restore();
+        specsY += 48;
       }
 
       // Battery
       if (!isNew && batteryHealth) {
         ctx.save();
-        ctx.font = "500 46px -apple-system, Helvetica, sans-serif";
-        ctx.fillStyle = "rgba(255,255,255,0.55)";
-        ctx.fillText(`🔋 Batería ${batteryHealth}%`, padX, y);
-        y += 64;
+        ctx.font = "300 32px -apple-system, sans-serif";
+        ctx.fillStyle = "rgba(255,255,255,0.40)";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "alphabetic";
+        ctx.fillText(`🔋 Batería ${batteryHealth}%`, PAD, specsY);
         ctx.restore();
+        specsY += 44;
       }
 
-      y += 20;
-
-      // Price
+      // Price — gold, right side
       if (price) {
+        const priceText = `USD ${price.toLocaleString()}`;
         ctx.save();
-        ctx.font = "bold 100px -apple-system, Helvetica, sans-serif";
-        ctx.fillStyle = "rgba(255,255,255,0.97)";
-        ctx.fillText(`$${price.toLocaleString()} USD`, padX, y);
-        y += 110;
+        ctx.font = "100 110px -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif";
+        ctx.fillStyle = GOLD;
+        ctx.textAlign = "right";
+        ctx.textBaseline = "alphabetic";
+        ctx.fillText(priceText, W - PAD, modelY + 10);
         ctx.restore();
       }
 
-      y += 16;
-
-      // Divider line
+      // Divider
+      const dividerY = H - 210;
       ctx.save();
-      ctx.strokeStyle = "rgba(255,255,255,0.15)";
-      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = "rgba(255,255,255,0.10)";
+      ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(padX, y);
-      ctx.lineTo(STORY_W - padX, y);
+      ctx.moveTo(PAD, dividerY);
+      ctx.lineTo(W - PAD, dividerY);
       ctx.stroke();
       ctx.restore();
-      y += 44;
 
-      // Address + phone icon
+      // Address
       ctx.save();
-      ctx.font = "500 40px -apple-system, Helvetica, sans-serif";
-      ctx.fillStyle = "rgba(255,255,255,0.55)";
-      ctx.fillText("📍 " + ADDRESS, padX, y);
+      ctx.font = "300 28px -apple-system, sans-serif";
+      ctx.fillStyle = "rgba(255,255,255,0.30)";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText(`📍 ${ADDRESS}  ·  @igreen.recoleta`, PAD, dividerY + 42);
+      ctx.restore();
+
+      // CTA button
+      const ctaX = PAD;
+      const ctaY = dividerY + 76;
+      const ctaW = 380;
+      const ctaH = 72;
+      ctx.save();
+      roundRect(ctx, ctaX, ctaY, ctaW, ctaH, 6);
+      ctx.fillStyle = GOLD;
+      ctx.fill();
+      ctx.font = "700 26px -apple-system, sans-serif";
+      ctx.fillStyle = BG;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("ESCRIBINOS →", ctaX + ctaW / 2, ctaY + ctaH / 2);
       ctx.restore();
 
       setReady(true);
@@ -253,7 +281,7 @@ export default function StoryCanvas({
         </div>
       )}
 
-      {/* Preview — scaled down to fit modal */}
+      {/* Preview — scaled 9:16 */}
       <div className="relative w-full" style={{ aspectRatio: "9/16", maxHeight: 480 }}>
         <canvas
           ref={canvasRef}
@@ -282,9 +310,7 @@ export default function StoryCanvas({
         Descargar Historia PNG
       </button>
 
-      <p className="text-[10px] text-white/30 text-center">
-        1080 × 1920px · Listo para subir a IG Stories
-      </p>
+      <p className="text-[10px] text-white/30 text-center">1080 × 1920px · Listo para subir a IG Stories</p>
     </div>
   );
 }
