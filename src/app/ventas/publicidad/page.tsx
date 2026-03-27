@@ -113,7 +113,7 @@ function TabPublicar({
   const [imageUrl, setImageUrl] = useState("");
   const [publishing, setPublishing] = useState(false);
   const [publishError, setPublishError] = useState("");
-  const [modalTab, setModalTab] = useState<"post" | "historia">("post");
+
   const [formatStep, setFormatStep] = useState<"elegir" | "feed" | "story" | "reel" | null>(null);
   const [storyOptions, setStoryOptions] = useState<StoryOptions>({
     showLogo: true, showModel: true, showPrice: true, showAddress: true, showButton: true,
@@ -126,7 +126,7 @@ function TabPublicar({
 
   function openModal(p: Product) {
     setSelectedProduct(p); setCaption(buildCaption(p));
-    setImageUrl(p.photos?.[0] || ""); setPublishError(""); setModalTab("post");
+    setImageUrl(p.photos?.[0] || ""); setPublishError("");
     setFormatStep("elegir");
     setStoryOptions(prev => ({
       ...prev,

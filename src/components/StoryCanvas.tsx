@@ -23,7 +23,8 @@ const W = 1080;
 const H = 1920;
 const GOLD = "#C9A84C";
 const BG = "#080808";
-const PAD = 72;
+
+
 
 function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
   ctx.beginPath();
