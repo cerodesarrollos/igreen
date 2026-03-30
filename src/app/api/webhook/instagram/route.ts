@@ -6,6 +6,7 @@ import crypto from 'crypto';
 const VERIFY_TOKEN = 'igreen_webhook_2026';
 const APP_SECRET = process.env.META_APP_SECRET || '37fdb89f28f0dbcdc7522ace4215e2af';
 const PAGE_ACCESS_TOKEN = process.env.META_PAGE_ACCESS_TOKEN || '';
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
 
 async function getIgUserProfile(senderId: string): Promise<{ name: string | null; username: string | null }> {
   try {
@@ -95,7 +96,39 @@ export async function POST(request: NextRequest) {
           const att = msg.attachments[0];
           messageType = att.type;
           mediaUrl = att.payload?.url || null;
-          if (!messageText) messageText = `[${att.type}]`;
+
+          // Transcribe audio messages with Whisper
+          if (att.type === 'audio' && att.payload?.url && OPENAI_API_KEY) {
+            try {
+              const audioRes = await fetch(att.payload.url);
+              if (audioRes.ok) {
+                const audioBlob = await audioRes.blob();
+                const formData = new FormData();
+                formData.append('file', audioBlob, 'audio.mp4');
+                formData.append('model', 'whisper-1');
+                formData.append('language', 'es');
+
+                const whisperRes = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+                  method: 'POST',
+                  headers: { 'Authorization': `Bearer ${OPENAI_API_KEY}` },
+                  body: formData,
+                });
+
+                if (whisperRes.ok) {
+                  const whisperData = await whisperRes.json();
+                  messageText = `🎤 ${whisperData.text}`;
+                  messageType = 'audio_transcribed';
+                } else {
+                  messageText = '[audio - no se pudo transcribir]';
+                }
+              }
+            } catch (err) {
+              console.error('Whisper transcription error:', err);
+              messageText = '[audio - error al transcribir]';
+            }
+          } else if (!messageText) {
+            messageText = `[${att.type}]`;
+          }
         }
 
         // Fetch sender profile for display name/username
