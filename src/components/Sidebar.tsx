@@ -15,6 +15,7 @@ const allVentasItems = [
   { href: "/ventas/clientes",   icon: "group",           label: "Clientes",   adminOnly: false },
   { href: "/ventas/gastos",     icon: "payments",        label: "Gastos",     adminOnly: true  },
   { href: "/ventas/rendicion",  icon: "receipt_long",    label: "Rendición",  adminOnly: true  },
+  { href: "/ventas/salvador",   icon: "handshake",       label: "Salvador",   adminOnly: true  },
   { href: "/ventas/metricas",   icon: "bar_chart",       label: "Métricas",   adminOnly: true  },
   { href: "/ventas/publicidad", icon: "campaign",        label: "Publicidad", adminOnly: true  },
 ];

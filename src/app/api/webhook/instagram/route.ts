@@ -65,7 +65,24 @@ export async function POST(request: NextRequest) {
   try {
     for (const entry of (payload.entry || [])) {
       for (const event of (entry.messaging || [])) {
-        if (!event.message || event.message.is_echo) continue;
+        if (!event.message) continue;
+
+        // Echo = message sent BY the page (agent reply) → save as outbound
+        if (event.message.is_echo) {
+          const echoMsg = event.message;
+          await getSupabase().from('ig_messages').upsert({
+            ig_message_id: echoMsg.mid,
+            ig_sender_id: event.recipient?.id || '',
+            message_text: echoMsg.text || `[${echoMsg.attachments?.[0]?.type || 'media'}]`,
+            message_type: 'text',
+            direction: 'outbound',
+            status: 'replied',
+            conversation_id: event.recipient?.id || '',
+            assigned_to: 'agent',
+            raw_payload: event,
+          }, { onConflict: 'ig_message_id' });
+          continue;
+        }
 
         const senderId = event.sender?.id;
         const msg = event.message;
