@@ -84,6 +84,9 @@ export async function POST(request: NextRequest) {
         // Fetch sender profile for display name/username
         const { name: senderName, username: senderUsername } = await getIgUserProfile(senderId);
 
+        // Notify Telegram
+        notifyTelegram(senderId, senderName, messageText);
+
         await getSupabase().from('ig_messages').upsert({
           ig_message_id: msg.mid,
           ig_sender_id: senderId,
@@ -105,4 +108,18 @@ export async function POST(request: NextRequest) {
   }
 
   return new NextResponse('EVENT_RECEIVED', { status: 200 });
+}
+
+// Notify iGreen agent via Telegram (fire-and-forget)
+async function notifyTelegram(senderId: string, senderName: string | null, messageText: string) {
+  try {
+    const botToken = '8635466884:AAE6SgnxzPtp-es4Fdybws_cgRa8i83Ul_M';
+    const chatId = '1708555508';
+    const text = `📩 DM Instagram\n\nDe: ${senderName || senderId}\nMensaje: ${messageText}`;
+    await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text }),
+    });
+  } catch { /* silent */ }
 }
