@@ -7,6 +7,8 @@ const VERIFY_TOKEN = 'igreen_webhook_2026';
 const APP_SECRET = process.env.META_APP_SECRET || '37fdb89f28f0dbcdc7522ace4215e2af';
 const PAGE_ACCESS_TOKEN = process.env.META_PAGE_ACCESS_TOKEN || '';
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
+const TG_BOT_TOKEN = '8635466884:AAE6SgnxzPtp-es4Fdybws_cgRa8i83Ul_M';
+const TG_GROUP_CHAT_ID = '-5237839540';
 
 async function getIgUserProfile(senderId: string): Promise<{ name: string | null; username: string | null }> {
   try {
@@ -147,6 +149,18 @@ export async function POST(request: NextRequest) {
           conversation_id: senderId,
           raw_payload: event,
         }, { onConflict: 'ig_message_id' });
+
+        // Notify iGreen agent via Telegram group
+        const tgText = `📩 DM de @${senderUsername || senderId}:\n\n${messageText}\n\n[ig_sender_id: ${senderId}]`;
+        await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: TG_GROUP_CHAT_ID,
+            text: tgText,
+            parse_mode: 'HTML',
+          }),
+        }).catch(err => console.error('TG notify error:', err));
       }
     }
   } catch (err) {
